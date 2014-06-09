@@ -11,6 +11,7 @@
     "describe": true,
     "before": true,
     "after": true,
-    "expect": true
+    "expect": true,
+    "captureEvents": true
   }
 }
