@@ -1,0 +1,17 @@
+{
+  "name": "pullme",
+  "version": "0.1.0",
+  "description": "An iterator library for advanced object pipelines.",
+  "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
+  "main": "pullme.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "hint": "./node_modules/jshint/bin/jshint *.js test"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "~1.20.1",
+    "jshint": "~2.5.1",
+    "chai": "~1.9.1"
+  }
+}
