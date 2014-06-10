@@ -57,6 +57,38 @@ EmptyIterator.prototype.ended = true;
 
 
 
+/** Creates an iterator that returns a single item. **/
+function SingletonIterator(item, options) {
+  if (!(this instanceof SingletonIterator))
+    return new SingletonIterator(item, options);
+  Iterator.call(this, options);
+
+  if (item === null)
+    return this._emitAsync('end');
+
+  this._item = item;
+  this._emitAsync('readable');
+}
+Iterator.makeSuperclassOf(SingletonIterator);
+
+/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
+SingletonIterator.prototype.read = function () {
+  var item = null;
+  if ('_item' in this) {
+    item = this._item;
+    delete this._item;
+    this._emitAsync('end');
+  }
+  return item;
+};
+
+/** Indicates whether reading more items from this iterator is not possible. **/
+Object.defineProperty(SingletonIterator.prototype, 'ended', {
+  get: function () { return !('_item' in this); },
+});
+
+
+
 /** Creates an iterator that returns items from the given array. **/
 function ArrayIterator(items, options) {
   if (!(this instanceof ArrayIterator))
@@ -93,5 +125,6 @@ Object.defineProperty(ArrayIterator.prototype, 'ended', {
 module.exports = {
   Iterator: Iterator,
   EmptyIterator: EmptyIterator,
+  SingletonIterator: SingletonIterator,
   ArrayIterator: ArrayIterator,
 };
