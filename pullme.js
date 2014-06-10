@@ -40,6 +40,23 @@ Iterator.makeSuperclassOf = function makeSuperclassOf(subclass) {
 
 
 
+/** Creates an iterator that doesn't return any items. **/
+function EmptyIterator(options) {
+  if (!(this instanceof EmptyIterator))
+    return new EmptyIterator(options);
+  Iterator.call(this, options);
+  this._emitAsync('end');
+}
+Iterator.makeSuperclassOf(EmptyIterator);
+
+/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
+EmptyIterator.prototype.read = function () { return null; };
+
+/** Indicates whether reading more items from this iterator is not possible. **/
+EmptyIterator.prototype.ended = true;
+
+
+
 /** Creates an iterator that returns items from the given array. **/
 function ArrayIterator(items, options) {
   if (!(this instanceof ArrayIterator))
@@ -75,5 +92,6 @@ Object.defineProperty(ArrayIterator.prototype, 'ended', {
 // Export all submodules
 module.exports = {
   Iterator: Iterator,
+  EmptyIterator: EmptyIterator,
   ArrayIterator: ArrayIterator,
 };
