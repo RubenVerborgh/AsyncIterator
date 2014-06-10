@@ -12,10 +12,6 @@ function Iterator(options) {
   if (!(this instanceof Iterator))
     return new Iterator(options);
   EventEmitter.call(this);
-
-  // Add a bound version of the emit method for use in callbacks
-  var self = this;
-  this._emit = function (name, a, b, c) { self.emit(name, a, b, c); };
 }
 util.inherits(Iterator, EventEmitter);
 
@@ -26,8 +22,20 @@ Iterator.prototype.read = function () {
 
 /** Asynchronously emits the given event. */
 Iterator.prototype._emitAsync = function (eventName, a, b, c) {
-  setImmediate(this._emit, eventName, a, b, c);
+  setImmediate(emit, this, eventName, a, b, c);
 };
+function emit(self, eventName, a, b, c) { self.emit(eventName, a, b, c); }
+
+/** Ends the iterator. */
+Iterator.prototype._end = function () {
+  setImmediate(endIterator, this);
+};
+function endIterator(self) {
+  self.emit('end');
+  self.addListener = self.on = self.once = self.emit = deleteEvents;
+  delete self._events;
+}
+function deleteEvents() { delete this._events; }
 
 /** Indicates whether reading more items from this iterator is not possible. **/
 Iterator.prototype.ended = false;
@@ -45,7 +53,7 @@ function EmptyIterator(options) {
   if (!(this instanceof EmptyIterator))
     return new EmptyIterator(options);
   Iterator.call(this, options);
-  this._emitAsync('end');
+  this._end();
 }
 Iterator.makeSuperclassOf(EmptyIterator);
 
@@ -64,7 +72,7 @@ function SingletonIterator(item, options) {
   Iterator.call(this, options);
 
   if (item === null)
-    return this._emitAsync('end');
+    return this._end();
 
   this._item = item;
   this._emitAsync('readable');
@@ -77,7 +85,7 @@ SingletonIterator.prototype.read = function () {
   if ('_item' in this) {
     item = this._item;
     delete this._item;
-    this._emitAsync('end');
+    this._end();
   }
   return item;
 };
@@ -96,7 +104,7 @@ function ArrayIterator(items, options) {
   Iterator.call(this, options);
 
   if (!(items && items.length > 0))
-    return this._emitAsync('end');
+    return this._end();
 
   this._buffer = items.slice();
   this._emitAsync('readable');
@@ -111,7 +119,7 @@ ArrayIterator.prototype.read = function () {
   var item = buffer.shift();
   if (buffer.length === 0) {
     delete this._buffer;
-    this._emitAsync('end');
+    this._end();
   }
   return item;
 };
