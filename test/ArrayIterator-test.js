@@ -40,8 +40,8 @@ describe('ArrayIterator', function () {
       iterator.ended.should.be.true;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
   });
 
@@ -64,12 +64,12 @@ describe('ArrayIterator', function () {
       iterator.ended.should.be.true;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
   });
 
@@ -92,12 +92,12 @@ describe('ArrayIterator', function () {
       iterator.ended.should.be.true;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
   });
 
@@ -129,8 +129,8 @@ describe('ArrayIterator', function () {
         item.should.equal(1);
       });
 
-      it('should return null when read is called again', function () {
-        expect(iterator.read()).to.be.null;
+      it('should return undefined when read is called again', function () {
+        expect(iterator.read()).to.be.undefined;
       });
 
       it('should have emitted the `end` event', function () {
@@ -203,8 +203,8 @@ describe('ArrayIterator', function () {
         item.should.equal(3);
       });
 
-      it('should return null when read is called again', function () {
-        expect(iterator.read()).to.be.null;
+      it('should return undefined when read is called again', function () {
+        expect(iterator.read()).to.be.undefined;
       });
 
       it('should have emitted the `end` event', function () {
@@ -245,8 +245,8 @@ describe('ArrayIterator', function () {
         item.should.equal(1);
       });
 
-      it('should return null when read is called again', function () {
-        expect(iterator.read()).to.be.null;
+      it('should return undefined when read is called again', function () {
+        expect(iterator.read()).to.be.undefined;
       });
 
       it('should have emitted the `end` event', function () {
@@ -274,7 +274,7 @@ describe('ArrayIterator', function () {
     });
 
     it('should return the original elements', function () {
-      items.should.deep.equal([1, 2, 3, null]);
+      items.should.deep.equal([1, 2, 3, undefined]);
     });
   });
 });

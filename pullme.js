@@ -15,7 +15,7 @@ function Iterator(options) {
 }
 util.inherits(Iterator, EventEmitter);
 
-/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
+/** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 Iterator.prototype.read = function () {
   throw new Error('The read method has not been implemented.');
 };
@@ -57,8 +57,8 @@ function EmptyIterator(options) {
 }
 Iterator.makeSuperclassOf(EmptyIterator);
 
-/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
-EmptyIterator.prototype.read = function () { return null; };
+/** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
+EmptyIterator.prototype.read = function () { };
 
 /** Indicates whether reading more items from this iterator is not possible. **/
 EmptyIterator.prototype.ended = true;
@@ -71,7 +71,7 @@ function SingletonIterator(item, options) {
     return new SingletonIterator(item, options);
   Iterator.call(this, options);
 
-  if (item === null)
+  if (item === undefined)
     return this._end();
 
   this._item = item;
@@ -79,20 +79,19 @@ function SingletonIterator(item, options) {
 }
 Iterator.makeSuperclassOf(SingletonIterator);
 
-/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
+/** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 SingletonIterator.prototype.read = function () {
-  var item = null;
-  if ('_item' in this) {
-    item = this._item;
+  var item = this._item;
+  if (item !== undefined) {
     delete this._item;
     this._end();
+    return item;
   }
-  return item;
 };
 
 /** Indicates whether reading more items from this iterator is not possible. **/
 Object.defineProperty(SingletonIterator.prototype, 'ended', {
-  get: function () { return !('_item' in this); },
+  get: function () { return this._item === undefined; },
 });
 
 
@@ -111,22 +110,22 @@ function ArrayIterator(items, options) {
 }
 Iterator.makeSuperclassOf(ArrayIterator);
 
-/** Tries to read an item from the iterator; returns the item, or `null` if none is available. **/
+/** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 ArrayIterator.prototype.read = function () {
   var buffer = this._buffer;
-  if (!buffer) return null;
-
-  var item = buffer.shift();
-  if (buffer.length === 0) {
-    delete this._buffer;
-    this._end();
+  if (buffer !== undefined) {
+    var item = buffer.shift();
+    if (buffer.length === 0) {
+      delete this._buffer;
+      this._end();
+    }
+    return item;
   }
-  return item;
 };
 
 /** Indicates whether reading more items from this iterator is not possible. **/
 Object.defineProperty(ArrayIterator.prototype, 'ended', {
-  get: function () { return !('_buffer' in this); },
+  get: function () { return this._buffer === undefined; },
 });
 
 // Export all submodules

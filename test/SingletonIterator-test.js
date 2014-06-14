@@ -24,7 +24,7 @@ describe('SingletonIterator', function () {
   describe('An SingletonIterator without item', function () {
     var iterator;
     before(function () {
-      iterator = new SingletonIterator(null);
+      iterator = new SingletonIterator();
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -40,8 +40,8 @@ describe('SingletonIterator', function () {
       iterator.ended.should.be.true;
     });
 
-    it('should return null when read is called', function () {
-      expect(iterator.read()).to.be.null;
+    it('should return undefined when read is called', function () {
+      expect(iterator.read()).to.be.undefined;
     });
   });
 
@@ -73,8 +73,8 @@ describe('SingletonIterator', function () {
         item.should.equal(1);
       });
 
-      it('should return null when read is called again', function () {
-        expect(iterator.read()).to.be.null;
+      it('should return undefined when read is called again', function () {
+        expect(iterator.read()).to.be.undefined;
       });
 
       it('should have emitted the `end` event', function () {
