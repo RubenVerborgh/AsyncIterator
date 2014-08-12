@@ -12,6 +12,7 @@
     "before": true,
     "after": true,
     "expect": true,
+    "sinon": true,
     "captureEvents": true
   }
 }
