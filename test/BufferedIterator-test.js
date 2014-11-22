@@ -45,10 +45,10 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that pushes null synchronously', function () {
+  describe('A BufferedIterator that is closed synchronously', function () {
     function createIterator(options) {
       var iterator = new BufferedIterator(options);
-      iterator._read = function () { this._push(null); };
+      iterator._read = function () { this._close(); };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
     }
@@ -177,10 +177,10 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that pushes null asynchronously', function () {
+  describe('A BufferedIterator that is closed asynchronously', function () {
     function createIterator(options) {
       var iterator = new BufferedIterator(options);
-      iterator._read = function () { setImmediate(function (self) { self._push(null); }, this); };
+      iterator._read = function () { setImmediate(function (self) { self._close(); }, this); };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
     }

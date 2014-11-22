@@ -16,9 +16,7 @@ function Iterator(options) {
 util.inherits(Iterator, EventEmitter);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
-Iterator.prototype.read = function () {
-  throw new Error('The read method has not been implemented.');
-};
+Iterator.prototype.read = function () { };
 
 /** Asynchronously emits the given event. */
 Iterator.prototype._emitAsync = function (eventName, a, b, c) {
@@ -30,12 +28,13 @@ function emit(self, eventName, a, b, c) { self.emit(eventName, a, b, c); }
 Iterator.prototype._close = function () {
   if (!this.closed) {
     this._closed = true;
-    this._end();
+    this._endAsync();
   }
 };
 
-/** Asynchronously terminates the iterator, after which no more items will be emitted. */
-Iterator.prototype._end = function () {
+/** Asynchronously terminates the iterator, after which no more items will be emitted.
+    Should never be called before `_close`; typically, `_close` is responsible for calling `_endAsync`. */
+Iterator.prototype._endAsync = function () {
   setImmediate(endIterator, this);
 };
 function endIterator(self) {
@@ -52,7 +51,9 @@ Object.defineProperty(Iterator.prototype, 'closed', {
 });
 
 /** Indicates whether the iterator has stopped emitting items. **/
-Iterator.prototype.ended = false;
+Object.defineProperty(Iterator.prototype, 'ended', {
+  get: function () { return this.emit === deleteEvents; },
+});
 
 /** Makes the current class a superclass of the given class. */
 Iterator.makeSuperclassOf = function makeSuperclassOf(subclass) {
@@ -67,15 +68,9 @@ function EmptyIterator(options) {
   if (!(this instanceof EmptyIterator))
     return new EmptyIterator(options);
   Iterator.call(this, options);
-  this._end();
+  this._close();
 }
 Iterator.makeSuperclassOf(EmptyIterator);
-
-/** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
-EmptyIterator.prototype.read = function () { };
-
-/** Indicates whether the iterator has stopped emitting items. **/
-EmptyIterator.prototype.ended = true;
 
 
 
@@ -86,27 +81,26 @@ function SingletonIterator(item, options) {
   Iterator.call(this, options);
 
   if (item === undefined)
-    return this._end();
-
-  this._item = item;
-  this._emitAsync('readable');
+    this._close();
+  else {
+    this._item = item;
+    this._emitAsync('readable');
+  }
 }
 Iterator.makeSuperclassOf(SingletonIterator);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 SingletonIterator.prototype.read = function () {
   var item = this._item;
-  if (item !== undefined) {
-    this._close();
-    delete this._item;
-    return item;
-  }
+  this._close();
+  return item;
 };
 
-/** Indicates whether the iterator has stopped emitting items. **/
-Object.defineProperty(SingletonIterator.prototype, 'ended', {
-  get: function () { return this._item === undefined; },
-});
+/** Stops the iterator from generating more items, eventually leading to the `end` event. */
+SingletonIterator.prototype._close = function () {
+  Iterator.prototype._close.call(this);
+  delete this._item;
+};
 
 
 
@@ -117,7 +111,7 @@ function ArrayIterator(items, options) {
   Iterator.call(this, options);
 
   if (!(items && items.length > 0))
-    return this._end();
+    return this._close();
 
   this._buffer = items.slice();
   this._emitAsync('readable');
@@ -136,11 +130,6 @@ ArrayIterator.prototype.read = function () {
     return item;
   }
 };
-
-/** Indicates whether the iterator has stopped emitting items. **/
-Object.defineProperty(ArrayIterator.prototype, 'ended', {
-  get: function () { return this._buffer === undefined; },
-});
 
 
 
@@ -174,7 +163,7 @@ BufferedIterator.prototype.read = function () {
 
   // If the buffer is empty, either end the iterator or fill it.
   if (buffer === undefined || buffer.length === 0)
-    this._closed ? this._end() : this._fillBuffer();
+    this._closed ? this._endAsync() : this._fillBuffer();
 
   return item;
 };
@@ -185,7 +174,6 @@ BufferedIterator.prototype._read = function (count) { };
 
 /** Adds an item to the internal buffer. */
 BufferedIterator.prototype._push = function (item) {
-  if (item === null) return this._close();
   if (this.ended) throw new Error('Cannot push after the iterator was ended.');
   this._buffer ? this._buffer.push(item) : this._buffer = [item];
 };
@@ -206,22 +194,13 @@ function fillBuffer(self) {
 /** Stops the iterator from generating more items, eventually leading to the `end` event. */
 BufferedIterator.prototype._close = function () {
   if (!this.closed) {
+    // When the iterator is closed, only buffered items can still be emitted
     this._closed = true;
+    // If the buffer is empty, no more items will be emitted
     if (this._buffer === undefined || this._buffer.length === 0)
-      this._end();
+      this._endAsync();
   }
 };
-
-/** Asynchronously terminates the iterator, after which no more items will be emitted. */
-BufferedIterator.prototype._end = function () {
-  delete this._bufferSize;
-  Iterator.prototype._end.call(this);
-};
-
-/** Indicates whether the iterator has stopped emitting items. **/
-Object.defineProperty(BufferedIterator.prototype, 'ended', {
-  get: function () { return this._bufferSize === undefined; },
-});
 
 
 

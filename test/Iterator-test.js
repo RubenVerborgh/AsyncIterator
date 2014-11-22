@@ -36,17 +36,16 @@ describe('Iterator', function () {
       iterator._eventCounts.end.should.equal(0);
     });
 
-    it('should throw an error when trying to read', function () {
-      (function () { iterator.read(); })
-      .should.throw('The read method has not been implemented.');
+    it('should return undefined when trying to read', function () {
+      expect(iterator.read()).to.be.undefined;
     });
 
     it('should not have ended', function () {
       iterator.ended.should.be.false;
     });
 
-    describe('after _end has been called', function () {
-      before(function () { iterator._end(); });
+    describe('after _close has been called', function () {
+      before(function () { iterator._close(); });
 
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -54,6 +53,53 @@ describe('Iterator', function () {
 
       it('should have emitted the `end` event', function () {
         iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when trying to read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+
+      it('should not have any listeners', function () {
+        iterator.should.not.contain.key('_events');
+      });
+
+      it('should not allow adding listeners with `on`', function () {
+        iterator.on('end', function () {});
+        iterator.should.not.contain.key('_events');
+      });
+
+      it('should not allow adding listeners with `once`', function () {
+        iterator.on('once', function () {});
+        iterator.should.not.contain.key('_events');
+      });
+
+      it('should not allow adding listeners with `addListener`', function () {
+        iterator.addListener('end', function () {});
+        iterator.should.not.contain.key('_events');
+      });
+    });
+
+    describe('after _close has been called a second time', function () {
+      before(function () { iterator._close(); });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event a second time', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when trying to read', function () {
+        expect(iterator.read()).to.be.undefined;
       });
 
       it('should not have any listeners', function () {
