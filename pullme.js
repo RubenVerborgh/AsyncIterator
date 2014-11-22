@@ -1,5 +1,4 @@
-var EventEmitter = require('events').EventEmitter,
-    util = require('util');
+var EventEmitter = require('events').EventEmitter;
 
 /**
    Creates an iterator that allows pull-based access to a stream of objects.
@@ -13,7 +12,13 @@ function Iterator(options) {
     return new Iterator(options);
   EventEmitter.call(this);
 }
-util.inherits(Iterator, EventEmitter);
+/** Makes the current class a superclass of the given class. */
+(function isPrototypeOf(child) {
+  child.isPrototypeOf = isPrototypeOf;
+  child.prototype = Object.create(this.prototype,
+    { constructor: { value: child, configurable: true, writable: true }});
+})
+.call(EventEmitter, Iterator);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 Iterator.prototype.read = function () { };
@@ -55,12 +60,6 @@ Object.defineProperty(Iterator.prototype, 'ended', {
   get: function () { return this.emit === deleteEvents; },
 });
 
-/** Makes the current class a superclass of the given class. */
-Iterator.makeSuperclassOf = function makeSuperclassOf(subclass) {
-  util.inherits(subclass, this);
-  subclass.makeSuperclassOf = makeSuperclassOf;
-};
-
 
 
 /** Creates an iterator that doesn't return any items. **/
@@ -70,7 +69,7 @@ function EmptyIterator(options) {
   Iterator.call(this, options);
   this._close();
 }
-Iterator.makeSuperclassOf(EmptyIterator);
+Iterator.isPrototypeOf(EmptyIterator);
 
 
 
@@ -87,7 +86,7 @@ function SingletonIterator(item, options) {
     this._emitAsync('readable');
   }
 }
-Iterator.makeSuperclassOf(SingletonIterator);
+Iterator.isPrototypeOf(SingletonIterator);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 SingletonIterator.prototype.read = function () {
@@ -116,7 +115,7 @@ function ArrayIterator(items, options) {
   this._buffer = items.slice();
   this._emitAsync('readable');
 }
-Iterator.makeSuperclassOf(ArrayIterator);
+Iterator.isPrototypeOf(ArrayIterator);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 ArrayIterator.prototype.read = function () {
@@ -147,7 +146,7 @@ function BufferedIterator(options) {
     this._fillBuffer();
   }
 }
-Iterator.makeSuperclassOf(BufferedIterator);
+Iterator.isPrototypeOf(BufferedIterator);
 
 /** Tries to read an item from the iterator; returns the item, or `undefined` if none is available. **/
 BufferedIterator.prototype.read = function () {
