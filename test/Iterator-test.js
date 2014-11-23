@@ -44,8 +44,8 @@ describe('Iterator', function () {
       iterator.ended.should.be.false;
     });
 
-    describe('after _close has been called', function () {
-      before(function () { iterator._close(); });
+    describe('after close has been called', function () {
+      before(function () { iterator.close(); });
 
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -83,8 +83,8 @@ describe('Iterator', function () {
       });
     });
 
-    describe('after _close has been called a second time', function () {
-      before(function () { iterator._close(); });
+    describe('after close has been called a second time', function () {
+      before(function () { iterator.close(); });
 
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
