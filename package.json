@@ -5,8 +5,9 @@
   "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
   "main": "pullme.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha",
-    "hint": "./node_modules/jshint/bin/jshint *.js test"
+    "test": "mocha",
+    "hint": "jshint *.js lib test",
+    "docs": "jsdoc -c jsdoc.json README.md lib"
   },
   "license": "MIT",
   "devDependencies": {
@@ -14,6 +15,7 @@
     "sinon": "~1.10.2",
     "jshint": "~2.5.1",
     "chai": "~1.9.1",
-    "sinon-chai": "~2.5.0"
+    "sinon-chai": "~2.5.0",
+    "jsdoc": "~3.3.0"
   }
 }
