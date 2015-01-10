@@ -347,8 +347,8 @@ describe('BufferedIterator', function () {
           expect(item).to.equal("a");
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should have emitted the `end` event', function () {
@@ -373,8 +373,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should not have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted another `end` event', function () {

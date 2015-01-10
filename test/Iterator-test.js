@@ -154,7 +154,7 @@ describe('Iterator', function () {
     var iterator, dataListener;
     before(function () {
       var items = [1];
-      iterator = new Iterator();
+      iterator = new Iterator(Iterator.READABLE);
       iterator.read = function () { return items.shift() || iterator.close(); };
     });
 
@@ -179,7 +179,7 @@ describe('Iterator', function () {
   describe('An Iterator instance to which items are added', function () {
     var iterator, dataListener1, dataListener2, items = [];
     before(function () {
-      iterator = new Iterator();
+      iterator = new Iterator(Iterator.READABLE);
       iterator.read = sinon.spy(function () { return items.shift(); });
     });
 
