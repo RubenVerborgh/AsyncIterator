@@ -1,9 +1,9 @@
 {
-  "name": "pullme",
-  "version": "0.1.0",
-  "description": "An iterator library for advanced object pipelines.",
+  "name": "asynciterator",
+  "version": "0.0.0",
+  "description": "An asynchronous iterator library for advanced object pipelines.",
   "author": "Ruben Verborgh <ruben.verborgh@gmail.com>",
-  "main": "pullme.js",
+  "main": "asynciterator.js",
   "scripts": {
     "test": "mocha",
     "hint": "jshint *.js lib test",

@@ -1,6 +1,6 @@
-var BufferedIterator = require('../pullme').BufferedIterator;
+var BufferedIterator = require('../asynciterator').BufferedIterator;
 
-var Iterator = require('../pullme').Iterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator;
 
 describe('BufferedIterator', function () {
   describe('The BufferedIterator module', function () {
@@ -12,12 +12,12 @@ describe('BufferedIterator', function () {
       new BufferedIterator().should.be.an.instanceof(BufferedIterator);
     });
 
-    it('should make Iterator objects', function () {
-      BufferedIterator().should.be.an.instanceof(Iterator);
+    it('should make AsyncIterator objects', function () {
+      BufferedIterator().should.be.an.instanceof(AsyncIterator);
     });
 
     it('should be an EventEmitter constructor', function () {
-      new BufferedIterator().should.be.an.instanceof(Iterator);
+      new BufferedIterator().should.be.an.instanceof(AsyncIterator);
     });
   });
 

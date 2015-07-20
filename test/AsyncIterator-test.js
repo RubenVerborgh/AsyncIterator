@@ -1,30 +1,30 @@
-var Iterator = require('../pullme').Iterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator;
 
 var EventEmitter = require('events').EventEmitter;
 
-describe('Iterator', function () {
-  describe('The Iterator module', function () {
-    it('should make Iterator objects', function () {
-      Iterator().should.be.an.instanceof(Iterator);
+describe('AsyncIterator', function () {
+  describe('The AsyncIterator module', function () {
+    it('should make AsyncIterator objects', function () {
+      AsyncIterator().should.be.an.instanceof(AsyncIterator);
     });
 
-    it('should be a Iterator constructor', function () {
-      new Iterator().should.be.an.instanceof(Iterator);
+    it('should be a AsyncIterator constructor', function () {
+      new AsyncIterator().should.be.an.instanceof(AsyncIterator);
     });
 
     it('should make EventEmitter objects', function () {
-      Iterator().should.be.an.instanceof(EventEmitter);
+      AsyncIterator().should.be.an.instanceof(EventEmitter);
     });
 
     it('should be a EventEmitter constructor', function () {
-      new Iterator().should.be.an.instanceof(EventEmitter);
+      new AsyncIterator().should.be.an.instanceof(EventEmitter);
     });
   });
 
-  describe('A default Iterator instance', function () {
+  describe('A default AsyncIterator instance', function () {
     var iterator;
     before(function () {
-      iterator = new Iterator();
+      iterator = new AsyncIterator();
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -123,10 +123,10 @@ describe('Iterator', function () {
     });
   });
 
-  describe('An Iterator instance without items', function () {
+  describe('An AsyncIterator instance without items', function () {
     var iterator, dataListener;
     before(function () {
-      iterator = new Iterator();
+      iterator = new AsyncIterator();
     });
 
     describe('after a data listener is attached', function () {
@@ -150,11 +150,11 @@ describe('Iterator', function () {
     });
   });
 
-  describe('An Iterator instance with 1 item', function () {
+  describe('An AsyncIterator instance with 1 item', function () {
     var iterator, dataListener;
     before(function () {
       var items = [1];
-      iterator = new Iterator(Iterator.READABLE);
+      iterator = new AsyncIterator(AsyncIterator.READABLE);
       iterator.read = function () { return items.shift() || iterator.close(); };
     });
 
@@ -176,10 +176,10 @@ describe('Iterator', function () {
     });
   });
 
-  describe('An Iterator instance to which items are added', function () {
+  describe('An AsyncIterator instance to which items are added', function () {
     var iterator, dataListener1, dataListener2, items = [];
     before(function () {
-      iterator = new Iterator(Iterator.READABLE);
+      iterator = new AsyncIterator(AsyncIterator.READABLE);
       iterator.read = sinon.spy(function () { return items.shift(); });
     });
 

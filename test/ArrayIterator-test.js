@@ -1,6 +1,6 @@
-var ArrayIterator = require('../pullme').ArrayIterator;
+var ArrayIterator = require('../asynciterator').ArrayIterator;
 
-var Iterator = require('../pullme').Iterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator;
 
 describe('ArrayIterator', function () {
   describe('The ArrayIterator module', function () {
@@ -12,12 +12,12 @@ describe('ArrayIterator', function () {
       new ArrayIterator().should.be.an.instanceof(ArrayIterator);
     });
 
-    it('should make Iterator objects', function () {
-      ArrayIterator().should.be.an.instanceof(Iterator);
+    it('should make AsyncIterator objects', function () {
+      ArrayIterator().should.be.an.instanceof(AsyncIterator);
     });
 
     it('should be an EventEmitter constructor', function () {
-      new ArrayIterator().should.be.an.instanceof(Iterator);
+      new ArrayIterator().should.be.an.instanceof(AsyncIterator);
     });
   });
 

@@ -1,6 +1,6 @@
-var EmptyIterator = require('../pullme').EmptyIterator;
+var EmptyIterator = require('../asynciterator').EmptyIterator;
 
-var Iterator = require('../pullme').Iterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator;
 
 describe('EmptyIterator', function () {
   describe('The EmptyIterator module', function () {
@@ -12,12 +12,12 @@ describe('EmptyIterator', function () {
       new EmptyIterator().should.be.an.instanceof(EmptyIterator);
     });
 
-    it('should make Iterator objects', function () {
-      EmptyIterator().should.be.an.instanceof(Iterator);
+    it('should make AsyncIterator objects', function () {
+      EmptyIterator().should.be.an.instanceof(AsyncIterator);
     });
 
     it('should be an EventEmitter constructor', function () {
-      new EmptyIterator().should.be.an.instanceof(Iterator);
+      new EmptyIterator().should.be.an.instanceof(AsyncIterator);
     });
   });
 
