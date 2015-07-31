@@ -163,6 +163,7 @@ AsyncIterator.prototype.close = function () {
  * Should never be called before {@link AsyncIterator#close};
  * typically, `close` is responsible for calling `_flush`.
  *
+ * @protected
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype._flush = function () {
@@ -254,7 +255,7 @@ function emitData() {
   }
 }
 // Calls the given function with the specified argument as `this` value
-function call (func, self) { func.call(self); }
+function call(func, self) { func.call(self); }
 
 
 
@@ -383,12 +384,13 @@ IntegerIterator.prototype.read = function () {
 /**
   Creates a new `BufferedIterator`.
   @constructor
-  @classdesc A writable iterator that maintains an internal buffer of items.
+  @classdesc A iterator that maintains an internal buffer of items.
 
   This class serves as a base class for other iterators
   with a typically complex item generation process.
   @param {object} [options] Settings of the iterator
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @extends AsyncIterator
 **/
 function BufferedIterator(options) {
