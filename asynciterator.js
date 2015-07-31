@@ -155,41 +155,57 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
 **/
 AsyncIterator.prototype.close = function () {
   if (this._changeStatus(CLOSED))
-    this._flush();
+    this._end();
 };
 
 /**
- * Writes terminating items and terminates the iterator asynchronously.
+ * Writes terminating items with {@link AsyncIterator#_flush},
+ * and then asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
  *
  * Should never be called before {@link AsyncIterator#close};
- * typically, `close` is responsible for calling `_flush`.
+ * typically, `close` is responsible for calling `_end`.
  *
  * @protected
  * @emits AsyncIterator.end
 **/
-AsyncIterator.prototype._flush = function () {
-  this._endAsync();
+AsyncIterator.prototype._end = function () {
+  var self = this;
+  this._flush(function () {
+    if (self) {
+      setImmediate(terminate, self);
+      self = null;
+    }
+  });
 };
 
 /**
- * Terminates the iterator asynchronously, so no more items can be emitted.
+ * Writes terminating items.
  *
- * Should never be called before {@link AsyncIterator#_flush};
- * typically, `_flush` is responsible for calling `_endAsync`.
+ * Should never be called before {@link AsyncIterator#_end};
+ * typically, `_end` is responsible for calling `_flush`.
+ *
+ * @protected
+ * @param {function} done To be called when termination is complete
+**/
+AsyncIterator.prototype._flush = function (done) { done(); };
+
+/**
+ * Terminates the iterator, so no more items can be emitted.
+ *
+ * Should never be called before {@link AsyncIterator#_end};
+ * typically, `_end` is responsible for calling `_terminate`.
  *
  * @protected
  * @emits AsyncIterator.end
 **/
-AsyncIterator.prototype._endAsync = function () {
-  setImmediate(end, this);
-};
-function end(self) {
-  if (self._changeStatus(ENDED)) {
-    self.removeAllListeners('readable');
-    self.removeAllListeners('data');
-    self.removeAllListeners('end');
+AsyncIterator.prototype._terminate = function () {
+  if (this._changeStatus(ENDED)) {
+    this.removeAllListeners('readable');
+    this.removeAllListeners('data');
+    this.removeAllListeners('end');
   }
-}
+};
+function terminate(self) { self._terminate(); }
 /**
  * Emitted after the last item of the iterator has been read.
  *
@@ -356,14 +372,14 @@ function IntegerIterator(options) {
 
   // Set start, end, and step
   options = options || {};
-  var step = options.step, limit, end = options.end, next = options.start;
+  var step = options.step, limit, last = options.end, next = options.start;
   this._step = step  = isFinite(step) ? ~~step : 1;
   limit      = step >= 0 ? Infinity : -Infinity; // counting towards plus or minus infinity?
-  this._end  = end   = isFinite(end)  ? ~~end  : (end === -limit ? end : limit);
+  this._last = last  = isFinite(last) ? ~~last : (last === -limit ? last : limit);
   this._next = next  = typeof next !== 'number' ? 0 : (isFinite(next) ? ~~next : next);
 
   // Start iteration if there is at least one item; close otherwise
-  if (!isFinite(next) || (step >= 0 ? next > end : next < end))
+  if (!isFinite(next) || (step >= 0 ? next > last : next < last))
     this.close();
   else
     this._changeStatus(READABLE, true);
@@ -373,8 +389,8 @@ AsyncIterator.isPrototypeOf(IntegerIterator);
 /* Reads an item from the iterator. */
 IntegerIterator.prototype.read = function () {
   if (!this.closed) {
-    var current = this._next, step = this._step, end = this._end, next = this._next += step;
-    if (step >= 0 ? next > end : next < end)
+    var current = this._next, step = this._step, last = this._last, next = this._next += step;
+    if (step >= 0 ? next > last : next < last)
       this.close();
     return current;
   }
@@ -405,11 +421,11 @@ function BufferedIterator(options) {
   var bufferSize = options.bufferSize, autoStart = options.autoStart;
   this._buffer = [];
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
-  this._reading = false;
+  this._reading = false; // whether a `_read` operation is scheduled or executing
 
   // Start buffering
   if (autoStart === undefined || autoStart)
-    this._fillBufferAsync();
+    fillBufferAsync(this);
 }
 AsyncIterator.isPrototypeOf(BufferedIterator);
 
@@ -431,12 +447,12 @@ BufferedIterator.prototype.read = function () {
   // If the buffer is becoming empty, either fill it or end the iterator
   if (!this._reading) {
     if (buffer.length < this._bufferSize) {
-      // If the iterator may still generate new items, fill the buffer
+      // If the iterator is not closed and thus may still generate new items, fill the buffer
       if (!this.closed)
-        this._fillBufferAsync();
-      // If no new items may be generated, and none are buffered anymore, end the iterator
+        fillBufferAsync(this);
+      // No new items will be generated, so if none are buffered, the iterator ends here
       else if (!buffer.length)
-        this._flush();
+        this._end();
     }
   }
 
@@ -467,53 +483,59 @@ BufferedIterator.prototype._push = function (item) {
 };
 
 /**
- * Asynchronously queues the filling of the internal buffer until `options.bufferSize` items are present.
+ * Fills the internal buffer until `this.bufferSize` items are present.
  *
  * This method calls {@link BufferedIterator#_read} to fetch items.
  * @protected
  * @emits AsyncIterator.readable
 **/
-BufferedIterator.prototype._fillBufferAsync = function () {
-  if (!this._reading) {
-    this._reading = true;
-    setImmediate(fillBuffer, this);
-  }
-};
-function fillBuffer(self) {
-  var buffer = self._buffer;
+BufferedIterator.prototype._fillBuffer = function () {
+  var buffer = this._buffer;
   // If the iterator has closed in the meantime, don't generate new items anymore
-  if (self.closed) {
-    self._reading = false;
+  if (this.closed) {
+    this._reading = false;
     // End the iterator if no items are left in the buffer
     if (!buffer.length)
-      self._flush();
+      this._end();
   }
   // Try to fill empty spaces in the buffer by generating new items
   else {
-    var neededItems = self._bufferSize - buffer.length;
+    var neededItems = this._bufferSize - buffer.length, self = this;
     // Try to read the needed number of items
     if (neededItems <= 0)
-      self._reading = false;
-    else
-      self._read(neededItems, function () {
+      this._reading = false;
+    else {
+      this._reading = true;
+      this._read(neededItems, function () {
         // Verify the callback is only called once
         if (!neededItems)
           throw new Error('done callback called multiple times');
         neededItems = 0;
         self._reading = false;
-        // End the iterator if it has been closed and the buffer contains no more items
+        // If the buffer still contains items, `read` is responsible for ending the iterator.
+        // If no items are buffered and the iterator was closed, the iterator ends here.
         if (!buffer.length && self.closed)
-          self._flush();
+          self._end();
       });
+    }
+  }
+};
+function fillBuffer(self) { self._fillBuffer(); }
+function fillBufferAsync(self) {
+  if (!self._reading) {
+    self._reading = true;
+    setImmediate(fillBuffer, self);
   }
 }
 
 /* Closes the iterator. */
 BufferedIterator.prototype.close = function () {
-  // When the iterator is closed, only buffered items can still be emitted.
-  // If the buffer is empty, no more items will be emitted.
+  // When the iterator is closed, only pending and buffered items can still be emitted.
+  // If the iterator is still reading, `_fillBuffer` is responsible for ending the iterator.
+  // If the buffer still contains items, `read` is responsible for ending the iterator.
+  // Otherwise, the iterator is not reading and no items are buffered, so the iterator ends here.
   if (this._changeStatus(CLOSED) && !this._reading && !this._buffer.length)
-    this._flush();
+    this._end();
 };
 
 
