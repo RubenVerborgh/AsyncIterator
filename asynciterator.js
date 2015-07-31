@@ -319,7 +319,7 @@ function ArrayIterator(items) {
   if (!(items && items.length > 0))
     return this.close();
 
-  this._buffer = items.slice();
+  this._buffer = Array.prototype.slice.call(items);
   this._changeStatus(READABLE, true);
 }
 AsyncIterator.isPrototypeOf(ArrayIterator);

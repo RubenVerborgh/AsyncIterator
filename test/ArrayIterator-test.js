@@ -236,10 +236,10 @@ describe('ArrayIterator', function () {
     });
   });
 
-  describe('An ArrayIterator with a one-item array', function () {
+  describe('An ArrayIterator with a three-item array-like object', function () {
     var iterator, item;
     before(function () {
-      iterator = new ArrayIterator([1]);
+      iterator = new ArrayIterator({ length: '3', 0: 1, 1: 2, 2: 3 });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -262,6 +262,38 @@ describe('ArrayIterator', function () {
 
       it('should read the first item of the array', function () {
         item.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after calling read for the second time', function () {
+      before(function () { item = iterator.read(); });
+
+      it('should read the second item of the array', function () {
+        item.should.equal(2);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after calling read for the third time', function () {
+      before(function () { item = iterator.read(); });
+
+      it('should read the third item of the array', function () {
+        item.should.equal(3);
       });
 
       it('should return undefined when read is called again', function () {
