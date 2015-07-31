@@ -154,7 +154,8 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype.close = function () {
-  this._changeStatus(CLOSED) && this._flush();
+  if (this._changeStatus(CLOSED))
+    this._flush();
 };
 
 /**
@@ -398,15 +399,17 @@ function BufferedIterator(options) {
     return new BufferedIterator(options);
   AsyncIterator.call(this);
 
-  // Initialize the internal buffer
   options = options || {};
+
+  // Initialize the internal buffer
   var bufferSize = options.bufferSize, autoStart = options.autoStart;
-  this._reading = false;
+  this._buffer = [];
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
-  if (autoStart === undefined || autoStart) {
-    this._buffer = [];
-    this._queueFillBuffer();
-  }
+  this._reading = false;
+
+  // Start buffering
+  if (autoStart === undefined || autoStart)
+    this._fillBufferAsync();
 }
 AsyncIterator.isPrototypeOf(BufferedIterator);
 
@@ -419,20 +422,20 @@ AsyncIterator.isPrototypeOf(BufferedIterator);
 **/
 BufferedIterator.prototype.read = function () {
   if (this.ended) return;
+
   // Try to retrieve an item from the buffer
-  var buffer = this._buffer, item = buffer && buffer.shift();
+  var buffer = this._buffer, item = buffer.shift();
   if (item === undefined)
     this._changeStatus(IDLE);
 
   // If the buffer is becoming empty, either fill it or end the iterator
   if (!this._reading) {
-    var length = buffer ? buffer.length : 0;
-    if (length < this._bufferSize) {
+    if (buffer.length < this._bufferSize) {
       // If the iterator may still generate new items, fill the buffer
       if (!this.closed)
-        this._queueFillBuffer();
+        this._fillBufferAsync();
       // If no new items may be generated, and none are buffered anymore, end the iterator
-      else if (!length)
+      else if (!buffer.length)
         this._flush();
     }
   }
@@ -457,8 +460,9 @@ BufferedIterator.prototype._read = function (count, done) { done(); };
  * @emits AsyncIterator.readable
 **/
 BufferedIterator.prototype._push = function (item) {
-  if (this.ended) throw new Error('Cannot push after the iterator was ended.');
-  this._buffer ? this._buffer.push(item) : this._buffer = [item];
+  if (this.ended)
+    throw new Error('Cannot push after the iterator was ended.');
+  this._buffer.push(item);
   this._changeStatus(READABLE, true);
 };
 
@@ -469,24 +473,24 @@ BufferedIterator.prototype._push = function (item) {
  * @protected
  * @emits AsyncIterator.readable
 **/
-BufferedIterator.prototype._queueFillBuffer = function () {
+BufferedIterator.prototype._fillBufferAsync = function () {
   if (!this._reading) {
     this._reading = true;
     setImmediate(fillBuffer, this);
   }
 };
 function fillBuffer(self) {
+  var buffer = self._buffer;
   // If the iterator has closed in the meantime, don't generate new items anymore
   if (self.closed) {
     self._reading = false;
     // End the iterator if no items are left in the buffer
-    if (!self._buffer || !self._buffer.length)
+    if (!buffer.length)
       self._flush();
   }
   // Try to fill empty spaces in the buffer by generating new items
   else {
-    var buffer = self._buffer || (self._buffer = []),
-        neededItems = self._bufferSize - buffer.length;
+    var neededItems = self._bufferSize - buffer.length;
     // Try to read the needed number of items
     if (neededItems <= 0)
       self._reading = false;
@@ -508,14 +512,8 @@ function fillBuffer(self) {
 BufferedIterator.prototype.close = function () {
   // When the iterator is closed, only buffered items can still be emitted.
   // If the buffer is empty, no more items will be emitted.
-  if (this._changeStatus(CLOSED) && !this._reading && (!this._buffer || !this._buffer.length))
+  if (this._changeStatus(CLOSED) && !this._reading && !this._buffer.length)
     this._flush();
-};
-
-/* Cleans up the iterator. */
-BufferedIterator.prototype._flush = function () {
-  delete this._buffer;
-  this._endAsync();
 };
 
 
