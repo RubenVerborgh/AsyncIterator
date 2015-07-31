@@ -36,7 +36,7 @@ describe('AsyncIterator', function () {
     var iterator;
     before(function () {
       iterator = new AsyncIterator();
-      captureEvents(iterator, 'readable', 'end');
+      captureEvents(iterator, 'data', 'readable', 'end');
     });
 
     it('should not have emitted the `readable` event', function () {
@@ -74,23 +74,10 @@ describe('AsyncIterator', function () {
         expect(iterator.read()).to.be.undefined;
       });
 
-      it('should not have any listeners', function () {
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `on`', function () {
-        iterator.on('end', function () {});
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `once`', function () {
-        iterator.on('once', function () {});
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `addListener`', function () {
-        iterator.addListener('end', function () {});
-        iterator.should.not.contain.key('_events');
+      it('should not have any listeners for data, readable, or end', function () {
+        iterator._events.should.not.contain.key('data');
+        iterator._events.should.not.contain.key('readable');
+        iterator._events.should.not.contain.key('end');
       });
     });
 
@@ -113,23 +100,10 @@ describe('AsyncIterator', function () {
         expect(iterator.read()).to.be.undefined;
       });
 
-      it('should not have any listeners', function () {
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `on`', function () {
-        iterator.on('end', function () {});
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `once`', function () {
-        iterator.on('once', function () {});
-        iterator.should.not.contain.key('_events');
-      });
-
-      it('should not allow adding listeners with `addListener`', function () {
-        iterator.addListener('end', function () {});
-        iterator.should.not.contain.key('_events');
+      it('should not have any listeners for data, readable, or end', function () {
+        iterator._events.should.not.contain.key('data');
+        iterator._events.should.not.contain.key('readable');
+        iterator._events.should.not.contain.key('end');
       });
     });
   });

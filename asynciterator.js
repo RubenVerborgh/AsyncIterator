@@ -180,15 +180,15 @@ AsyncIterator.prototype._flush = function () {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype._endAsync = function () {
-  setImmediate(endIterator, this);
+  setImmediate(end, this);
 };
-function endIterator(self) {
+function end(self) {
   if (self._changeStatus(ENDED)) {
-    delete self._events;
-    self.addListener = self.on = self.once = self.emit = deleteEvents;
+    self.removeAllListeners('readable');
+    self.removeAllListeners('data');
+    self.removeAllListeners('end');
   }
 }
-function deleteEvents() { delete this._events; }
 /**
  * Emitted after the last item of the iterator has been read.
  *
