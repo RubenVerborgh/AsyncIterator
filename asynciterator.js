@@ -140,8 +140,8 @@ AsyncIterator.prototype._hasListeners = function (eventName) {
 **/
 AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
   var listeners = this._events && this._events[eventName];
-  if (!listeners || (typeof listeners === 'function' ? listeners !== listener
-                                                     : listeners.indexOf(listener) < 0))
+  if (!listeners || (isFunction(listeners) ? listeners !== listener
+                                           : listeners.indexOf(listener) < 0))
     this.addListener(eventName, listener);
 };
 
@@ -504,6 +504,61 @@ BufferedIterator.prototype._flush = function () {
 
 
 
+
+/**
+  Creates a new `TransformIterator`.
+  @constructor
+  @classdesc An iterator that generates items based on a source iterator.
+
+  This class serves as a base class for other iterators.
+  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {object} [options] Settings of the iterator
+  @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+  @param {AsyncIterator} [options.source] The source this iterator generates items from
+  @extends AsyncIterator
+**/
+function TransformIterator(source, options) {
+  if (!(this instanceof TransformIterator))
+    return new TransformIterator(source, options);
+  // Shift arguments if the first is not a source
+  if (!source || !isFunction(source.read)) {
+    if (!options) options = source;
+    source = options && options.source;
+  }
+  BufferedIterator.call(this, options);
+  if (source) this.source = source;
+}
+BufferedIterator.isPrototypeOf(TransformIterator);
+
+/**
+ * The source this iterator generates items from
+ * @name AsyncIterator#source
+ * @type AsyncIterator
+**/
+Object.defineProperty(AsyncIterator.prototype, 'source', {
+  set: function (source) {
+    // Verify and set source
+    if (this._source)
+      throw new Error('The source cannot be changed after it has been set');
+    if (!source || !isFunction(source.read) || !isFunction(source.on))
+      throw new Error('Invalid source: ' + source);
+    this._source = source;
+
+    // Close this iterator if the source has already ended
+    if (source.ended)
+      this.close();
+  },
+  get: function () { return this._source; },
+  enumerable: true,
+});
+
+
+
+
+// Determines whether the given object is a function
+function isFunction(object) { return typeof object === 'function'; }
+
 // Export all submodules
 module.exports = {
   AsyncIterator: AsyncIterator,
@@ -512,4 +567,5 @@ module.exports = {
   ArrayIterator: ArrayIterator,
   IntegerIterator: IntegerIterator,
   BufferedIterator: BufferedIterator,
+  TransformIterator: TransformIterator,
 };
