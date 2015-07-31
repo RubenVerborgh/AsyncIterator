@@ -6,8 +6,8 @@
   "main": "asynciterator.js",
   "scripts": {
     "test": "mocha",
-    "hint": "jshint *.js lib test",
-    "docs": "jsdoc -c jsdoc.json README.md lib"
+    "hint": "jshint *.js test",
+    "docs": "jsdoc -c jsdoc.json README.md *.js"
   },
   "license": "MIT",
   "devDependencies": {
