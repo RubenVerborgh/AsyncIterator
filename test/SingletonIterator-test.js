@@ -1,23 +1,42 @@
 var SingletonIterator = require('../asynciterator').SingletonIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator,
+    EventEmitter = require('events').EventEmitter;
 
 describe('SingletonIterator', function () {
-  describe('The SingletonIterator module', function () {
-    it('should make SingletonIterator objects', function () {
-      SingletonIterator().should.be.an.instanceof(SingletonIterator);
+  describe('The SingletonIterator function', function () {
+    describe('the result when called without `new`', function () {
+      var instance;
+      before(function () { instance = SingletonIterator(); });
+
+      it('should be a SingletonIterator object', function () {
+        instance.should.be.an.instanceof(SingletonIterator);
+      });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
 
-    it('should be an SingletonIterator constructor', function () {
-      new SingletonIterator().should.be.an.instanceof(SingletonIterator);
-    });
+    describe('the result when called with `new`', function () {
+      var instance;
+      before(function () { instance = new SingletonIterator(); });
 
-    it('should make AsyncIterator objects', function () {
-      SingletonIterator().should.be.an.instanceof(AsyncIterator);
-    });
+      it('should be a SingletonIterator object', function () {
+        instance.should.be.an.instanceof(SingletonIterator);
+      });
 
-    it('should be an EventEmitter constructor', function () {
-      new SingletonIterator().should.be.an.instanceof(AsyncIterator);
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
   });
 

@@ -1,23 +1,42 @@
 var IntegerIterator = require('../asynciterator').IntegerIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator,
+    EventEmitter = require('events').EventEmitter;
 
 describe('IntegerIterator', function () {
-  describe('The IntegerIterator module', function () {
-    it('should make IntegerIterator objects', function () {
-      IntegerIterator().should.be.an.instanceof(IntegerIterator);
+  describe('The IntegerIterator function', function () {
+    describe('the result when called without `new`', function () {
+      var instance;
+      before(function () { instance = IntegerIterator(); });
+
+      it('should be an IntegerIterator object', function () {
+        instance.should.be.an.instanceof(IntegerIterator);
+      });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
 
-    it('should be an IntegerIterator constructor', function () {
-      new IntegerIterator().should.be.an.instanceof(IntegerIterator);
-    });
+    describe('the result when called with `new`', function () {
+      var instance;
+      before(function () { instance = new IntegerIterator(); });
 
-    it('should make AsyncIterator objects', function () {
-      IntegerIterator().should.be.an.instanceof(AsyncIterator);
-    });
+      it('should be an IntegerIterator object', function () {
+        instance.should.be.an.instanceof(IntegerIterator);
+      });
 
-    it('should be an EventEmitter constructor', function () {
-      new IntegerIterator().should.be.an.instanceof(AsyncIterator);
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
   });
 

@@ -1,23 +1,42 @@
 var EmptyIterator = require('../asynciterator').EmptyIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator;
+var AsyncIterator = require('../asynciterator').AsyncIterator,
+    EventEmitter = require('events').EventEmitter;
 
 describe('EmptyIterator', function () {
-  describe('The EmptyIterator module', function () {
-    it('should make EmptyIterator objects', function () {
-      EmptyIterator().should.be.an.instanceof(EmptyIterator);
+  describe('The EmptyIterator function', function () {
+    describe('the result when called without `new`', function () {
+      var instance;
+      before(function () { instance = EmptyIterator(); });
+
+      it('should be an EmptyIterator object', function () {
+        instance.should.be.an.instanceof(EmptyIterator);
+      });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
 
-    it('should be an EmptyIterator constructor', function () {
-      new EmptyIterator().should.be.an.instanceof(EmptyIterator);
-    });
+    describe('the result when called with `new`', function () {
+      var instance;
+      before(function () { instance = new EmptyIterator(); });
 
-    it('should make AsyncIterator objects', function () {
-      EmptyIterator().should.be.an.instanceof(AsyncIterator);
-    });
+      it('should be an EmptyIterator object', function () {
+        instance.should.be.an.instanceof(EmptyIterator);
+      });
 
-    it('should be an EventEmitter constructor', function () {
-      new EmptyIterator().should.be.an.instanceof(AsyncIterator);
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
   });
 

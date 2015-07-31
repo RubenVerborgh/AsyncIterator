@@ -1,23 +1,34 @@
 var AsyncIterator = require('../asynciterator').AsyncIterator;
 
-var EventEmitter = require('events').EventEmitter;
+var AsyncIterator = require('../asynciterator').AsyncIterator,
+    EventEmitter = require('events').EventEmitter;
 
 describe('AsyncIterator', function () {
-  describe('The AsyncIterator module', function () {
-    it('should make AsyncIterator objects', function () {
-      AsyncIterator().should.be.an.instanceof(AsyncIterator);
+  describe('The AsyncIterator function', function () {
+    describe('the result when called without `new`', function () {
+      var instance;
+      before(function () { instance = AsyncIterator(); });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
 
-    it('should be a AsyncIterator constructor', function () {
-      new AsyncIterator().should.be.an.instanceof(AsyncIterator);
-    });
+    describe('the result when called with `new`', function () {
+      var instance;
+      before(function () { instance = new AsyncIterator(); });
 
-    it('should make EventEmitter objects', function () {
-      AsyncIterator().should.be.an.instanceof(EventEmitter);
-    });
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
 
-    it('should be a EventEmitter constructor', function () {
-      new AsyncIterator().should.be.an.instanceof(EventEmitter);
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
     });
   });
 
