@@ -547,7 +547,11 @@ Object.defineProperty(AsyncIterator.prototype, 'source', {
 
     // Close this iterator if the source has already ended
     if (source.ended)
-      this.close();
+      return this.close();
+
+    // React to source events
+    var parent = this;
+    source.once('end', function () { parent.close(); });
   },
   get: function () { return this._source; },
   enumerable: true,

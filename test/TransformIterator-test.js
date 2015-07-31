@@ -127,6 +127,9 @@ describe('TransformIterator', function () {
     before(function () {
       iterator = new TransformIterator(source = new EmptyIterator());
       captureEvents(iterator, 'readable', 'end');
+      source._events.should.not.contain.key('data');
+      source._events.should.not.contain.key('readable');
+      source._events.should.not.contain.key('end');
     });
 
     it('should expose the source in the `source` property', function () {
@@ -147,6 +150,52 @@ describe('TransformIterator', function () {
 
     it('should return undefined when read is called', function () {
       expect(iterator.read()).to.be.undefined;
+    });
+  });
+
+  describe('A TransformIterator initialized with a source that ends asynchronously', function () {
+    var iterator, source;
+    before(function () {
+      iterator = new TransformIterator(source = new AsyncIterator());
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the source ends', function () {
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined when read is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after the source ends', function () {
+      before(function () { source.close(); });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when read is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
     });
   });
 });
