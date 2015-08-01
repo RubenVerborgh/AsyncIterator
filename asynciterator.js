@@ -11,36 +11,36 @@ function AsyncIterator() {
     return new AsyncIterator();
   EventEmitter.call(this);
   this.on('newListener', waitForDataListener);
-  this._status = IDLE;
+  this._state = OPEN;
   this._readable = false;
 }
 
 /**
-  Names of possible iterator statuses.
-  The status' position in the array corresponds to its ID.
-  @name AsyncIterator.STATUSES
+  Names of possible iterator states.
+  The state's position in the array corresponds to its ID.
+  @name AsyncIterator.STATES
   @type String[]
 */
-var STATUSES = AsyncIterator.STATUSES = ['IDLE', 'CLOSED', 'ENDED'];
-var IDLE = 0, CLOSED = 1, ENDED = 2;
-STATUSES.forEach(function (status, id) { AsyncIterator[status] = id; });
+var STATES = AsyncIterator.STATES = ['OPEN', 'CLOSED', 'ENDED'];
+var OPEN = 0, CLOSED = 1, ENDED = 2;
+STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
-  ID of the IDLE status.
-  An iterator is idle if it is in none of the other states.
-  @name AsyncIterator.IDLE
+  ID of the OPEN state.
+  An iterator is open if it can generate new items.
+  @name AsyncIterator.OPEN
   @type integer
 */
 
 /**
-  ID of the CLOSED status.
+  ID of the CLOSED state.
   An iterator is closed if it no longer generates new items. Items might still be available.
   @name AsyncIterator.CLOSED
   @type integer
 */
 
 /**
-  ID of the ENDED status.
+  ID of the ENDED state.
   An iterator has ended if no further items will become available.
   @name AsyncIterator.ENDED
   @type integer
@@ -61,27 +61,24 @@ STATUSES.forEach(function (status, id) { AsyncIterator[status] = id; });
 .call(EventEmitter, AsyncIterator);
 
 /**
- * Changes the iterator to the given status if possible and necessary,
+ * Changes the iterator to the given state if possible and necessary,
  * possibly emitting events to signal that change.
  * @protected
- * @param {integer} newStatus The ID of the new status (from the `STATUSES` array).
+ * @param {integer} newState The ID of the new state (from the `STATES` array).
  * @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously.
- * @returns boolean Whether the status was changed.
+ * @returns boolean Whether the state was changed.
  * @emits AsyncIterator.end
 */
-AsyncIterator.prototype._changeStatus = function (newStatus, eventAsync) {
-  // Validate the status change
-  var oldStatus = this._status;
-  if (newStatus === oldStatus || oldStatus === ENDED ||
-      (oldStatus === CLOSED && newStatus !== ENDED))
-    return false;
-
-  // Change the internal status
-  this._status = newStatus;
-  // Emit the `end` event when changing to ENDED
-  if (newStatus === ENDED)
-    eventAsync ? setImmediate(emit, this, 'end') : this.emit('end');
-  return true;
+AsyncIterator.prototype._changeState = function (newState, eventAsync) {
+  // Validate the state change
+  var valid = newState > this._state;
+  if (valid) {
+    this._state = newState;
+    // Emit the `end` event when changing to ENDED
+    if (newState === ENDED)
+      eventAsync ? setImmediate(emit, this, 'end') : this.emit('end');
+  }
+  return valid;
 };
 // Emits the event on the given EventEmitter
 function emit(self, eventName) { self.emit(eventName); }
@@ -140,7 +137,7 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype.close = function () {
-  if (this._changeStatus(CLOSED))
+  if (this._changeState(CLOSED))
     this._end();
 };
 
@@ -167,7 +164,7 @@ AsyncIterator.prototype._end = function () {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype._terminate = function () {
-  if (this._changeStatus(ENDED)) {
+  if (this._changeState(ENDED)) {
     this.removeAllListeners('readable');
     this.removeAllListeners('data');
     this.removeAllListeners('end');
@@ -207,7 +204,7 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
  * @type boolean
 **/
 Object.defineProperty(AsyncIterator.prototype, 'closed', {
-  get: function () { return this._status === CLOSED || this._status === ENDED; },
+  get: function () { return this._state === CLOSED || this._state === ENDED; },
   enumerable: true,
 });
 
@@ -217,7 +214,7 @@ Object.defineProperty(AsyncIterator.prototype, 'closed', {
  * @type boolean
 **/
 Object.defineProperty(AsyncIterator.prototype, 'ended', {
-  get: function () { return this._status === ENDED; },
+  get: function () { return this._state === ENDED; },
   enumerable: true,
 });
 
@@ -275,7 +272,7 @@ function EmptyIterator() {
   if (!(this instanceof EmptyIterator))
     return new EmptyIterator();
   AsyncIterator.call(this);
-  this._changeStatus(ENDED, true);
+  this._changeState(ENDED, true);
 }
 AsyncIterator.isPrototypeOf(EmptyIterator);
 
@@ -524,7 +521,7 @@ BufferedIterator.prototype.close = function () {
   // If the iterator is still reading, `_fillBuffer` is responsible for ending the iterator.
   // If the buffer still contains items, `read` is responsible for ending the iterator.
   // Otherwise, the iterator is not reading and no items are buffered, so the iterator ends here.
-  if (this._changeStatus(CLOSED) && !this._reading && !this._buffer.length)
+  if (this._changeState(CLOSED) && !this._reading && !this._buffer.length)
     this._end();
 };
 
