@@ -4,14 +4,15 @@ var EventEmitter = require('events').EventEmitter;
   Creates a new `AsyncIterator`.
   @constructor
   @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
-  @extends EventEmiter
+  @extends EventEmitter
 **/
-function AsyncIterator(status) {
+function AsyncIterator() {
   if (!(this instanceof AsyncIterator))
-    return new AsyncIterator(status);
+    return new AsyncIterator();
   EventEmitter.call(this);
   this.on('newListener', waitForDataListener);
-  this._changeStatus(status || IDLE, true);
+  this._status = IDLE;
+  this._readable = false;
 }
 
 /**
@@ -20,21 +21,14 @@ function AsyncIterator(status) {
   @name AsyncIterator.STATUSES
   @type String[]
 */
-var STATUSES = AsyncIterator.STATUSES = ['IDLE', 'READABLE', 'CLOSED', 'ENDED'];
-var IDLE = 0, READABLE = 1, CLOSED = 2, ENDED = 3;
+var STATUSES = AsyncIterator.STATUSES = ['IDLE', 'CLOSED', 'ENDED'];
+var IDLE = 0, CLOSED = 1, ENDED = 2;
 STATUSES.forEach(function (status, id) { AsyncIterator[status] = id; });
 
 /**
   ID of the IDLE status.
   An iterator is idle if it is in none of the other states.
   @name AsyncIterator.IDLE
-  @type integer
-*/
-
-/**
-  ID of the READABLE status.
-  An iterator is readable if it _might_ have an item ready to read.
-  @name AsyncIterator.READABLE
   @type integer
 */
 
@@ -73,28 +67,20 @@ STATUSES.forEach(function (status, id) { AsyncIterator[status] = id; });
  * @param {integer} newStatus The ID of the new status (from the `STATUSES` array).
  * @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously.
  * @returns boolean Whether the status was changed.
- * @emits AsyncIterator.readable
  * @emits AsyncIterator.end
 */
 AsyncIterator.prototype._changeStatus = function (newStatus, eventAsync) {
   // Validate the status change
-  var oldStatus = this._status, event;
+  var oldStatus = this._status;
   if (newStatus === oldStatus || oldStatus === ENDED ||
-      (oldStatus === CLOSED && newStatus !== ENDED)) return false;
-
-  // Determine the event name
-  switch (newStatus) {
-  case READABLE:
-    event = 'readable';
-    break;
-  case ENDED:
-    event = 'end';
-    break;
-  }
+      (oldStatus === CLOSED && newStatus !== ENDED))
+    return false;
 
   // Change the internal status
   this._status = newStatus;
-  if (event) eventAsync ? setImmediate(emit, this, event) : this.emit(event);
+  // Emit the `end` event when changing to ENDED
+  if (newStatus === ENDED)
+    eventAsync ? setImmediate(emit, this, 'end') : this.emit('end');
   return true;
 };
 // Emits the event on the given EventEmitter
@@ -195,6 +181,27 @@ function terminate(self) { self._terminate(); }
 **/
 
 /**
+ * Whether items can potentially be read from the iterator.
+ * @name AsyncIterator#closed
+ * @type boolean
+ * @emits AsyncIterator.readable
+**/
+Object.defineProperty(AsyncIterator.prototype, 'readable', {
+  get: function () { return this._readable; },
+  set: function (readable) {
+    readable = !!readable;
+    // Set the readable value only if it has changed
+    if (this._readable !== readable) {
+      this._readable = readable;
+      // If the iterator became readable, emit the `readable` event
+      if (readable)
+        setImmediate(emit, this, 'readable');
+    }
+  },
+  enumerable: true,
+});
+
+/**
  * Whether the iterator has stopped generating new items
  * @name AsyncIterator#closed
  * @type boolean
@@ -237,7 +244,7 @@ function waitForDataListener(eventName, listener) {
   if (eventName === 'data') {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
-    if (this._status === READABLE)
+    if (this.readable)
       setImmediate(call, emitData, this);
   }
 }
@@ -267,7 +274,8 @@ function call(func, self) { func.call(self); }
 function EmptyIterator() {
   if (!(this instanceof EmptyIterator))
     return new EmptyIterator();
-  AsyncIterator.call(this, ENDED);
+  AsyncIterator.call(this);
+  this._changeStatus(ENDED, true);
 }
 AsyncIterator.isPrototypeOf(EmptyIterator);
 
@@ -288,7 +296,7 @@ function SingletonIterator(item) {
   if (item === undefined)
     this.close();
   else
-    this._item = item, this._changeStatus(READABLE, true);
+    this._item = item, this.readable = true;
 }
 AsyncIterator.isPrototypeOf(SingletonIterator);
 
@@ -318,7 +326,7 @@ function ArrayIterator(items) {
     return this.close();
 
   this._buffer = Array.prototype.slice.call(items);
-  this._changeStatus(READABLE, true);
+  this.readable = true;
 }
 AsyncIterator.isPrototypeOf(ArrayIterator);
 
@@ -364,7 +372,7 @@ function IntegerIterator(options) {
   if (!isFinite(next) || (step >= 0 ? next > last : next < last))
     this.close();
   else
-    this._changeStatus(READABLE, true);
+    this.readable = true;
 }
 AsyncIterator.isPrototypeOf(IntegerIterator);
 
@@ -424,7 +432,7 @@ BufferedIterator.prototype.read = function () {
   // Try to retrieve an item from the buffer
   var buffer = this._buffer, item = buffer.shift();
   if (item === undefined)
-    this._changeStatus(IDLE);
+    this.readable = false;
 
   // If the buffer is becoming empty, either fill it or end the iterator
   if (!this._reading) {
@@ -461,7 +469,7 @@ BufferedIterator.prototype._push = function (item) {
   if (this.ended)
     throw new Error('Cannot push after the iterator was ended.');
   this._buffer.push(item);
-  this._changeStatus(READABLE, true);
+  this.readable = true;
 };
 
 /**
