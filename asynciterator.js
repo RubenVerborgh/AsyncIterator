@@ -159,8 +159,7 @@ AsyncIterator.prototype.close = function () {
 };
 
 /**
- * Writes terminating items with {@link AsyncIterator#_flush},
- * and then asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
+ * Asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
  *
  * Should never be called before {@link AsyncIterator#close};
  * typically, `close` is responsible for calling `_end`.
@@ -169,25 +168,8 @@ AsyncIterator.prototype.close = function () {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype._end = function () {
-  var self = this;
-  this._flush(function () {
-    if (self) {
-      setImmediate(terminate, self);
-      self = null;
-    }
-  });
+  setImmediate(terminate, this);
 };
-
-/**
- * Writes terminating items.
- *
- * Should never be called before {@link AsyncIterator#_end};
- * typically, `_end` is responsible for calling `_flush`.
- *
- * @protected
- * @param {function} done To be called when termination is complete
-**/
-AsyncIterator.prototype._flush = function (done) { done(); };
 
 /**
  * Terminates the iterator, so no more items can be emitted.
@@ -537,6 +519,37 @@ BufferedIterator.prototype.close = function () {
   if (this._changeStatus(CLOSED) && !this._reading && !this._buffer.length)
     this._end();
 };
+
+/**
+ * Writes terminating items with {@link AsyncIterator#_flush},
+ * and then asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
+ *
+ * Should never be called before {@link AsyncIterator#close};
+ * typically, `close` is responsible for calling `_end`.
+ *
+ * @protected
+ * @emits AsyncIterator.end
+**/
+BufferedIterator.prototype._end = function () {
+  var self = this;
+  this._flush(function () {
+    if (self) {
+      setImmediate(terminate, self);
+      self = null;
+    }
+  });
+};
+
+/**
+ * Writes terminating items.
+ *
+ * Should never be called before {@link AsyncIterator#_end};
+ * typically, `_end` is responsible for calling `_flush`.
+ *
+ * @protected
+ * @param {function} done To be called when termination is complete
+**/
+BufferedIterator.prototype._flush = function (done) { done(); };
 
 
 
