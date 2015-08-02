@@ -606,6 +606,7 @@ Object.defineProperty(AsyncIterator.prototype, 'source', {
     // React to source events
     var parent = this;
     source.once('end', function () { parent.close(); });
+    source.on('readable', function () { parent.emit('readable'); });
   },
   get: function () { return this._source; },
   enumerable: true,

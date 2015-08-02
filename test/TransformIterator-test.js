@@ -3,6 +3,7 @@ var TransformIterator = require('../asynciterator').TransformIterator;
 var AsyncIterator = require('../asynciterator').AsyncIterator,
     BufferedIterator = require('../asynciterator').BufferedIterator,
     EmptyIterator = require('../asynciterator').EmptyIterator,
+    ArrayIterator = require('../asynciterator').ArrayIterator,
     EventEmitter = require('events').EventEmitter;
 
 describe('TransformIterator', function () {
@@ -195,6 +196,28 @@ describe('TransformIterator', function () {
 
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
+
+  describe('A default TransformIterator with a one-item source', function () {
+    var iterator, source;
+    before(function () {
+      iterator = new TransformIterator(source = new ArrayIterator(['a']));
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
       });
     });
   });
