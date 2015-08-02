@@ -590,7 +590,7 @@ BufferedIterator.isPrototypeOf(TransformIterator);
  * @name AsyncIterator#source
  * @type AsyncIterator
 **/
-Object.defineProperty(AsyncIterator.prototype, 'source', {
+Object.defineProperty(TransformIterator.prototype, 'source', {
   set: function (source) {
     // Verify and set source
     if (this._source)
@@ -608,13 +608,47 @@ Object.defineProperty(AsyncIterator.prototype, 'source', {
 
     // React to source events
     source.once('end', closeDestination);
-    source.on('readable', emitDestinationReadable);
+    source.on('readable', makeDestinationReadable);
   },
   get: function () { return this._source; },
   enumerable: true,
 });
 function closeDestination() { this._destination.close(); }
-function emitDestinationReadable() { this._destination.emit('readable'); }
+function makeDestinationReadable() { this._destination.readable = true; }
+
+/* Tries to read and transform an item */
+TransformIterator.prototype._read = function (count, done) {
+  var source = this._source, item;
+  // If the source exists and still can read items,
+  // try to read and transform the next item.
+  if (source && !source.ended && (item = source.read()) !== undefined)
+    this._transform(item, done);
+  else
+    done();
+};
+
+/**
+ * Generates items based on the item from the source.
+ *
+ * Implementers should add items through {@link BufferedIterator#_push}.
+ * The default implementation pushes the source item as-is.
+ * @param {object} item The last read item from the source
+ * @param {function} done To be called when reading is complete
+ * @protected
+**/
+TransformIterator.prototype._transform = function (item, done) {
+  this._push(item), done();
+};
+
+/* Cleans up the source iterator and terminates. */
+TransformIterator.prototype._terminate = function () {
+  var source = this._source;
+  if (source) {
+    source.removeListener('readable', makeDestinationReadable);
+    delete source._destination;
+  }
+  BufferedIterator.prototype._terminate.call(this);
+};
 
 
 
