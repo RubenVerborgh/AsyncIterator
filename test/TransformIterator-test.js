@@ -273,4 +273,196 @@ describe('TransformIterator', function () {
       });
     });
   });
+
+  describe('A TransformIterator that synchronously transforms a two-item source', function () {
+    var iterator, source;
+    before(function () {
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b']));
+      iterator._transform = function (item, done) {
+        this._push(item + '1');
+        this._push(item + '2');
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+      sinon.spy(source, 'read');
+      // intentionally break source cleanup to verify whether destination does it
+      source._terminate = function () { this._changeState(AsyncIterator.ENDED); };
+    });
+
+    describe('before reading an item', function () {
+      it('should have called `read` on the source', function () {
+        source.read.should.have.been.calledOnce;
+      });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading one item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the transformed item', function () {
+        item.should.equal('a1');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the remaining items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 3; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the transformed items', function () {
+        items.should.deep.equal(['a2', 'b1', 'b2']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+
+      it('should not leave `readable` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'readable').should.equal(0);
+      });
+
+      it('should not leave `end` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'end').should.equal(0);
+      });
+
+      it('should remove itself as destination from the source', function () {
+        source.should.not.have.key('_destination');
+      });
+    });
+  });
+
+  describe('A TransformIterator that asynchronously transforms a two-item source', function () {
+    var iterator, source;
+    before(function () {
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b']));
+      iterator._transform = function (item, done) {
+        setImmediate(function () {
+          iterator._push(item + '1');
+          iterator._push(item + '2');
+          done();
+        });
+      };
+      captureEvents(iterator, 'readable', 'end');
+      sinon.spy(source, 'read');
+      // intentionally break source cleanup to verify whether destination does it
+      source._terminate = function () { this._changeState(AsyncIterator.ENDED); };
+    });
+
+    describe('before reading an item', function () {
+      it('should have called `read` on the source', function () {
+        source.read.should.have.been.calledOnce;
+      });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading one item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the transformed item', function () {
+        item.should.equal('a1');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the remaining items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 3; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the transformed items', function () {
+        items.should.deep.equal(['a2', 'b1', 'b2']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+
+      it('should not leave `readable` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'readable').should.equal(0);
+      });
+
+      it('should not leave `end` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'end').should.equal(0);
+      });
+
+      it('should remove itself as destination from the source', function () {
+        source.should.not.have.key('_destination');
+      });
+    });
+  });
 });
