@@ -93,6 +93,14 @@ describe('TransformIterator', function () {
           iterator = new TransformIterator(sourceA, { source: sourceB });
       iterator.source.should.equal(sourceA);
     });
+
+    it('does not allow setting a source that already has a destination', function () {
+      var source = new EmptyIterator(),
+          iteratorA = new TransformIterator(),
+          iteratorB = new TransformIterator();
+      (function () { iteratorA.source = source; }).should.not.throw();
+      (function () { iteratorB.source = source; }).should.throw('The source already has a destination');
+    });
   });
 
   describe('A TransformIterator without arguments', function () {

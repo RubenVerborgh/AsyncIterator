@@ -597,20 +597,24 @@ Object.defineProperty(AsyncIterator.prototype, 'source', {
       throw new Error('The source cannot be changed after it has been set');
     if (!source || !isFunction(source.read) || !isFunction(source.on))
       throw new Error('Invalid source: ' + source);
+    if (source._destination)
+      throw new Error('The source already has a destination');
     this._source = source;
+    source._destination = this;
 
     // Close this iterator if the source has already ended
     if (source.ended)
       return this.close();
 
     // React to source events
-    var parent = this;
-    source.once('end', function () { parent.close(); });
-    source.on('readable', function () { parent.emit('readable'); });
+    source.once('end', closeDestination);
+    source.on('readable', emitDestinationReadable);
   },
   get: function () { return this._source; },
   enumerable: true,
 });
+function closeDestination() { this._destination.close(); }
+function emitDestinationReadable() { this._destination.emit('readable'); }
 
 
 
