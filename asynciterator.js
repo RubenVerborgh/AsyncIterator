@@ -537,14 +537,13 @@ BufferedIterator.prototype._completeClose = function () {
     var self = this;
     this._reading = true;
     this._flush(function () {
-      // Guard against multiple callback calls
-      if (self._reading) {
-        self._reading = false;
-        // If no items are left, end the iterator
-        // Otherwise, `read` becomes responsible for ending the iterator
-        if (!self._buffer.length)
-          endAsync(self);
-      }
+      if (!self._reading)
+        throw new Error('done callback called multiple times');
+      self._reading = false;
+      // If no items are left, end the iterator
+      // Otherwise, `read` becomes responsible for ending the iterator
+      if (!self._buffer.length)
+        endAsync(self);
     });
   }
 };

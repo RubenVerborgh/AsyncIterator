@@ -967,26 +967,22 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that calls `done` multiple times', function () {
-    var iterator, afterRead;
+  describe('A BufferedIterator with `_read` that calls `done` multiple times', function () {
+    var iterator, readDone;
     before(function () {
       iterator = new BufferedIterator({ autoStart: false });
-      iterator._read = function (count, done) {
-        count.should.equal(4);
-        done.should.not.throw();
-        done.should.throw('done callback called multiple times');
-        done.should.throw('done callback called multiple times');
-        afterRead();
-      };
+      iterator._read = function (count, done) { readDone = done; };
+      iterator.read();
     });
 
-    it('should cause an exception on read', function (done) {
-      afterRead = done;
-      iterator.read();
+    it('should cause an exception', function () {
+      readDone.should.not.throw();
+      readDone.should.throw('done callback called multiple times');
+      readDone.should.throw('done callback called multiple times');
     });
   });
 
-  describe('A BufferedIterator that does not call `done`', function () {
+  describe('A BufferedIterator with `_read` that does not call `done`', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
@@ -1002,7 +998,7 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that calls its own `read` method', function () {
+  describe('A BufferedIterator with `_read` that calls `read`', function () {
     var iterator;
     before(function () {
       var counter = 0;
@@ -1180,6 +1176,48 @@ describe('BufferedIterator', function () {
       it('should return undefined when `read` is called', function () {
         expect(iterator.read()).to.be.undefined;
       });
+    });
+  });
+
+  describe('A BufferedIterator with `_flush` that calls `done` multiple times', function () {
+    var iterator, flushDone;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._flush = function (done) { flushDone = done; };
+      iterator.close();
+      iterator.read();
+    });
+
+    it('should cause an exception', function () {
+      flushDone.should.not.throw();
+      flushDone.should.throw('done callback called multiple times');
+      flushDone.should.throw('done callback called multiple times');
+    });
+  });
+
+  describe('A BufferedIterator with `_flush` that does not call `done`', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._flush = function (count, done) { this._push("a"); };
+      iterator.close();
+      captureEvents(iterator, 'end');
+    });
+
+    it('should return the first item on read', function () {
+      expect(iterator.read()).to.equal("a");
+    });
+
+    it('should return undefined on subsequent reads', function () {
+      expect(iterator.read()).to.be.undefined;
+    });
+
+    it('should not have emitted the `end` event', function () {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
     });
   });
 });
