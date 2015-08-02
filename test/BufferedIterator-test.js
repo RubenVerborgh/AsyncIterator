@@ -1018,4 +1018,168 @@ describe('BufferedIterator', function () {
       expect(iterator.read()).to.be.undefined;
     });
   });
+
+  describe('A BufferedIterator with a synchronous flush', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = function (item, done) {
+        this._push('a');
+        this.close();
+        done();
+      };
+      iterator._flush = function (done) {
+        this._push('x');
+        this._push('y');
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the flushed items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 2; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the flushed items', function () {
+        items.should.deep.equal(['x', 'y']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
+
+  describe('A BufferedIterator with an asynchronous flush', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = function (item, done) {
+        this._push('a');
+        this.close();
+        done();
+      };
+      iterator._flush = function (done) {
+        setImmediate(function () {
+          iterator._push('x');
+          iterator._push('y');
+          done();
+        });
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the flushed items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 2; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the flushed items', function () {
+        items.should.deep.equal(['x', 'y']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
 });

@@ -21,8 +21,8 @@ function AsyncIterator() {
   @name AsyncIterator.STATES
   @type String[]
 */
-var STATES = AsyncIterator.STATES = ['OPEN', 'CLOSED', 'ENDED'];
-var OPEN = 0, CLOSED = 1, ENDED = 2;
+var STATES = AsyncIterator.STATES = ['OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
+var OPEN = 0, CLOSING = 1, CLOSED = 2, ENDED = 3;
 STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
@@ -33,8 +33,15 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 */
 
 /**
+  ID of the CLOSING state.
+  An iterator is closing if item generation is pending but will not be scheduled again.
+  @name AsyncIterator.CLOSING
+  @type integer
+*/
+
+/**
   ID of the CLOSED state.
-  An iterator is closed if it no longer generates new items. Items might still be available.
+  An iterator is closed if it no longer actively generates new items. Items might still be available.
   @name AsyncIterator.CLOSED
   @type integer
 */
@@ -138,11 +145,11 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
 **/
 AsyncIterator.prototype.close = function () {
   if (this._changeState(CLOSED))
-    this._end();
+    endAsync(this);
 };
 
 /**
- * Asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
+ * Asynchronously ends the iterator and cleans up.
  *
  * Should never be called before {@link AsyncIterator#close};
  * typically, `close` is responsible for calling `_end`.
@@ -151,26 +158,14 @@ AsyncIterator.prototype.close = function () {
  * @emits AsyncIterator.end
 **/
 AsyncIterator.prototype._end = function () {
-  setImmediate(terminate, this);
-};
-
-/**
- * Terminates the iterator, so no more items can be emitted.
- *
- * Should never be called before {@link AsyncIterator#_end};
- * typically, `_end` is responsible for calling `_terminate`.
- *
- * @protected
- * @emits AsyncIterator.end
-**/
-AsyncIterator.prototype._terminate = function () {
   if (this._changeState(ENDED)) {
     this.removeAllListeners('readable');
     this.removeAllListeners('data');
     this.removeAllListeners('end');
   }
 };
-function terminate(self) { self._terminate(); }
+function end(self) { self._end(); }
+function endAsync(self) { setImmediate(end, self); }
 /**
  * Emitted after the last item of the iterator has been read.
  *
@@ -204,7 +199,7 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
  * @type boolean
 **/
 Object.defineProperty(AsyncIterator.prototype, 'closed', {
-  get: function () { return this._state === CLOSED || this._state === ENDED; },
+  get: function () { return this._state >= CLOSING; },
   enumerable: true,
 });
 
@@ -432,15 +427,13 @@ BufferedIterator.prototype.read = function () {
     this.readable = false;
 
   // If the buffer is becoming empty, either fill it or end the iterator
-  if (!this._reading) {
-    if (buffer.length < this._bufferSize) {
-      // If the iterator is not closed and thus may still generate new items, fill the buffer
-      if (!this.closed)
-        fillBufferAsync(this);
-      // No new items will be generated, so if none are buffered, the iterator ends here
-      else if (!buffer.length)
-        this._end();
-    }
+  if (!this._reading && buffer.length < this._bufferSize) {
+    // If the iterator is not closed and thus may still generate new items, fill the buffer
+    if (!this.closed)
+      fillBufferAsync(this);
+    // No new items will be generated, so if none are buffered, the iterator ends here
+    else if (!buffer.length)
+      endAsync(this);
   }
 
   return item;
@@ -478,14 +471,12 @@ BufferedIterator.prototype._push = function (item) {
 **/
 BufferedIterator.prototype._fillBuffer = function () {
   var buffer = this._buffer;
-  // If the iterator has closed in the meantime, don't generate new items anymore
+  // If iterator closing started in the meantime, don't generate new items anymore
   if (this.closed) {
     this._reading = false;
-    // End the iterator if no items are left in the buffer
-    if (!buffer.length)
-      this._end();
+    this._completeClose();
   }
-  // Try to fill empty spaces in the buffer by generating new items
+  // Otherwise, try to fill empty spaces in the buffer by generating new items
   else {
     var neededItems = this._bufferSize - buffer.length, self = this;
     // Try to read the needed number of items
@@ -499,10 +490,9 @@ BufferedIterator.prototype._fillBuffer = function () {
           throw new Error('done callback called multiple times');
         neededItems = 0;
         self._reading = false;
-        // If the buffer still contains items, `read` is responsible for ending the iterator.
-        // If no items are buffered and the iterator was closed, the iterator ends here.
-        if (!buffer.length && self.closed)
-          self._end();
+        // If the iterator was closed while reading, complete closing
+        if (self.closed)
+          self._completeClose();
       });
     }
   }
@@ -515,41 +505,55 @@ function fillBufferAsync(self) {
   }
 }
 
-/* Closes the iterator. */
+/**
+ * Stops the iterator from generating new items
+ * after a possible pending read operation has finished.
+ *
+ * Already generated, pending, or terminating items can still be emitted.
+ * After this, the iterator will end asynchronously.
+ *
+ * @emits AsyncIterator.end
+**/
 BufferedIterator.prototype.close = function () {
-  // When the iterator is closed, only pending and buffered items can still be emitted.
-  // If the iterator is still reading, `_fillBuffer` is responsible for ending the iterator.
-  // If the buffer still contains items, `read` is responsible for ending the iterator.
-  // Otherwise, the iterator is not reading and no items are buffered, so the iterator ends here.
-  if (this._changeState(CLOSED) && !this._reading && !this._buffer.length)
-    this._end();
+  // If the iterator is not currently reading, we can close immediately
+  if (!this._reading)
+    this._completeClose();
+  // Closing cannot complete when reading, so temporarily assume CLOSING state
+  // `_fillBuffer` becomes responsible for calling `_completeClose`
+  else
+    this._changeState(CLOSING);
 };
 
 /**
- * Writes terminating items with {@link AsyncIterator#_flush},
- * and then asynchronously ends the iterator with {@link AsyncIterator#_terminate}.
- *
- * Should never be called before {@link AsyncIterator#close};
- * typically, `close` is responsible for calling `_end`.
+ * Stops the iterator from generating new items,
+ * switching from `CLOSING` state into `CLOSED` state.
  *
  * @protected
  * @emits AsyncIterator.end
 **/
-BufferedIterator.prototype._end = function () {
-  var self = this;
-  this._flush(function () {
-    if (self) {
-      setImmediate(terminate, self);
-      self = null;
-    }
-  });
+BufferedIterator.prototype._completeClose = function () {
+  if (this._changeState(CLOSED)) {
+    // Write possible terminating items
+    var self = this;
+    this._reading = true;
+    this._flush(function () {
+      // Guard against multiple callback calls
+      if (self._reading) {
+        self._reading = false;
+        // If no items are left, end the iterator
+        // Otherwise, `read` becomes responsible for ending the iterator
+        if (!self._buffer.length)
+          endAsync(self);
+      }
+    });
+  }
 };
 
 /**
  * Writes terminating items.
  *
- * Should never be called before {@link AsyncIterator#_end};
- * typically, `_end` is responsible for calling `_flush`.
+ * Should never be called before {@link AsyncIterator#close};
+ * typically, `close` is responsible for calling `_flush`.
  *
  * @protected
  * @param {function} done To be called when termination is complete
@@ -640,14 +644,14 @@ TransformIterator.prototype._transform = function (item, done) {
   this._push(item), done();
 };
 
-/* Cleans up the source iterator and terminates. */
-TransformIterator.prototype._terminate = function () {
+/* Cleans up the source iterator and ends. */
+TransformIterator.prototype._end = function () {
   var source = this._source;
   if (source) {
     source.removeListener('readable', makeDestinationReadable);
     delete source._destination;
   }
-  BufferedIterator.prototype._terminate.call(this);
+  BufferedIterator.prototype._end.call(this);
 };
 
 
