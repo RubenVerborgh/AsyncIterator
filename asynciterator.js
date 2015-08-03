@@ -21,9 +21,16 @@ function AsyncIterator() {
   @name AsyncIterator.STATES
   @type String[]
 */
-var STATES = AsyncIterator.STATES = ['OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
-var OPEN = 0, CLOSING = 1, CLOSED = 2, ENDED = 3;
+var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
+var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4;
 STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
+
+/**
+  ID of the INIT state.
+  An iterator is initializing if it is preparing main item generation. It can already produce items.
+  @name AsyncIterator.OPEN
+  @type integer
+*/
 
 /**
   ID of the OPEN state.
@@ -399,17 +406,55 @@ function BufferedIterator(options) {
 
   options = options || {};
 
-  // Initialize the internal buffer
+  // Set up the internal buffer
   var bufferSize = options.bufferSize, autoStart = options.autoStart;
   this._buffer = [];
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
-  this._reading = false; // whether a `_read` operation is scheduled or executing
 
-  // Start buffering
-  if (autoStart === undefined || autoStart)
-    fillBufferAsync(this);
+  // Initialize the iterator
+  this._state = INIT;
+  this._reading = true;
+  setImmediate(init, this, autoStart === undefined || autoStart);
 }
 AsyncIterator.isPrototypeOf(BufferedIterator);
+
+/**
+ * Initializing the iterator by calling {@link BufferedIterator#_begin}
+ * and changing state from INIT to OPEN.
+ *
+ * @param {boolean} autoStart Whether reading of items should immediately start after OPEN.
+ * @protected
+**/
+BufferedIterator.prototype._init = function (autoStart) {
+  // Perform initialization tasks
+  var self = this;
+  this._reading = true;
+  this._begin(function () {
+    if (!self._reading)
+      throw new Error('done callback called multiple times');
+    self._reading = false;
+    // Open the iterator and start buffering
+    self._changeState(OPEN);
+    if (autoStart)
+      fillBufferAsync(self);
+    // If reading should not start automatically, the iterator doesn't become readable.
+    // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
+    else
+      self._readable = true;
+  });
+};
+function init(self, autoStart) { self._init(autoStart); }
+
+/**
+ * Writes beginning items and opens iterator resources.
+ *
+ * Should never be called before {@link AsyncIterator#_init};
+ * typically, `_init` is responsible for calling `_begin`.
+ *
+ * @protected
+ * @param {function} done To be called when initialization is complete
+**/
+BufferedIterator.prototype._begin = function (done) { done(); };
 
 /**
  * Tries to read the next item from the iterator.
@@ -549,7 +594,7 @@ BufferedIterator.prototype._completeClose = function () {
 };
 
 /**
- * Writes terminating items.
+ * Writes terminating items and closes iterator resources.
  *
  * Should never be called before {@link AsyncIterator#close};
  * typically, `close` is responsible for calling `_flush`.

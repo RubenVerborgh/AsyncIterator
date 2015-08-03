@@ -969,10 +969,12 @@ describe('BufferedIterator', function () {
 
   describe('A BufferedIterator with `_read` that calls `done` multiple times', function () {
     var iterator, readDone;
-    before(function () {
+    before(function (done) {
       iterator = new BufferedIterator({ autoStart: false });
       iterator._read = function (count, done) { readDone = done; };
-      iterator.read();
+      // `setImmediate` because reading directly after construction does not call `_read`;
+      // this is necessary to enable attaching a `_begin` hook after construction
+      setImmediate(function () { iterator.read(); done(); });
     });
 
     it('should cause an exception', function () {
@@ -1012,6 +1014,212 @@ describe('BufferedIterator', function () {
 
     it('should return undefined on subsequent reads', function () {
       expect(iterator.read()).to.be.undefined;
+    });
+  });
+
+  describe('A BufferedIterator with a synchronous beginning', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._begin = function (done) {
+        this._push('x');
+        this._push('y');
+        done();
+      };
+      iterator._read = function (item, done) {
+        this._push('a');
+        this.close();
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the beginning items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 2; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the beginning items', function () {
+        items.should.deep.equal(['x', 'y']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
+
+  describe('A BufferedIterator with an asynchronous beginning', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._begin = function (done) {
+        setImmediate(function () {
+          iterator._push('x');
+          iterator._push('y');
+          done();
+        });
+      };
+      iterator._read = function (item, done) {
+        this._push('a');
+        this.close();
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the beginning items', function () {
+      var items = [];
+      before(function () {
+        for (var i = 0; i < 2; i++)
+          items.push(iterator.read());
+      });
+
+      it('should have read the beginning items', function () {
+        items.should.deep.equal(['x', 'y']);
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading the item', function () {
+      var item;
+      before(function () { item = iterator.read(); });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
+
+  describe('A BufferedIterator with `_flush` that calls `done` multiple times', function () {
+    var iterator, flushDone;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._flush = function (done) { flushDone = done; };
+      iterator.close();
+      iterator.read();
+    });
+
+    it('should cause an exception', function () {
+      flushDone.should.not.throw();
+      flushDone.should.throw('done callback called multiple times');
+      flushDone.should.throw('done callback called multiple times');
+    });
+  });
+
+  describe('A BufferedIterator with `_flush` that does not call `done`', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._flush = function (count, done) { this._push("a"); };
+      iterator.close();
+      captureEvents(iterator, 'end');
+    });
+
+    it('should return the first item on read', function () {
+      expect(iterator.read()).to.equal("a");
+    });
+
+    it('should return undefined on subsequent reads', function () {
+      expect(iterator.read()).to.be.undefined;
+    });
+
+    it('should not have emitted the `end` event', function () {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
     });
   });
 
