@@ -1181,28 +1181,27 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator with `_flush` that calls `done` multiple times', function () {
-    var iterator, flushDone;
+  describe('A BufferedIterator with `_begin` that calls `done` multiple times', function () {
+    var iterator, beginDone;
     before(function () {
       iterator = new BufferedIterator();
-      iterator._flush = function (done) { flushDone = done; };
-      iterator.close();
-      iterator.read();
+      iterator._begin = function (done) { beginDone = done; };
     });
 
     it('should cause an exception', function () {
-      flushDone.should.not.throw();
-      flushDone.should.throw('done callback called multiple times');
-      flushDone.should.throw('done callback called multiple times');
+      beginDone.should.not.throw();
+      beginDone.should.throw('done callback called multiple times');
+      beginDone.should.throw('done callback called multiple times');
     });
   });
 
-  describe('A BufferedIterator with `_flush` that does not call `done`', function () {
+  describe('A BufferedIterator with `_begin` that does not call `done`', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
-      iterator._flush = function (count, done) { this._push("a"); };
+      iterator._begin = function (count, done) { this._push("a"); };
       iterator.close();
+      sinon.spy(iterator, '_read');
       captureEvents(iterator, 'end');
     });
 
@@ -1220,6 +1219,10 @@ describe('BufferedIterator', function () {
 
     it('should not have ended', function () {
       iterator.ended.should.be.false;
+    });
+
+    it('should not have called _read', function () {
+      iterator._read.should.not.have.been.called;
     });
   });
 

@@ -430,10 +430,10 @@ BufferedIterator.prototype._init = function (autoStart) {
   var self = this;
   this._reading = true;
   this._begin(function () {
-    if (!self._reading)
+    if (!self)
       throw new Error('done callback called multiple times');
-    self._reading = false;
     // Open the iterator and start buffering
+    self._reading = false;
     self._changeState(OPEN);
     if (autoStart)
       fillBufferAsync(self);
@@ -441,6 +441,7 @@ BufferedIterator.prototype._init = function (autoStart) {
     // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
     else
       self._readable = true;
+    self = null;
   });
 };
 function init(self, autoStart) { self._init(autoStart); }
