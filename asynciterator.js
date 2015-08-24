@@ -627,7 +627,7 @@ BufferedIterator.prototype._flush = function (done) { done(); };
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {AsyncIterator} [options.source] The source this iterator generates items from
-  @extends AsyncIterator
+  @extends BufferedIterator
 **/
 function TransformIterator(source, options) {
   if (!(this instanceof TransformIterator))
@@ -710,6 +710,127 @@ TransformIterator.prototype._end = function () {
 
 
 
+/**
+  Creates a new `SimpleTransformIterator`.
+  @constructor
+  @classdesc An iterator that generates items based on a source iterator
+             and simple transformation steps passed as arguments.
+
+  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {object} [options] Settings of the iterator
+  @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+  @param {AsyncIterator} [options.source] The source this iterator generates items from
+  @param {Function} [options.map] A function to synchronously transform elements from the source
+  @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
+  @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+  @extends TransformIterator
+**/
+function SimpleTransformIterator(source, options) {
+  if (!(this instanceof SimpleTransformIterator))
+    return new SimpleTransformIterator(source, options);
+  TransformIterator.call(this, source, options);
+
+  // Set transformation steps from the options
+  if (options = options || !isFunction(source && source.read) && source) {
+    if (isFunction(options.map))
+      this._map = options.map;
+    if (options.prepend)
+      this._prepender = options.prepend.on ? options.prepend : new ArrayIterator(options.prepend);
+    if (options.append)
+      this._appender  = options.append.on  ? options.append  : new ArrayIterator(options.append);
+  }
+}
+TransformIterator.isPrototypeOf(SimpleTransformIterator);
+
+// Default mapping function
+SimpleTransformIterator.prototype._map = function (item) { return item; };
+
+// Transforms items using the mapping function
+SimpleTransformIterator.prototype._transform = function (item, done) {
+  this._push(this._map(item)), done();
+};
+
+// Prepends items
+SimpleTransformIterator.prototype._begin = function (done) {
+  var self = this, prepender = this._prepender;
+  if (!prepender || prepender.ended)
+    done();
+  else {
+    delete this._prepender;
+    prepender.on('data', push);
+    prepender.once('end', end);
+  }
+  function push(item) { self._push(item); }
+  function end() { this.removeListener('data', push); done(); }
+};
+
+// Appends items
+SimpleTransformIterator.prototype._flush = function (done) {
+  var self = this, appender = this._appender;
+  if (!appender || appender.ended)
+    done();
+  else {
+    delete this._appender;
+    appender.on('data', push);
+    appender.once('end', end);
+  }
+  function push(item) { self._push(item); }
+  function end() { this.removeListener('data', push); done(); }
+};
+
+/**
+ * Maps items from this iterator using the given function.
+ *
+ * The current iterator may not be read anymore after this operation.
+ *
+ * @param {Function} map A mapping function to call on this iterator's (remaining) items
+ * @returns {AsyncIterator} A new iterator that maps the items from this iterator
+**/
+AsyncIterator.prototype.map = function (map) {
+  return new SimpleTransformIterator(this, { map: map });
+};
+
+/**
+ * Prepends the items to the current iterator.
+ *
+ * The current iterator may not be read anymore after this operation.
+ *
+ * @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
+ * @returns {AsyncIterator} A new iterator that prepends items to this iterator
+**/
+AsyncIterator.prototype.prepend = function (prepend) {
+  return new SimpleTransformIterator(this, { prepend: prepend });
+};
+
+/**
+ * Appends the items to the current iterator.
+ *
+ * The current iterator may not be read anymore after this operation.
+ *
+ * @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
+ * @returns {AsyncIterator} A new iterator that prepends items to this iterator
+**/
+AsyncIterator.prototype.append = function (append) {
+  return new SimpleTransformIterator(this, { append: append });
+};
+
+/**
+ * Surrounds items of the current iterator with the given items.
+ *
+ * The current iterator may not be read anymore after this operation.
+ *
+ * @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
+ * @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
+ * @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+**/
+AsyncIterator.prototype.surround = function (prepend, append) {
+  return new SimpleTransformIterator(this, { prepend: prepend, append: append });
+};
+
+
+
+
 // Determines whether the given object is a function
 function isFunction(object) { return typeof object === 'function'; }
 
@@ -722,4 +843,5 @@ module.exports = {
   IntegerIterator: IntegerIterator,
   BufferedIterator: BufferedIterator,
   TransformIterator: TransformIterator,
+  SimpleTransformIterator: SimpleTransformIterator,
 };
