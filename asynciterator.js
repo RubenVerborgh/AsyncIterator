@@ -3,6 +3,7 @@ var EventEmitter = require('events').EventEmitter;
 /**
   Names of possible iterator states.
   The state's position in the array corresponds to its ID.
+
   @name AsyncIterator.STATES
   @type String[]
 */
@@ -12,7 +13,9 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
   ID of the INIT state.
-  An iterator is initializing if it is preparing main item generation. It can already produce items.
+  An iterator is initializing if it is preparing main item generation.
+  It can already produce items.
+
   @name AsyncIterator.OPEN
   @type integer
 */
@@ -20,6 +23,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
   ID of the OPEN state.
   An iterator is open if it can generate new items.
+
   @name AsyncIterator.OPEN
   @type integer
 */
@@ -27,13 +31,16 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
   ID of the CLOSING state.
   An iterator is closing if item generation is pending but will not be scheduled again.
+
   @name AsyncIterator.CLOSING
   @type integer
 */
 
 /**
   ID of the CLOSED state.
-  An iterator is closed if it no longer actively generates new items. Items might still be available.
+  An iterator is closed if it no longer actively generates new items.
+  Items might still be available.
+
   @name AsyncIterator.CLOSED
   @type integer
 */
@@ -41,6 +48,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
   ID of the ENDED state.
   An iterator has ended if no further items will become available.
+
   @name AsyncIterator.ENDED
   @type integer
 */
@@ -50,6 +58,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
   Creates a new `AsyncIterator`.
+
   @constructor
   @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
   @extends EventEmitter
@@ -63,33 +72,35 @@ function AsyncIterator() {
   this._readable = false;
 }
 
-
-
-
 /**
-  Makes the specified iterator inherit from the current iterator.
+  Makes objects of the specified iterator constructor inherit from the current iterator.
+
   @function
   @name AsyncIterator.isPrototypeOf
-  @param {Function} child The iterator that should inherit from the current iterator.
+  @param {Function} Constructor The constructor whose instances should inherit
+  @returns {AsyncIterator} The child object's prototype
 **/
-(function isPrototypeOf(child) {
-  child.prototype = Object.create(this.prototype,
-    { constructor: { value: child, configurable: true, writable: true } });
-  child.isPrototypeOf = isPrototypeOf;
+var AsyncIteratorPrototype = (function isPrototypeOf(Constructor) {
+  var prototype = Constructor.prototype = Object.create(this.prototype,
+    { constructor: { value: Constructor, configurable: true, writable: true } });
+  Constructor.isPrototypeOf = isPrototypeOf;
+  return prototype;
 })
 .call(EventEmitter, AsyncIterator);
 
 /**
- * Changes the iterator to the given state if possible and necessary,
- * possibly emitting events to signal that change.
- *
- * @protected
- * @param {integer} newState The ID of the new state (from the `STATES` array).
- * @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously.
- * @returns {boolean} Whether the state was changed.
- * @emits AsyncIterator.end
+  Changes the iterator to the given state if possible and necessary,
+  possibly emitting events to signal that change.
+
+  @protected
+  @function
+  @name AsyncIterator#_changeState
+  @param {integer} newState The ID of the new state (from the `STATES` array)
+  @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously
+  @returns {boolean} Whether the state was changed
+  @emits AsyncIterator.end
 **/
-AsyncIterator.prototype._changeState = function (newState, eventAsync) {
+AsyncIteratorPrototype._changeState = function (newState, eventAsync) {
   // Validate the state change
   var valid = newState > this._state;
   if (valid) {
@@ -104,45 +115,53 @@ AsyncIterator.prototype._changeState = function (newState, eventAsync) {
 function emit(self, eventName) { self.emit(eventName); }
 
 /**
- * Tries to read the next item from the iterator.
- *
- * This is the main method for reading the iterator in _on-demand mode_,
- * where new items are only created when needed by consumers.
- * If no items are currently available, this methods returns `undefined`.
- * The {@link AsyncIterator.event:readable} event will then signal when new items might be ready.
- *
- * To read all items from the stream,
- * switch to _flow mode_ by subscribing to the {@link AsyncIterator.event:data} event.
- * When in flow mode, do not use the `read` method.
- *
- * @returns {object?} The next item, or `undefined` if none is available
+  Tries to read the next item from the iterator.
+
+  This is the main method for reading the iterator in _on-demand mode_,
+  where new items are only created when needed by consumers.
+  If no items are currently available, this methods returns `undefined`.
+  The {@link AsyncIterator.event:readable} event will then signal when new items might be ready.
+
+  To read all items from the stream,
+  switch to _flow mode_ by subscribing to the {@link AsyncIterator.event:data} event.
+  When in flow mode, do not use the `read` method.
+
+  @function
+  @name AsyncIterator#read
+  @returns {object?} The next item, or `undefined` if none is available
 **/
-AsyncIterator.prototype.read = function () { };
+AsyncIteratorPrototype.read = function () { };
 
 /**
- * Emitted when the iterator possibly has new items available,
- * which can be retrieved by calling {@link AsyncIterator#read}.
- *
- * @event AsyncIterator.readable
+  Emitted when the iterator possibly has new items available,
+  which can be retrieved by calling {@link AsyncIterator#read}.
+
+  @event AsyncIterator.readable
 **/
 
 /**
- * Verifies whether the iterator has listeners for the given event.
- * @private
- * @param {string} eventName The name of the event
- * @returns {boolean} Whether the iterator has listeners
+  Verifies whether the iterator has listeners for the given event.
+
+  @private
+  @function
+  @name AsyncIterator#_hasListeners
+  @param {string} eventName The name of the event
+  @returns {boolean} Whether the iterator has listeners
 **/
-AsyncIterator.prototype._hasListeners = function (eventName) {
+AsyncIteratorPrototype._hasListeners = function (eventName) {
   return this._events && (eventName in this._events);
 };
 
 /**
- * Adds the listener to the event, if it has not been added previously.
- * @private
- * @param {string} eventName The name of the event
- * @param {Function} listener The listener to add
+  Adds the listener to the event, if it has not been added previously.
+
+  @private
+  @function
+  @name AsyncIterator#_addSingleListener
+  @param {string} eventName The name of the event
+  @param {Function} listener The listener to add
 **/
-AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
+AsyncIteratorPrototype._addSingleListener = function (eventName, listener) {
   var listeners = this._events && this._events[eventName];
   if (!listeners || (isFunction(listeners) ? listeners !== listener
                                            : listeners.indexOf(listener) < 0))
@@ -150,28 +169,32 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
 };
 
 /**
- * Stops the iterator from generating new items.
- *
- * Already generated items, or terminating items, can still be emitted.
- * After this, the iterator will end asynchronously.
- *
- * @emits AsyncIterator.end
+  Stops the iterator from generating new items.
+
+  Already generated items, or terminating items, can still be emitted.
+  After this, the iterator will end asynchronously.
+
+  @function
+  @name AsyncIterator#close
+  @emits AsyncIterator.end
 **/
-AsyncIterator.prototype.close = function () {
+AsyncIteratorPrototype.close = function () {
   if (this._changeState(CLOSED))
     endAsync(this);
 };
 
 /**
- * Asynchronously ends the iterator and cleans up.
- *
- * Should never be called before {@link AsyncIterator#close};
- * typically, `close` is responsible for calling `_end`.
- *
- * @protected
- * @emits AsyncIterator.end
+  Asynchronously ends the iterator and cleans up.
+
+  Should never be called before {@link AsyncIterator#close};
+  typically, `close` is responsible for calling `_end`.
+
+  @protected
+  @function
+  @name AsyncIterator#_end
+  @emits AsyncIterator.end
 **/
-AsyncIterator.prototype._end = function () {
+AsyncIteratorPrototype._end = function () {
   if (this._changeState(ENDED)) {
     this.removeAllListeners('readable');
     this.removeAllListeners('data');
@@ -182,18 +205,19 @@ function end(self) { self._end(); }
 function endAsync(self) { setImmediate(end, self); }
 
 /**
- * Emitted after the last item of the iterator has been read.
- *
- * @event AsyncIterator.end
+  Emitted after the last item of the iterator has been read.
+
+  @event AsyncIterator.end
 **/
 
 /**
- * Whether items can potentially be read from the iterator.
- * @name AsyncIterator#closed
- * @type boolean
- * @emits AsyncIterator.readable
+  Whether items can potentially be read from the iterator.
+
+  @name AsyncIterator#readable
+  @type boolean
+  @emits AsyncIterator.readable
 **/
-Object.defineProperty(AsyncIterator.prototype, 'readable', {
+Object.defineProperty(AsyncIteratorPrototype, 'readable', {
   get: function () { return this._readable; },
   set: function (readable) {
     readable = !!readable;
@@ -209,41 +233,43 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
 });
 
 /**
- * Whether the iterator has stopped generating new items
- * @name AsyncIterator#closed
- * @type boolean
+  Whether the iterator has stopped generating new items
+
+  @name AsyncIterator#closed
+  @type boolean
 **/
-Object.defineProperty(AsyncIterator.prototype, 'closed', {
+Object.defineProperty(AsyncIteratorPrototype, 'closed', {
   get: function () { return this._state >= CLOSING; },
   enumerable: true,
 });
 
 /**
- * Whether the iterator has stopped emitting items
- * @name AsyncIterator#ended
- * @type boolean
+  Whether the iterator has stopped emitting items
+
+  @name AsyncIterator#ended
+  @type boolean
 **/
-Object.defineProperty(AsyncIterator.prototype, 'ended', {
+Object.defineProperty(AsyncIteratorPrototype, 'ended', {
   get: function () { return this._state === ENDED; },
   enumerable: true,
 });
 
 /**
- * Emitted when a new item is available on the iterator.
- *
- * As soon as one or more listeners are attached to the `data` event,
- * the iterator switches to _flow mode_,
- * generating and emitting new items as fast as possible.
- * This drains the source and might create backpressure on the consumers,
- * so only subscribe to this event if this behavior is intended.
- * In flow mode, don't use the {@link AsyncIterator#read} method.
- *
- * To switch back to _on-demand mode_,
- * remove all listeners from the `data` event.
- * You can then obtain items through {@link AsyncIterator#read} again.
- *
- * @event AsyncIterator.data
- * @param {object} item The new item
+  Emitted when a new item is available on the iterator.
+
+  As soon as one or more listeners are attached to the `data` event,
+  the iterator switches to _flow mode_,
+  generating and emitting new items as fast as possible.
+  This drains the source and might create backpressure on the consumers,
+  so only subscribe to this event if this behavior is intended.
+  In flow mode, don't use the {@link AsyncIterator#read} method.
+
+  To switch back to _on-demand mode_,
+  remove all listeners from the `data` event.
+  You can then obtain items through {@link AsyncIterator#read} again.
+
+  @event AsyncIterator.data
+  @param {object} item The new item
 **/
 
 // Starts emitting `data` events when `data` listeners are added
@@ -274,6 +300,7 @@ function call(func, self) { func.call(self); }
 
 /**
   Creates a new `EmptyIterator`.
+
   @constructor
   @classdesc An iterator that doesn't emit any items.
   @extends AsyncIterator
@@ -290,6 +317,7 @@ AsyncIterator.isPrototypeOf(EmptyIterator);
 
 /**
   Creates a new `SingletonIterator`.
+
   @constructor
   @classdesc An iterator that emits a single item.
   @param {object} item The item that will be emitted.
@@ -305,10 +333,10 @@ function SingletonIterator(item) {
   else
     this._item = item, this.readable = true;
 }
-AsyncIterator.isPrototypeOf(SingletonIterator);
+var SingletonIteratorPrototype = AsyncIterator.isPrototypeOf(SingletonIterator);
 
 /* Reads the item from the iterator. */
-SingletonIterator.prototype.read = function () {
+SingletonIteratorPrototype.read = function () {
   var item = this._item;
   delete this._item;
   this.close();
@@ -319,6 +347,7 @@ SingletonIterator.prototype.read = function () {
 
 /**
   Creates a new `ArrayIterator`.
+
   @constructor
   @classdesc An iterator that emits the items of a given array.
   @param {Array} items The items that will be emitted.
@@ -335,10 +364,10 @@ function ArrayIterator(items) {
   this._buffer = Array.prototype.slice.call(items);
   this.readable = true;
 }
-AsyncIterator.isPrototypeOf(ArrayIterator);
+var ArrayIteratorPrototype = AsyncIterator.isPrototypeOf(ArrayIterator);
 
 /* Reads an item from the iterator. */
-ArrayIterator.prototype.read = function () {
+ArrayIteratorPrototype.read = function () {
   var buffer = this._buffer;
   if (buffer) {
     var item = buffer.shift();
@@ -354,6 +383,7 @@ ArrayIterator.prototype.read = function () {
 
 /**
   Creates a new `IntegerIterator`.
+
   @constructor
   @classdesc An iterator that enumerates integers in a certain range.
   @param {object} [options] Settings of the iterator
@@ -381,10 +411,10 @@ function IntegerIterator(options) {
   else
     this.readable = true;
 }
-AsyncIterator.isPrototypeOf(IntegerIterator);
+var IntegerIteratorPrototype = AsyncIterator.isPrototypeOf(IntegerIterator);
 
 /* Reads an item from the iterator. */
-IntegerIterator.prototype.read = function () {
+IntegerIteratorPrototype.read = function () {
   if (!this.closed) {
     var current = this._next, step = this._step, last = this._last, next = this._next += step;
     if (step >= 0 ? next > last : next < last)
@@ -397,6 +427,7 @@ IntegerIterator.prototype.read = function () {
 
 /**
   Creates a new `BufferedIterator`.
+
   @constructor
   @classdesc A iterator that maintains an internal buffer of items.
 
@@ -424,16 +455,18 @@ function BufferedIterator(options) {
   this._reading = true;
   setImmediate(init, this, autoStart === undefined || autoStart);
 }
-AsyncIterator.isPrototypeOf(BufferedIterator);
+var BufferedIteratorPrototype = AsyncIterator.isPrototypeOf(BufferedIterator);
 
 /**
- * Initializing the iterator by calling {@link BufferedIterator#_begin}
- * and changing state from INIT to OPEN.
- *
- * @param {boolean} autoStart Whether reading of items should immediately start after OPEN.
- * @protected
+  Initializing the iterator by calling {@link BufferedIterator#_begin}
+  and changing state from INIT to OPEN.
+
+  @protected
+  @function
+  @name BufferedIterator#_init
+  @param {boolean} autoStart Whether reading of items should immediately start after OPEN.
 **/
-BufferedIterator.prototype._init = function (autoStart) {
+BufferedIteratorPrototype._init = function (autoStart) {
   // Perform initialization tasks
   var self = this;
   this._reading = true;
@@ -455,24 +488,26 @@ BufferedIterator.prototype._init = function (autoStart) {
 function init(self, autoStart) { self._init(autoStart); }
 
 /**
- * Writes beginning items and opens iterator resources.
- *
- * Should never be called before {@link AsyncIterator#_init};
- * typically, `_init` is responsible for calling `_begin`.
- *
- * @protected
- * @param {function} done To be called when initialization is complete
+  Writes beginning items and opens iterator resources.
+
+  Should never be called before {@link BufferedIterator#_init};
+  typically, `_init` is responsible for calling `_begin`.
+
+  @protected
+  @function
+  @name BufferedIterator#_begin
+  @param {function} done To be called when initialization is complete
 **/
-BufferedIterator.prototype._begin = function (done) { done(); };
+BufferedIteratorPrototype._begin = function (done) { done(); };
 
 /**
- * Tries to read the next item from the iterator.
- *
- * If the buffer is empty,
- * this method calls {@link BufferedIterator#_read} to fetch items.
- * @returns {object?} The next item, or `undefined` if none is available
+  Tries to read the next item from the iterator.
+
+  If the buffer is empty,
+  this method calls {@link BufferedIterator#_read} to fetch items.
+  @returns {object?} The next item, or `undefined` if none is available
 **/
-BufferedIterator.prototype.read = function () {
+BufferedIteratorPrototype.read = function () {
   if (this.ended) return;
 
   // Try to retrieve an item from the buffer
@@ -494,22 +529,28 @@ BufferedIterator.prototype.read = function () {
 };
 
 /**
- * Tries to generate the given number of items.
- *
- * Implementers should add `count` items through {@link BufferedIterator#_push}.
- * @param {integer} count The number of items to generate
- * @param {function} done To be called when reading is complete
- * @protected
+  Tries to generate the given number of items.
+
+  Implementers should add `count` items through {@link BufferedIterator#_push}.
+
+  @protected
+  @function
+  @name BufferedIterator#_read
+  @param {integer} count The number of items to generate
+  @param {function} done To be called when reading is complete
 **/
-BufferedIterator.prototype._read = function (count, done) { done(); };
+BufferedIteratorPrototype._read = function (count, done) { done(); };
 
 /**
- * Adds an item to the internal buffer.
- * @param {object} item The item to add
- * @protected
- * @emits AsyncIterator.readable
+  Adds an item to the internal buffer.
+
+  @protected
+  @function
+  @name BufferedIterator#_push
+  @param {object} item The item to add
+  @emits AsyncIterator.readable
 **/
-BufferedIterator.prototype._push = function (item) {
+BufferedIteratorPrototype._push = function (item) {
   if (this.ended)
     throw new Error('Cannot push after the iterator was ended.');
   this._buffer.push(item);
@@ -517,13 +558,16 @@ BufferedIterator.prototype._push = function (item) {
 };
 
 /**
- * Fills the internal buffer until `this.bufferSize` items are present.
- *
- * This method calls {@link BufferedIterator#_read} to fetch items.
- * @protected
- * @emits AsyncIterator.readable
+  Fills the internal buffer until `this.bufferSize` items are present.
+
+  This method calls {@link BufferedIterator#_read} to fetch items.
+
+  @protected
+  @function
+  @name BufferedIterator#_fillBuffer
+  @emits AsyncIterator.readable
 **/
-BufferedIterator.prototype._fillBuffer = function () {
+BufferedIteratorPrototype._fillBuffer = function () {
   var self = this, neededItems;
   // Avoid recursive reads
   if (this._reading)
@@ -560,15 +604,17 @@ function fillBufferAsyncCallback(self) {
 }
 
 /**
- * Stops the iterator from generating new items
- * after a possible pending read operation has finished.
- *
- * Already generated, pending, or terminating items can still be emitted.
- * After this, the iterator will end asynchronously.
- *
- * @emits AsyncIterator.end
+  Stops the iterator from generating new items
+  after a possible pending read operation has finished.
+
+  Already generated, pending, or terminating items can still be emitted.
+  After this, the iterator will end asynchronously.
+
+  @function
+  @name BufferedIterator#close
+  @emits AsyncIterator.end
 **/
-BufferedIterator.prototype.close = function () {
+BufferedIteratorPrototype.close = function () {
   // If the iterator is not currently reading, we can close immediately
   if (!this._reading)
     this._completeClose();
@@ -579,13 +625,15 @@ BufferedIterator.prototype.close = function () {
 };
 
 /**
- * Stops the iterator from generating new items,
- * switching from `CLOSING` state into `CLOSED` state.
- *
- * @protected
- * @emits AsyncIterator.end
+  Stops the iterator from generating new items,
+  switching from `CLOSING` state into `CLOSED` state.
+
+  @protected
+  @function
+  @name BufferedIterator#_completeClose
+  @emits AsyncIterator.end
 **/
-BufferedIterator.prototype._completeClose = function () {
+BufferedIteratorPrototype._completeClose = function () {
   if (this._changeState(CLOSED)) {
     // Write possible terminating items
     var self = this;
@@ -603,25 +651,28 @@ BufferedIterator.prototype._completeClose = function () {
 };
 
 /**
- * Writes terminating items and closes iterator resources.
- *
- * Should never be called before {@link AsyncIterator#close};
- * typically, `close` is responsible for calling `_flush`.
- *
- * @protected
- * @param {function} done To be called when termination is complete
+  Writes terminating items and closes iterator resources.
+
+  Should never be called before {@link BufferedIterator#close};
+  typically, `close` is responsible for calling `_flush`.
+
+  @protected
+  @function
+  @name BufferedIterator#_flush
+  @param {function} done To be called when termination is complete
 **/
-BufferedIterator.prototype._flush = function (done) { done(); };
+BufferedIteratorPrototype._flush = function (done) { done(); };
 
 
 
 
 /**
   Creates a new `TransformIterator`.
-  @constructor
-  @classdesc An iterator that generates items based on a source iterator.
 
   This class serves as a base class for other iterators.
+
+  @constructor
+  @classdesc An iterator that generates items based on a source iterator.
   @param {AsyncIterator} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
@@ -640,12 +691,14 @@ function TransformIterator(source, options) {
   BufferedIterator.call(this, options);
   if (source) this.source = source;
 }
-BufferedIterator.isPrototypeOf(TransformIterator);
+var TransformIteratorPrototype = BufferedIterator.isPrototypeOf(TransformIterator);
 
 /**
- * The source this iterator generates items from
- * @name AsyncIterator#source
- * @type AsyncIterator
+  The source this iterator generates items from
+
+  @function
+  @name AsyncIterator#source
+  @type AsyncIterator
 **/
 Object.defineProperty(TransformIterator.prototype, 'source', {
   set: function (source) {
@@ -674,7 +727,7 @@ function destinationClose() { this._destination.close(); }
 function destinationFillBuffer() { this._destination._fillBuffer(); }
 
 /* Tries to read and transform an item */
-TransformIterator.prototype._read = function (count, done) {
+TransformIteratorPrototype._read = function (count, done) {
   var source = this._source, item;
   // If the source exists and still can read items,
   // try to read and transform the next item.
@@ -685,26 +738,29 @@ TransformIterator.prototype._read = function (count, done) {
 };
 
 /**
- * Generates items based on the item from the source.
- *
- * Implementers should add items through {@link BufferedIterator#_push}.
- * The default implementation pushes the source item as-is.
- * @param {object} item The last read item from the source
- * @param {function} done To be called when reading is complete
- * @protected
+  Generates items based on the item from the source.
+
+  Implementers should add items through {@link BufferedIterator#_push}.
+  The default implementation pushes the source item as-is.
+
+  @protected
+  @function
+  @name TransformIterator#_transform
+  @param {object} item The last read item from the source
+  @param {function} done To be called when reading is complete
 **/
-TransformIterator.prototype._transform = function (item, done) {
+TransformIteratorPrototype._transform = function (item, done) {
   this._push(item), done();
 };
 
 /* Cleans up the source iterator and ends. */
-TransformIterator.prototype._end = function () {
+TransformIteratorPrototype._end = function () {
   var source = this._source;
   if (source) {
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
   }
-  BufferedIterator.prototype._end.call(this);
+  BufferedIteratorPrototype._end.call(this);
 };
 
 
@@ -712,10 +768,10 @@ TransformIterator.prototype._end = function () {
 
 /**
   Creates a new `SimpleTransformIterator`.
+
   @constructor
   @classdesc An iterator that generates items based on a source iterator
              and simple transformation steps passed as arguments.
-
   @param {AsyncIterator} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
@@ -739,30 +795,30 @@ function SimpleTransformIterator(source, options) {
     if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
   }
 }
-TransformIterator.isPrototypeOf(SimpleTransformIterator);
+var SimpleTransformIteratorPrototype = TransformIterator.isPrototypeOf(SimpleTransformIterator);
 
 // Default mapping function
-SimpleTransformIterator.prototype._map = function (item) { return item; };
+SimpleTransformIteratorPrototype._map = function (item) { return item; };
 
 // Transforms items using the mapping function
-SimpleTransformIterator.prototype._transform = function (item, done) {
+SimpleTransformIteratorPrototype._transform = function (item, done) {
   this._push(this._map(item)), done();
 };
 
 // Prepends items to the iterator
-SimpleTransformIterator.prototype._begin = function (done) {
+SimpleTransformIteratorPrototype._begin = function (done) {
   this._insert(this._prepender, done);
   delete this._prepender;
 };
 
 // Appends items to the iterator
-SimpleTransformIterator.prototype._flush = function (done) {
+SimpleTransformIteratorPrototype._flush = function (done) {
   this._insert(this._appender, done);
   delete this._appender;
 };
 
 // Inserts items in the iterator
-SimpleTransformIterator.prototype._insert = function (inserter, done) {
+SimpleTransformIteratorPrototype._insert = function (inserter, done) {
   var self = this;
   if (!inserter || inserter.ended)
     done();
@@ -773,51 +829,59 @@ SimpleTransformIterator.prototype._insert = function (inserter, done) {
 };
 
 /**
- * Maps items from this iterator using the given function.
- *
- * The current iterator may not be read anymore after this operation.
- *
- * @param {Function} map A mapping function to call on this iterator's (remaining) items
- * @returns {AsyncIterator} A new iterator that maps the items from this iterator
+  Maps items from this iterator using the given function.
+
+  The current iterator may not be read anymore after this operation.
+
+  @function
+  @name AsyncIterator#map
+  @param {Function} mapper A mapping function to call on this iterator's (remaining) items
+  @returns {AsyncIterator} A new iterator that maps the items from this iterator
 **/
-AsyncIterator.prototype.map = function (map) {
-  return new SimpleTransformIterator(this, { map: map });
+AsyncIteratorPrototype.map = function (mapper) {
+  return new SimpleTransformIterator(this, { map: mapper });
 };
 
 /**
- * Prepends the items to the current iterator.
- *
- * The current iterator may not be read anymore after this operation.
- *
- * @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
- * @returns {AsyncIterator} A new iterator that prepends items to this iterator
+  Prepends the items to the current iterator.
+
+  The current iterator may not be read anymore after this operation.
+
+  @function
+  @name AsyncIterator#prepend
+  @param {Array|AsyncIterator} items Items to insert before this iterator's (remaining) items
+  @returns {AsyncIterator} A new iterator that prepends items to this iterator
 **/
-AsyncIterator.prototype.prepend = function (prepend) {
-  return new SimpleTransformIterator(this, { prepend: prepend });
+AsyncIteratorPrototype.prepend = function (items) {
+  return new SimpleTransformIterator(this, { prepend: items });
 };
 
 /**
- * Appends the items to the current iterator.
- *
- * The current iterator may not be read anymore after this operation.
- *
- * @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
- * @returns {AsyncIterator} A new iterator that prepends items to this iterator
+  Appends the items to the current iterator.
+
+  The current iterator may not be read anymore after this operation.
+
+  @function
+  @name AsyncIterator#append
+  @param {Array|AsyncIterator} items Items to insert after this iterator's (remaining) items
+  @returns {AsyncIterator} A new iterator that prepends items to this iterator
 **/
-AsyncIterator.prototype.append = function (append) {
-  return new SimpleTransformIterator(this, { append: append });
+AsyncIteratorPrototype.append = function (items) {
+  return new SimpleTransformIterator(this, { append: items });
 };
 
 /**
- * Surrounds items of the current iterator with the given items.
- *
- * The current iterator may not be read anymore after this operation.
- *
- * @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
- * @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
- * @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+  Surrounds items of the current iterator with the given items.
+
+  The current iterator may not be read anymore after this operation.
+
+  @function
+  @name AsyncIterator#surround
+  @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
+  @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
+  @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
 **/
-AsyncIterator.prototype.surround = function (prepend, append) {
+AsyncIteratorPrototype.surround = function (prepend, append) {
   return new SimpleTransformIterator(this, { prepend: prepend, append: append });
 };
 
