@@ -733,12 +733,10 @@ function SimpleTransformIterator(source, options) {
 
   // Set transformation steps from the options
   if (options = options || !isFunction(source && source.read) && source) {
-    if (isFunction(options.map))
-      this._map = options.map;
-    if (options.prepend)
-      this._prepender = options.prepend.on ? options.prepend : new ArrayIterator(options.prepend);
-    if (options.append)
-      this._appender  = options.append.on  ? options.append  : new ArrayIterator(options.append);
+    var map = options.map, prepend = options.prepend, append = options.append;
+    if (isFunction(map)) this._map = map;
+    if (prepend) this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
+    if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
   }
 }
 TransformIterator.isPrototypeOf(SimpleTransformIterator);
@@ -751,32 +749,27 @@ SimpleTransformIterator.prototype._transform = function (item, done) {
   this._push(this._map(item)), done();
 };
 
-// Prepends items
+// Prepends items to the iterator
 SimpleTransformIterator.prototype._begin = function (done) {
-  var self = this, prepender = this._prepender;
-  if (!prepender || prepender.ended)
-    done();
-  else {
-    delete this._prepender;
-    prepender.on('data', push);
-    prepender.once('end', end);
-  }
-  function push(item) { self._push(item); }
-  function end() { this.removeListener('data', push); done(); }
+  this._insert(this._prepender, done);
+  delete this._prepender;
 };
 
-// Appends items
+// Appends items to the iterator
 SimpleTransformIterator.prototype._flush = function (done) {
-  var self = this, appender = this._appender;
-  if (!appender || appender.ended)
+  this._insert(this._appender, done);
+  delete this._appender;
+};
+
+// Inserts items in the iterator
+SimpleTransformIterator.prototype._insert = function (inserter, done) {
+  var self = this;
+  if (!inserter || inserter.ended)
     done();
-  else {
-    delete this._appender;
-    appender.on('data', push);
-    appender.once('end', end);
-  }
+  else
+    inserter.on('data', push), inserter.once('end', end);
   function push(item) { self._push(item); }
-  function end() { this.removeListener('data', push); done(); }
+  function end() { inserter.removeListener('data', push); done(); }
 };
 
 /**
