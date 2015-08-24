@@ -311,4 +311,91 @@ describe('AsyncIterator', function () {
       });
     });
   });
+
+  describe('The AsyncIterator#each function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.each).to.be.a('function');
+    });
+
+    describe('called on an empty iterator', function () {
+      var iterator, callback, result;
+      before(function () {
+        iterator = new AsyncIterator();
+        callback = sinon.stub();
+        result = iterator.each(callback);
+      });
+
+      it('should return undefined', function () {
+        expect(result).to.be.undefined;
+      });
+
+      it('should not invoke the callback', function () {
+        callback.should.not.have.beenCalled;
+      });
+    });
+
+    describe('called on an iterator with two elements', function () {
+      var iterator, callback, result;
+      before(function () {
+        var i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = function () { if (i++ < 2) return i; };
+        callback = sinon.stub();
+        result = iterator.each(callback);
+      });
+
+      it('should return undefined', function () {
+        expect(result).to.be.undefined;
+      });
+
+      it('should invoke the callback twice', function () {
+        callback.should.have.been.calledTwice;
+      });
+
+      it('should send the first item in the first call', function () {
+        callback.getCall(0).args.should.deep.equal([1]);
+      });
+
+      it('should send the second item in the first call', function () {
+        callback.getCall(1).args.should.deep.equal([2]);
+      });
+
+      it('should call the callback with the iterator as `this`', function () {
+        callback.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+
+    describe('called on an iterator with two elements and a `this` argument', function () {
+      var iterator, callback, result, self = {};
+      before(function () {
+        var i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = function () { if (i++ < 2) return i; };
+        callback = sinon.stub();
+        result = iterator.each(callback, self);
+      });
+
+      it('should return undefined', function () {
+        expect(result).to.be.undefined;
+      });
+
+      it('should invoke the callback twice', function () {
+        callback.should.have.been.calledTwice;
+      });
+
+      it('should send the first item in the first call', function () {
+        callback.getCall(0).args.should.deep.equal([1]);
+      });
+
+      it('should send the second item in the first call', function () {
+        callback.getCall(1).args.should.deep.equal([2]);
+      });
+
+      it('should call the callback with the argument as `this`', function () {
+        callback.alwaysCalledOn(self).should.be.true;
+      });
+    });
+  });
 });

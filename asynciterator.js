@@ -140,6 +140,20 @@ AsyncIteratorPrototype.read = function () { };
 **/
 
 /**
+  Invokes the callback for each remaining item in the iterator.
+
+  Switches the iterator to flow mode.
+
+  @function
+  @name AsyncIterator#each
+  @param {Function} callback A function that will be called with each item
+  @param {object?} self The `this` pointer for the callback
+**/
+AsyncIteratorPrototype.each = function (callback, self) {
+  this.on('data', self === undefined ? callback : callback.bind(self));
+};
+
+/**
   Verifies whether the iterator has listeners for the given event.
 
   @private
