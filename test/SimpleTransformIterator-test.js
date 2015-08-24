@@ -103,6 +103,10 @@ describe('SimpleTransformIterator', function () {
       it('should have called the map function once for each item', function () {
         map.should.have.been.calledThrice;
       });
+
+      it('should have called the map function with the iterator as `this`', function () {
+        map.alwaysCalledOn(instance).should.be.true;
+      });
     });
   });
 
@@ -259,6 +263,10 @@ describe('SimpleTransformIterator', function () {
       it('should have called the map function once for each original item', function () {
         map.should.have.been.calledThrice;
       });
+
+      it('should have called the map function with the iterator as `this`', function () {
+        map.alwaysCalledOn(instance).should.be.true;
+      });
     });
   });
 
@@ -291,8 +299,46 @@ describe('SimpleTransformIterator', function () {
           items.should.deep.equal(['a1', 'b2', 'c3']);
         });
 
-        it('should have called the map function once for each item', function () {
+        it('should call the map function once for each item', function () {
           map.should.have.been.calledThrice;
+        });
+
+        it('should call the map function with the returned iterator as `this`', function () {
+          map.alwaysCalledOn(result).should.be.true;
+        });
+      });
+    });
+
+    describe('when called on an iterator with a `this` argument', function () {
+      var iterator, map, result, self = {};
+      before(function () {
+        var i = 0;
+        iterator = new ArrayIterator(['a', 'b', 'c']);
+        map = sinon.spy(function (item) { return item + (++i); });
+        result = iterator.map(map, self);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should execute the map function on all items in order', function () {
+          items.should.deep.equal(['a1', 'b2', 'c3']);
+        });
+
+        it('should call the map function once for each item', function () {
+          map.should.have.been.calledThrice;
+        });
+
+        it('should call the map function with the passed argument as `this`', function () {
+          map.alwaysCalledOn(self).should.be.true;
         });
       });
     });

@@ -836,9 +836,12 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
   @function
   @name AsyncIterator#map
   @param {Function} mapper A mapping function to call on this iterator's (remaining) items
+  @param {object?} self The `this` pointer for the mapping function
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
 **/
-AsyncIteratorPrototype.map = function (mapper) {
+AsyncIteratorPrototype.map = function (mapper, self) {
+  if (self !== undefined)
+    mapper = mapper.bind(self);
   return new SimpleTransformIterator(this, { map: mapper });
 };
 
