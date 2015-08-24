@@ -16,6 +16,10 @@ describe('TransformIterator', function () {
         instance.should.be.an.instanceof(TransformIterator);
       });
 
+      it('should be a BufferedIterator object', function () {
+        instance.should.be.an.instanceof(BufferedIterator);
+      });
+
       it('should be an AsyncIterator object', function () {
         instance.should.be.an.instanceof(AsyncIterator);
       });
@@ -31,6 +35,10 @@ describe('TransformIterator', function () {
 
       it('should be a TransformIterator object', function () {
         instance.should.be.an.instanceof(TransformIterator);
+      });
+
+      it('should be a BufferedIterator object', function () {
+        instance.should.be.an.instanceof(BufferedIterator);
       });
 
       it('should be an AsyncIterator object', function () {
@@ -188,7 +196,7 @@ describe('TransformIterator', function () {
     });
 
     describe('when the source emits a `readable` event (but does not actually contain items)', function () {
-      before(function () { source.emit('readable'); });
+      before(function () { source.emit('readable'); });
 
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);

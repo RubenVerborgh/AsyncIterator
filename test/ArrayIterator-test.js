@@ -67,7 +67,7 @@ describe('ArrayIterator', function () {
   describe('An ArrayIterator with a non-array', function () {
     var iterator;
     before(function () {
-      iterator = new ArrayIterator({ a: 1, b: 2 });
+      iterator = new ArrayIterator({ foo: 1, bar: 2 });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -239,7 +239,7 @@ describe('ArrayIterator', function () {
   describe('An ArrayIterator with a three-item array-like object', function () {
     var iterator, item;
     before(function () {
-      iterator = new ArrayIterator({ length: '3', 0: 1, 1: 2, 2: 3 });
+      iterator = new ArrayIterator({ length: '3', 0: 1, 1: 2, 2: 3 });
       captureEvents(iterator, 'readable', 'end');
     });
 

@@ -1,21 +1,6 @@
 var EventEmitter = require('events').EventEmitter;
 
 /**
-  Creates a new `AsyncIterator`.
-  @constructor
-  @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
-  @extends EventEmitter
-**/
-function AsyncIterator() {
-  if (!(this instanceof AsyncIterator))
-    return new AsyncIterator();
-  EventEmitter.call(this);
-  this.on('newListener', waitForDataListener);
-  this._state = OPEN;
-  this._readable = false;
-}
-
-/**
   Names of possible iterator states.
   The state's position in the array corresponds to its ID.
   @name AsyncIterator.STATES
@@ -61,6 +46,26 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 */
 
 
+
+
+/**
+  Creates a new `AsyncIterator`.
+  @constructor
+  @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
+  @extends EventEmitter
+**/
+function AsyncIterator() {
+  if (!(this instanceof AsyncIterator))
+    return new AsyncIterator();
+  EventEmitter.call(this);
+  this.on('newListener', waitForDataListener);
+  this._state = OPEN;
+  this._readable = false;
+}
+
+
+
+
 /**
   Makes the specified iterator inherit from the current iterator.
   @function
@@ -68,8 +73,8 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
   @param {Function} child The iterator that should inherit from the current iterator.
 **/
 (function isPrototypeOf(child) {
-  var prototype = child.prototype = Object.create(this.prototype,
-    { constructor: { value: child, configurable: true, writable: true }});
+  child.prototype = Object.create(this.prototype,
+    { constructor: { value: child, configurable: true, writable: true } });
   child.isPrototypeOf = isPrototypeOf;
 })
 .call(EventEmitter, AsyncIterator);
@@ -77,12 +82,13 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
  * Changes the iterator to the given state if possible and necessary,
  * possibly emitting events to signal that change.
+ *
  * @protected
  * @param {integer} newState The ID of the new state (from the `STATES` array).
  * @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously.
- * @returns boolean Whether the state was changed.
+ * @returns {boolean} Whether the state was changed.
  * @emits AsyncIterator.end
-*/
+**/
 AsyncIterator.prototype._changeState = function (newState, eventAsync) {
   // Validate the state change
   var valid = newState > this._state;
@@ -112,6 +118,7 @@ function emit(self, eventName) { self.emit(eventName); }
  * @returns {object?} The next item, or `undefined` if none is available
 **/
 AsyncIterator.prototype.read = function () { };
+
 /**
  * Emitted when the iterator possibly has new items available,
  * which can be retrieved by calling {@link AsyncIterator#read}.
@@ -173,6 +180,7 @@ AsyncIterator.prototype._end = function () {
 };
 function end(self) { self._end(); }
 function endAsync(self) { setImmediate(end, self); }
+
 /**
  * Emitted after the last item of the iterator has been read.
  *
@@ -239,7 +247,7 @@ Object.defineProperty(AsyncIterator.prototype, 'ended', {
 **/
 
 // Starts emitting `data` events when `data` listeners are added
-function waitForDataListener(eventName, listener) {
+function waitForDataListener(eventName) {
   if (eventName === 'data') {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
@@ -393,7 +401,7 @@ IntegerIterator.prototype.read = function () {
   @classdesc A iterator that maintains an internal buffer of items.
 
   This class serves as a base class for other iterators
-  with a typically complex item generation process.
+  with a typically complex item generation process.
   @param {object} [options] Settings of the iterator
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
@@ -414,7 +422,7 @@ function BufferedIterator(options) {
   // Initialize the iterator
   this._state = INIT;
   this._reading = true;
-  setImmediate(init, this, autoStart === undefined || autoStart);
+  setImmediate(init, this, autoStart === undefined || autoStart);
 }
 AsyncIterator.isPrototypeOf(BufferedIterator);
 

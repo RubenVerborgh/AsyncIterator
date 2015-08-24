@@ -1,8 +1,8 @@
 // Set up the Chai assertion library
-var chai = require('chai'),
-    should = global.should = chai.should(),
-    expect = global.expect = chai.expect,
-    sinon = global.sinon = require('sinon');
+var chai = require('chai');
+global.sinon = require('sinon');
+global.should = chai.should();
+global.expect = chai.expect;
 
 chai.use(require('sinon-chai'));
 

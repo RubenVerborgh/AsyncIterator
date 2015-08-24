@@ -1,7 +1,6 @@
 var AsyncIterator = require('../asynciterator').AsyncIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator,
-    EventEmitter = require('events').EventEmitter;
+var EventEmitter = require('events').EventEmitter;
 
 describe('AsyncIterator', function () {
   describe('The AsyncIterator function', function () {
@@ -141,7 +140,7 @@ describe('AsyncIterator', function () {
       var items = [1];
       iterator = new AsyncIterator();
       iterator.readable = true;
-      iterator.read = function () { return items.shift() || iterator.close(); };
+      iterator.read = function () { return items.shift() || iterator.close(); };
     });
 
     describe('after a data listener is attached', function () {

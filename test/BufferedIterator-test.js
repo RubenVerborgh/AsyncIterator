@@ -712,7 +712,7 @@ describe('BufferedIterator', function () {
   describe('A BufferedIterator that synchronously pushes "a" and ends', function () {
     function createIterator(options) {
       var iterator = new BufferedIterator(options);
-      iterator._read = function (count, done) { this._push("a"); this.close(); done(); };
+      iterator._read = function (count, done) { this._push('a'); this.close(); done(); };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
     }
@@ -770,7 +770,7 @@ describe('BufferedIterator', function () {
         before(function () { item = iterator.read(); });
 
         it('should have returned "a"', function () {
-          expect(item).to.equal("a");
+          expect(item).to.equal('a');
         });
 
         it('should have emitted the `readable` event', function () {
@@ -845,7 +845,7 @@ describe('BufferedIterator', function () {
         before(function () { item = iterator.read(); });
 
         it('should have returned "a"', function () {
-          expect(item).to.equal("a");
+          expect(item).to.equal('a');
         });
 
         it('should not have emitted the `readable` event anymore', function () {
@@ -871,10 +871,10 @@ describe('BufferedIterator', function () {
     function createIterator(options) {
       var iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
-        this._push("a");
+        this._push('a');
         setImmediate(function (self) {
-          self._push("b");
-          self._push("c");
+          self._push('b');
+          self._push('c');
           done();
         }, this);
       };
@@ -913,7 +913,7 @@ describe('BufferedIterator', function () {
         });
 
         it('should have returned "a"', function () {
-          expect(item).to.equal("a");
+          expect(item).to.equal('a');
         });
 
         it('should not have emitted another `readable` event yet', function () {
@@ -931,7 +931,7 @@ describe('BufferedIterator', function () {
         before(function () { item = iterator.read(); });
 
         it('should have returned "b"', function () {
-          expect(item).to.equal("b");
+          expect(item).to.equal('b');
         });
 
         it('should not have emitted another `readable` event yet', function () {
@@ -952,7 +952,7 @@ describe('BufferedIterator', function () {
 
         it('should have returned all remaining items in the buffer', function () {
           // plus `undefined` for two reads past the end of the buffer
-          expect(items).to.deep.equal(["c", "a", "b", "c", undefined, undefined]);
+          expect(items).to.deep.equal(['c', 'a', 'b', 'c', undefined, undefined]);
         });
 
         it('should have emitted another `readable` event', function () {
@@ -988,11 +988,11 @@ describe('BufferedIterator', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
-      iterator._read = function (count, done) { this._push("a"); };
+      iterator._read = function () { this._push('a'); };
     });
 
     it('should return the first item on read', function () {
-      expect(iterator.read()).to.equal("a");
+      expect(iterator.read()).to.equal('a');
     });
 
     it('should return undefined on subsequent reads', function () {
@@ -1005,7 +1005,7 @@ describe('BufferedIterator', function () {
     before(function () {
       var counter = 0;
       iterator = new BufferedIterator();
-      iterator._read = function (count, done) { this.read(); this._push(counter++); };
+      iterator._read = function () { this.read(); this._push(counter++); };
     });
 
     it('should return the first item on read', function () {
@@ -1199,14 +1199,14 @@ describe('BufferedIterator', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
-      iterator._begin = function (count, done) { this._push("a"); };
+      iterator._begin = function () { this._push('a'); };
       iterator.close();
       sinon.spy(iterator, '_read');
       captureEvents(iterator, 'end');
     });
 
     it('should return the first item on read', function () {
-      expect(iterator.read()).to.equal("a");
+      expect(iterator.read()).to.equal('a');
     });
 
     it('should return undefined on subsequent reads', function () {
@@ -1410,13 +1410,13 @@ describe('BufferedIterator', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
-      iterator._flush = function (count, done) { this._push("a"); };
+      iterator._flush = function () { this._push('a'); };
       iterator.close();
       captureEvents(iterator, 'end');
     });
 
     it('should return the first item on read', function () {
-      expect(iterator.read()).to.equal("a");
+      expect(iterator.read()).to.equal('a');
     });
 
     it('should return undefined on subsequent reads', function () {

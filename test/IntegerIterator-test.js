@@ -232,7 +232,7 @@ describe('IntegerIterator', function () {
     });
 
     describe('when reading the final element', function () {
-        it('should return -5 on read call 4', function () {
+      it('should return -5 on read call 4', function () {
         expect(iterator.read()).to.equal(-5);
       });
 
