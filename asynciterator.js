@@ -516,39 +516,39 @@ BufferedIterator.prototype._push = function (item) {
  * @emits AsyncIterator.readable
 **/
 BufferedIterator.prototype._fillBuffer = function () {
-  var buffer = this._buffer;
+  var self = this, neededItems;
+  // Avoid recursive reads
+  if (this._reading)
+    return;
   // If iterator closing started in the meantime, don't generate new items anymore
-  if (this.closed) {
-    this._reading = false;
+  else if (this.closed)
     this._completeClose();
-  }
   // Otherwise, try to fill empty spaces in the buffer by generating new items
-  else {
-    var neededItems = this._bufferSize - buffer.length, self = this;
-    // Try to read the needed number of items
-    if (neededItems <= 0)
-      this._reading = false;
-    else {
-      this._reading = true;
-      this._read(neededItems, function () {
-        // Verify the callback is only called once
-        if (!neededItems)
-          throw new Error('done callback called multiple times');
-        neededItems = 0;
-        self._reading = false;
-        // If the iterator was closed while reading, complete closing
-        if (self.closed)
-          self._completeClose();
-      });
-    }
+  else if ((neededItems = this._bufferSize - this._buffer.length) > 0) {
+    this._reading = true;
+    this._read(neededItems, function () {
+      // Verify the callback is only called once
+      if (!neededItems)
+        throw new Error('done callback called multiple times');
+      neededItems = 0;
+      self._reading = false;
+      // If the iterator was closed while reading, complete closing
+      if (self.closed)
+        self._completeClose();
+    });
   }
 };
-function fillBuffer(self) { self._fillBuffer(); }
 function fillBufferAsync(self) {
+  // Take reading lock to avoid recursive reads
   if (!self._reading) {
     self._reading = true;
-    setImmediate(fillBuffer, self);
+    setImmediate(fillBufferAsyncCallback, self);
   }
+}
+function fillBufferAsyncCallback(self) {
+  // Free reading lock so _fillBuffer` can take it
+  self._reading = false;
+  self._fillBuffer();
 }
 
 /**
