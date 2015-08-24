@@ -187,6 +187,26 @@ describe('TransformIterator', function () {
       });
     });
 
+    describe('when the source emits a `readable` event (but does not actually contain items)', function () {
+      before(function () { source.emit('readable'); });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined when read is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
     describe('after the source ends', function () {
       before(function () { source.close(); });
 

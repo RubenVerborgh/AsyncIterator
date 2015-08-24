@@ -656,14 +656,14 @@ Object.defineProperty(TransformIterator.prototype, 'source', {
       return this.close();
 
     // React to source events
-    source.once('end', closeDestination);
-    source.on('readable', makeDestinationReadable);
+    source.once('end', destinationClose);
+    source.on('readable', destinationFillBuffer);
   },
   get: function () { return this._source; },
   enumerable: true,
 });
-function closeDestination() { this._destination.close(); }
-function makeDestinationReadable() { this._destination.readable = true; }
+function destinationClose() { this._destination.close(); }
+function destinationFillBuffer() { this._destination._fillBuffer(); }
 
 /* Tries to read and transform an item */
 TransformIterator.prototype._read = function (count, done) {
@@ -693,7 +693,7 @@ TransformIterator.prototype._transform = function (item, done) {
 TransformIterator.prototype._end = function () {
   var source = this._source;
   if (source) {
-    source.removeListener('readable', makeDestinationReadable);
+    source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
   }
   BufferedIterator.prototype._end.call(this);
