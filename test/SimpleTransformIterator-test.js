@@ -1018,4 +1018,41 @@ describe('SimpleTransformIterator', function () {
       });
     });
   });
+
+  describe('The AsyncIterator#transform function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.transform).to.be.a('function');
+    });
+
+    describe('when called on an iterator', function () {
+      var iterator, map, prepend, append, result;
+      before(function () {
+        var i = 0;
+        iterator = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+        map = function (item) { return item + (++i); };
+        prepend = new ArrayIterator(['i', 'ii', 'iii']);
+        append  = new ArrayIterator(['I', 'II', 'III']);
+        result = iterator.transform({
+          map: map, prepend: prepend, append: append,
+          offset: 2, limit: 3,
+        });
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should transform the items', function () {
+          items.should.deep.equal(['i', 'ii', 'iii', 'c1', 'd2', 'e3', 'I', 'II', 'III']);
+        });
+      });
+    });
+  });
 });

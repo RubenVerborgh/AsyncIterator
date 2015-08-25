@@ -878,6 +878,25 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
 };
 
 /**
+  Transforms items from this iterator.
+
+  The current iterator may not be read anymore after this operation.
+
+  @function
+  @name AsyncIterator#transform
+  @param {object} [options] Settings of the iterator
+  @param {integer} [options.offset] The number of items to skip
+  @param {integer} [options.limit] The maximum number of items
+  @param {Function} [options.map] A function to synchronously transform elements from the source
+  @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
+  @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+  @returns {AsyncIterator} A new iterator that maps the items from this iterator
+**/
+AsyncIteratorPrototype.transform = function (options) {
+  return new SimpleTransformIterator(this, options);
+};
+
+/**
   Maps items from this iterator using the given function.
 
   The current iterator may not be read anymore after this operation.
@@ -889,9 +908,7 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
 **/
 AsyncIteratorPrototype.map = function (mapper, self) {
-  if (self !== undefined)
-    mapper = mapper.bind(self);
-  return new SimpleTransformIterator(this, { map: mapper });
+  return this.transform({ map: self === undefined ? mapper : mapper.bind(self) });
 };
 
 /**
@@ -905,7 +922,7 @@ AsyncIteratorPrototype.map = function (mapper, self) {
   @returns {AsyncIterator} A new iterator that prepends items to this iterator
 **/
 AsyncIteratorPrototype.prepend = function (items) {
-  return new SimpleTransformIterator(this, { prepend: items });
+  return this.transform({ prepend: items });
 };
 
 /**
@@ -919,7 +936,7 @@ AsyncIteratorPrototype.prepend = function (items) {
   @returns {AsyncIterator} A new iterator that prepends items to this iterator
 **/
 AsyncIteratorPrototype.append = function (items) {
-  return new SimpleTransformIterator(this, { append: items });
+  return this.transform({ append: items });
 };
 
 /**
@@ -934,7 +951,7 @@ AsyncIteratorPrototype.append = function (items) {
   @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
 **/
 AsyncIteratorPrototype.surround = function (prepend, append) {
-  return new SimpleTransformIterator(this, { prepend: prepend, append: append });
+  return this.transform({ prepend: prepend, append: append });
 };
 
 /**
@@ -948,7 +965,7 @@ AsyncIteratorPrototype.surround = function (prepend, append) {
   @returns {AsyncIterator} A new iterator that skips the given number of items
 **/
 AsyncIteratorPrototype.skip = function (offset) {
-  return new SimpleTransformIterator(this, { offset: offset });
+  return this.transform({ offset: offset });
 };
 
 /**
@@ -962,7 +979,7 @@ AsyncIteratorPrototype.skip = function (offset) {
   @returns {AsyncIterator} A new iterator with at most the given number of items
 **/
 AsyncIteratorPrototype.take = function (limit) {
-  return new SimpleTransformIterator(this, { limit: limit });
+  return this.transform({ limit: limit });
 };
 
 /**
@@ -977,8 +994,7 @@ AsyncIteratorPrototype.take = function (limit) {
   @returns {AsyncIterator} A new iterator with items in the given range
 **/
 AsyncIteratorPrototype.range = function (start, end) {
-  var limit = Math.max(end - start + 1, 0);
-  return new SimpleTransformIterator(this, { offset: start, limit: limit });
+  return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
 };
 
 
