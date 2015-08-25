@@ -880,7 +880,7 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
 /**
   Transforms items from this iterator.
 
-  The current iterator may not be read anymore after this operation.
+  After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#transform
@@ -899,7 +899,7 @@ AsyncIteratorPrototype.transform = function (options) {
 /**
   Maps items from this iterator using the given function.
 
-  The current iterator may not be read anymore after this operation.
+  After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#map
@@ -914,7 +914,7 @@ AsyncIteratorPrototype.map = function (mapper, self) {
 /**
   Prepends the items to the current iterator.
 
-  The current iterator may not be read anymore after this operation.
+  After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#prepend
@@ -928,7 +928,7 @@ AsyncIteratorPrototype.prepend = function (items) {
 /**
   Appends the items to the current iterator.
 
-  The current iterator may not be read anymore after this operation.
+  After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#append
@@ -942,7 +942,7 @@ AsyncIteratorPrototype.append = function (items) {
 /**
   Surrounds items of the current iterator with the given items.
 
-  The current iterator may not be read anymore after this operation.
+  After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#surround
