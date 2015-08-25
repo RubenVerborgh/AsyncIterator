@@ -5,6 +5,7 @@ var TransformIterator = require('../asynciterator').TransformIterator,
     BufferedIterator = require('../asynciterator').BufferedIterator,
     EmptyIterator = require('../asynciterator').EmptyIterator,
     ArrayIterator = require('../asynciterator').ArrayIterator,
+    IntegerIterator = require('../asynciterator').IntegerIterator,
     EventEmitter = require('events').EventEmitter;
 
 describe('SimpleTransformIterator', function () {
@@ -61,17 +62,17 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator without options', function () {
-    var instance, source;
+    var iterator, source;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
-      instance = new SimpleTransformIterator(source);
+      iterator = new SimpleTransformIterator(source);
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should return items as they are', function () {
@@ -81,19 +82,19 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a map function', function () {
-    var instance, source, map;
+    var iterator, source, map;
     before(function () {
       var i = 0;
       source = new ArrayIterator(['a', 'b', 'c']);
       map = sinon.spy(function (item) { return item + (++i); });
-      instance = new SimpleTransformIterator(source, { map: map });
+      iterator = new SimpleTransformIterator(source, { map: map });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should execute the map function on all items in order', function () {
@@ -105,25 +106,25 @@ describe('SimpleTransformIterator', function () {
       });
 
       it('should have called the map function with the iterator as `this`', function () {
-        map.alwaysCalledOn(instance).should.be.true;
+        map.alwaysCalledOn(iterator).should.be.true;
       });
     });
   });
 
   describe('A SimpleTransformIterator with a prepend array', function () {
-    var instance, source, prepend;
+    var iterator, source, prepend;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       prepend = ['i', 'ii', 'iii'];
-      instance = new SimpleTransformIterator(source, { prepend: prepend });
+      iterator = new SimpleTransformIterator(source, { prepend: prepend });
       prepend.push(['iiii']); // modify array to verify it is copied
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should prepend the items to the regular items', function () {
@@ -133,18 +134,18 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a prepend iterator', function () {
-    var instance, source, prepend;
+    var iterator, source, prepend;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       prepend = new ArrayIterator(['i', 'ii', 'iii']);
-      instance = new SimpleTransformIterator(source, { prepend: prepend });
+      iterator = new SimpleTransformIterator(source, { prepend: prepend });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should prepend the items to the regular items', function () {
@@ -154,18 +155,18 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a prepend iterator that ended', function () {
-    var instance, source, prepend;
+    var iterator, source, prepend;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       prepend = new EmptyIterator();
-      instance = new SimpleTransformIterator(source, { prepend: prepend });
+      iterator = new SimpleTransformIterator(source, { prepend: prepend });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should return items as they are', function () {
@@ -175,19 +176,19 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with an append array', function () {
-    var instance, source, append;
+    var iterator, source, append;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       append = ['I', 'II', 'III'];
-      instance = new SimpleTransformIterator(source, { append: append });
+      iterator = new SimpleTransformIterator(source, { append: append });
       append.push(['IIII']); // modify array to verify it is copied
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should append the items to the regular items', function () {
@@ -197,18 +198,18 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with an append iterator', function () {
-    var instance, source, append;
+    var iterator, source, append;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       append = new ArrayIterator(['I', 'II', 'III']);
-      instance = new SimpleTransformIterator(source, { append: append });
+      iterator = new SimpleTransformIterator(source, { append: append });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should append the items to the regular items', function () {
@@ -218,18 +219,18 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with an append iterator that ended', function () {
-    var instance, source, append;
+    var iterator, source, append;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       append = new EmptyIterator();
-      instance = new SimpleTransformIterator(source, { append: append });
+      iterator = new SimpleTransformIterator(source, { append: append });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should return items as they are', function () {
@@ -238,34 +239,497 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
-  describe('A SimpleTransformIterator with a map function, prepender, and appender', function () {
-    var instance, source, map, prepend, append;
+  describe('A SimpleTransformIterator with an offset of 0', function () {
+    var iterator, source;
     before(function () {
-      var i = 0;
-      source = new ArrayIterator(['a', 'b', 'c']);
-      map = sinon.spy(function (item) { return item + (++i); });
-      prepend = new ArrayIterator(['i', 'ii', 'iii']);
-      append  = new ArrayIterator(['I', 'II', 'III']);
-      instance = new SimpleTransformIterator(source, { map: map, prepend: prepend, append: append });
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: 0 });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        instance.on('data', function (item) { items.push(item); });
-        instance.on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
-      it('should return prepended, mapped, and appended items', function () {
-        items.should.deep.equal(['i', 'ii', 'iii', 'a1', 'b2', 'c3', 'I', 'II', 'III']);
+      it('should call `read` on the source 10 times', function () {
+        source.read.should.have.callCount(10);
+      });
+
+      it('should result in all items', function () {
+        items.should.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with an offset of 5', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: 5 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 10 times', function () {
+        source.read.should.have.callCount(10);
+      });
+
+      it('should result in skipping the first 5 items', function () {
+        items.should.deep.equal([6, 7, 8, 9, 10]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with an offset of +Infinity', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: Infinity });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should not call `read` on the source', function () {
+        source.read.should.not.have.been.called;
+      });
+
+      it('should not result in any items', function () {
+        items.should.deep.equal([]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a negative offset', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: -1 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 10 times', function () {
+        source.read.should.have.callCount(10);
+      });
+
+      it('should result in all items', function () {
+        items.should.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with an offset of -Infinity', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: -Infinity });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 10 times', function () {
+        source.read.should.have.callCount(10);
+      });
+
+      it('should result in all items', function () {
+        items.should.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a limit of 0', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { limit: 0 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should not call `read` on the source', function () {
+        source.read.should.not.have.been.called;
+      });
+
+      it('should not result in any items', function () {
+        items.should.deep.equal([]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a limit of 5', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { limit: 5 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 5 times', function () {
+        source.read.should.have.callCount(5);
+      });
+
+      it('should result in the first 5 items', function () {
+        items.should.deep.equal([1, 2, 3, 4, 5]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a limit of +Infinity', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { limit: Infinity });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 10 times', function () {
+        source.read.should.have.callCount(10);
+      });
+
+      it('should result in all items', function () {
+        items.should.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a negative limit', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { limit: -1 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should not call `read` on the source', function () {
+        source.read.should.not.have.been.called;
+      });
+
+      it('should not result in any items', function () {
+        items.should.deep.equal([]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a limit of -Infinity', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { limit: -Infinity });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should not call `read` on the source', function () {
+        source.read.should.not.have.been.called;
+      });
+
+      it('should not result in any items', function () {
+        items.should.deep.equal([]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with an offset of 2 and a limit of 3', function () {
+    var iterator, source;
+    before(function () {
+      source = new IntegerIterator({ start: 1, end: 10 });
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator(source, { offset: 2, limit: 3 });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should call `read` on the source 5 times', function () {
+        source.read.should.have.callCount(5);
+      });
+
+      it('should result in skipping 2 items and reading 3', function () {
+        items.should.deep.equal([3, 4, 5]);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with offset/limit and a slow source', function () {
+    var iterator, source;
+    before(function () {
+      source = new BufferedIterator();
+      sinon.spy(source, 'read');
+      iterator = new SimpleTransformIterator({ offset: 2, limit: 3 });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the source is set', function () {
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined on read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after the source is set', function () {
+      before(function () { iterator.source = source; });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined on read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 1 becomes available', function () {
+      before(function () { source._push('a'); });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined on read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 2 becomes available', function () {
+      before(function () { source._push('b'); });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return undefined on read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 3 becomes available', function () {
+      before(function () { source._push('c'); });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return the item on read', function () {
+        expect(iterator.read()).to.equal('c');
+      });
+
+      it('should return undefined on subsequent reads', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 4 becomes available', function () {
+      before(function () { source._push('d'); });
+
+      it('should have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(2);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return the item on read', function () {
+        expect(iterator.read()).to.equal('d');
+      });
+
+      it('should return undefined on subsequent reads', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 5 becomes available', function () {
+      before(function () { source._push('e'); });
+
+      it('should have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(3);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should return the item on read', function () {
+        expect(iterator.read()).to.equal('e');
+      });
+
+      it('should return undefined on subsequent reads', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+
+    describe('after item 5 has been read', function () {
+      before(function () { source._push('f'); });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(3);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should return undefined on read', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with map/prepend/append/offset/limit', function () {
+    var iterator, source, map, prepend, append;
+    before(function () {
+      var i = 0;
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      sinon.spy(source, 'read');
+      map = sinon.spy(function (item) { return item + (++i); });
+      prepend = new ArrayIterator(['i', 'ii', 'iii']);
+      append  = new ArrayIterator(['I', 'II', 'III']);
+      iterator = new SimpleTransformIterator(source, {
+        map: map, prepend: prepend, append: append,
+        offset: 2, limit: 3,
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the processed items', function () {
+        items.should.deep.equal(['i', 'ii', 'iii', 'c1', 'd2', 'e3', 'I', 'II', 'III']);
       });
 
       it('should have called the map function once for each original item', function () {
         map.should.have.been.calledThrice;
       });
 
+      it('should call `read` on the source 5 times', function () {
+        source.read.should.have.callCount(5);
+      });
+
       it('should have called the map function with the iterator as `this`', function () {
-        map.alwaysCalledOn(instance).should.be.true;
+        map.alwaysCalledOn(iterator).should.be.true;
       });
     });
   });
@@ -429,6 +893,127 @@ describe('SimpleTransformIterator', function () {
 
         it('should surround the items', function () {
           items.should.deep.equal(['i', 'ii', 'iii', 'a', 'b', 'c', 'I', 'II', 'III']);
+        });
+      });
+    });
+  });
+
+  describe('The AsyncIterator#skip function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.skip).to.be.a('function');
+    });
+
+    describe('when called on an iterator', function () {
+      var iterator, result;
+      before(function () {
+        iterator = new ArrayIterator(['a', 'b', 'c', 'd', 'e']);
+        result = iterator.skip(2);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should skip the given number of items', function () {
+          items.should.deep.equal(['c', 'd', 'e']);
+        });
+      });
+    });
+  });
+
+  describe('The AsyncIterator#take function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.take).to.be.a('function');
+    });
+
+    describe('when called on an iterator', function () {
+      var iterator, result;
+      before(function () {
+        iterator = new ArrayIterator(['a', 'b', 'c', 'd', 'e']);
+        result = iterator.take(3);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should take the given number of items', function () {
+          items.should.deep.equal(['a', 'b', 'c']);
+        });
+      });
+    });
+  });
+
+  describe('The AsyncIterator#range function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.range).to.be.a('function');
+    });
+
+    describe('when called on an iterator', function () {
+      var iterator, result;
+      before(function () {
+        iterator = new IntegerIterator();
+        result = iterator.range(20, 29);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should contain the indicated range', function () {
+          items.should.have.length(10);
+          items[0].should.equal(20);
+          items[9].should.equal(29);
+        });
+      });
+    });
+
+    describe('when called on an iterator with an inverse range', function () {
+      var iterator, result;
+      before(function () {
+        iterator = new IntegerIterator();
+        sinon.spy(iterator, 'read');
+        result = iterator.range(30, 20);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should be empty', function () {
+          items.should.be.empty;
+        });
+
+        it('should not have called `read` on the iterator', function () {
+          iterator.read.should.not.have.been.called;
         });
       });
     });
