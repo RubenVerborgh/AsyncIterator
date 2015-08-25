@@ -73,17 +73,18 @@ function AsyncIterator() {
 }
 
 /**
-  Makes objects of the specified iterator constructor inherit from the current iterator.
+  Creates a prototype for the given constructor,
+  such that its instances inherit from the current constructor.
 
   @function
-  @name AsyncIterator.isPrototypeOf
-  @param {Function} Constructor The constructor whose instances should inherit
+  @name AsyncIterator.createPrototypeFor
+  @param {Function} Constructor The constructor for which to create a prototype
   @returns {AsyncIterator} The child object's prototype
 **/
-var AsyncIteratorPrototype = (function isPrototypeOf(Constructor) {
+var AsyncIteratorPrototype = (function createPrototypeFor(Constructor) {
   var prototype = Constructor.prototype = Object.create(this.prototype,
     { constructor: { value: Constructor, configurable: true, writable: true } });
-  Constructor.isPrototypeOf = isPrototypeOf;
+  Constructor.createPrototypeFor = createPrototypeFor;
   return prototype;
 })
 .call(EventEmitter, AsyncIterator);
@@ -325,7 +326,7 @@ function EmptyIterator() {
   AsyncIterator.call(this);
   this._changeState(ENDED, true);
 }
-AsyncIterator.isPrototypeOf(EmptyIterator);
+AsyncIterator.createPrototypeFor(EmptyIterator);
 
 
 
@@ -347,7 +348,7 @@ function SingletonIterator(item) {
   else
     this._item = item, this.readable = true;
 }
-var SingletonIteratorPrototype = AsyncIterator.isPrototypeOf(SingletonIterator);
+var SingletonIteratorPrototype = AsyncIterator.createPrototypeFor(SingletonIterator);
 
 /* Reads the item from the iterator. */
 SingletonIteratorPrototype.read = function () {
@@ -378,7 +379,7 @@ function ArrayIterator(items) {
   this._buffer = Array.prototype.slice.call(items);
   this.readable = true;
 }
-var ArrayIteratorPrototype = AsyncIterator.isPrototypeOf(ArrayIterator);
+var ArrayIteratorPrototype = AsyncIterator.createPrototypeFor(ArrayIterator);
 
 /* Reads an item from the iterator. */
 ArrayIteratorPrototype.read = function () {
@@ -425,7 +426,7 @@ function IntegerIterator(options) {
   else
     this.readable = true;
 }
-var IntegerIteratorPrototype = AsyncIterator.isPrototypeOf(IntegerIterator);
+var IntegerIteratorPrototype = AsyncIterator.createPrototypeFor(IntegerIterator);
 
 /* Reads an item from the iterator. */
 IntegerIteratorPrototype.read = function () {
@@ -469,7 +470,7 @@ function BufferedIterator(options) {
   this._reading = true;
   setImmediate(init, this, autoStart === undefined || autoStart);
 }
-var BufferedIteratorPrototype = AsyncIterator.isPrototypeOf(BufferedIterator);
+var BufferedIteratorPrototype = AsyncIterator.createPrototypeFor(BufferedIterator);
 
 /**
   Initializing the iterator by calling {@link BufferedIterator#_begin}
@@ -705,7 +706,7 @@ function TransformIterator(source, options) {
   BufferedIterator.call(this, options);
   if (source) this.source = source;
 }
-var TransformIteratorPrototype = BufferedIterator.isPrototypeOf(TransformIterator);
+var TransformIteratorPrototype = BufferedIterator.createPrototypeFor(TransformIterator);
 
 /**
   The source this iterator generates items from
@@ -819,7 +820,7 @@ function SimpleTransformIterator(source, options) {
     if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
   }
 }
-var SimpleTransformIteratorPrototype = TransformIterator.isPrototypeOf(SimpleTransformIterator);
+var SimpleTransformIteratorPrototype = TransformIterator.createPrototypeFor(SimpleTransformIterator);
 
 // Default settings
 SimpleTransformIteratorPrototype._offset = 0;
