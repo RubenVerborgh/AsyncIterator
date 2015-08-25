@@ -59,6 +59,10 @@ describe('BufferedIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when `read` is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
@@ -77,8 +81,8 @@ describe('BufferedIterator', function () {
       before(function () { iterator = createIterator({ autoStart: false }); });
 
       describe('before `read` has been called', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -87,6 +91,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called _read', function () {
@@ -102,8 +110,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should not have emitted the `readable` event anymore', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should have emitted the `end` event', function () {
@@ -112,6 +120,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -128,8 +140,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should not have emitted the `readable` event anymore', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted another `end` event', function () {
@@ -138,6 +150,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -161,6 +177,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -187,6 +207,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -211,8 +235,8 @@ describe('BufferedIterator', function () {
       before(function () { iterator = createIterator({ autoStart: false }); });
 
       describe('before `read` has been called', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -221,6 +245,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called _read', function () {
@@ -236,8 +264,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should not have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should have emitted the `end` event', function () {
@@ -246,6 +274,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -262,8 +294,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should not have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted another `end` event', function () {
@@ -272,6 +304,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -295,6 +331,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -321,6 +361,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -389,10 +433,6 @@ describe('BufferedIterator', function () {
       before(createIterator);
 
       describe('before the iterator has been closed', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
-        });
-
         it('should not have emitted the `end` event', function () {
           iterator._eventCounts.end.should.equal(0);
         });
@@ -414,10 +454,6 @@ describe('BufferedIterator', function () {
           // because the iterator closes before an asynchronous _read can take place
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
-        });
-
         it('should have emitted the `end` event', function () {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -436,10 +472,6 @@ describe('BufferedIterator', function () {
       before(createIterator);
 
       describe('before the iterator has been closed', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
-        });
-
         it('should not have emitted the `end` event', function () {
           iterator._eventCounts.end.should.equal(0);
         });
@@ -460,10 +492,6 @@ describe('BufferedIterator', function () {
           setImmediate(function () { iterator.close(); });
         });
 
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
-        });
-
         it('should have emitted the `end` event', function () {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -482,8 +510,8 @@ describe('BufferedIterator', function () {
       before(createIterator);
 
       describe('before the iterator has been closed', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -492,6 +520,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should return undefined when `read` is called', function () {
@@ -506,8 +538,8 @@ describe('BufferedIterator', function () {
       describe('after an item is pushed', function () {
         before(function () { iterator._push('a'); });
 
-        it('should have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+        it('should have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -516,6 +548,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -528,7 +564,7 @@ describe('BufferedIterator', function () {
         before(function () { item = iterator.read(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -537,6 +573,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should have returned the pushed item', function () {
@@ -552,7 +592,7 @@ describe('BufferedIterator', function () {
         before(function () { iterator.close(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -561,6 +601,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -572,7 +616,7 @@ describe('BufferedIterator', function () {
         before(function () { _readDone(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should have emitted the `end` event', function () {
@@ -581,6 +625,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should return undefined when `read` is called', function () {
@@ -597,8 +645,8 @@ describe('BufferedIterator', function () {
       before(createIterator);
 
       describe('before the iterator has been closed', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -607,6 +655,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should return undefined when `read` is called', function () {
@@ -621,8 +673,8 @@ describe('BufferedIterator', function () {
       describe('after an item is pushed', function () {
         before(function () { iterator._push('a'); });
 
-        it('should have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+        it('should have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -631,6 +683,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -642,7 +698,7 @@ describe('BufferedIterator', function () {
         before(function () { iterator.close(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -651,6 +707,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -663,7 +723,7 @@ describe('BufferedIterator', function () {
         before(function () { item = iterator.read(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -672,6 +732,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should have returned the pushed item', function () {
@@ -687,7 +751,7 @@ describe('BufferedIterator', function () {
         before(function () { _readDone(); });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should have emitted the `end` event', function () {
@@ -696,6 +760,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should return undefined when `read` is called', function () {
@@ -722,8 +790,8 @@ describe('BufferedIterator', function () {
       before(function () { iterator = createIterator({ autoStart: false }); });
 
       describe('before `read` has been called', function () {
-        it('should not have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -732,6 +800,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should not have called _read', function () {
@@ -747,8 +819,8 @@ describe('BufferedIterator', function () {
           expect(item).to.be.undefined;
         });
 
-        it('should have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+        it('should have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', function () {
@@ -757,6 +829,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -773,8 +849,8 @@ describe('BufferedIterator', function () {
           expect(item).to.equal('a');
         });
 
-        it('should have emitted the `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+        it('should not have emitted another `readable` event', function () {
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should have emitted the `end` event', function () {
@@ -785,13 +861,17 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.true;
         });
 
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
+        });
+
         it('should have called `_read` with 4 (the default buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
       });
 
-      describe('after `read` has been called the second time', function () {
+      describe('after `read` has been called the third time', function () {
         var item;
         before(function () { item = iterator.read(); });
 
@@ -800,7 +880,7 @@ describe('BufferedIterator', function () {
         });
 
         it('should not have emitted another `readable` event', function () {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted another `end` event', function () {
@@ -809,6 +889,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -832,6 +916,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should have called `_read` with 4 (the default buffer size)', function () {
@@ -858,6 +946,10 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          iterator.readable.should.be.false;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -897,6 +989,10 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should be readable', function () {
+          iterator.readable.should.be.true;
         });
 
         it('should have called `_read` with 4 (the buffer size)', function () {
@@ -1046,6 +1142,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the beginning items', function () {
@@ -1070,6 +1170,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the item', function () {
@@ -1090,6 +1194,10 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {
@@ -1129,6 +1237,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the beginning items', function () {
@@ -1153,6 +1265,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the item', function () {
@@ -1173,6 +1289,10 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {
@@ -1205,6 +1325,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'end');
     });
 
+    it('should be readable', function () {
+      iterator.readable.should.be.true;
+    });
+
     it('should return the first item on read', function () {
       expect(iterator.read()).to.equal('a');
     });
@@ -1219,6 +1343,10 @@ describe('BufferedIterator', function () {
 
     it('should not have ended', function () {
       iterator.ended.should.be.false;
+    });
+
+    it('should be readable after reading', function () {
+      iterator.readable.should.be.false;
     });
 
     it('should not have called _read', function () {
@@ -1255,6 +1383,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the item', function () {
@@ -1275,6 +1407,10 @@ describe('BufferedIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -1299,6 +1435,10 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {
@@ -1338,6 +1478,10 @@ describe('BufferedIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading the item', function () {
@@ -1358,6 +1502,10 @@ describe('BufferedIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -1382,6 +1530,10 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {

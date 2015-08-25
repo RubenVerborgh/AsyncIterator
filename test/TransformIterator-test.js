@@ -134,6 +134,10 @@ describe('TransformIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when `read` is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
@@ -165,6 +169,10 @@ describe('TransformIterator', function () {
       iterator.ended.should.be.true;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when read is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
@@ -190,6 +198,10 @@ describe('TransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.be.undefined;
       });
@@ -210,6 +222,10 @@ describe('TransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.be.undefined;
       });
@@ -228,6 +244,10 @@ describe('TransformIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when read is called', function () {
@@ -262,6 +282,10 @@ describe('TransformIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading an item', function () {
@@ -282,6 +306,10 @@ describe('TransformIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {
@@ -333,6 +361,10 @@ describe('TransformIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading one item', function () {
@@ -353,6 +385,10 @@ describe('TransformIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -377,6 +413,10 @@ describe('TransformIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {
@@ -430,6 +470,10 @@ describe('TransformIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after reading one item', function () {
@@ -450,6 +494,10 @@ describe('TransformIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -474,6 +522,10 @@ describe('TransformIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when `read` is called', function () {

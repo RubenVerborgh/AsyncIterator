@@ -536,6 +536,10 @@ describe('SimpleTransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined on read', function () {
         expect(iterator.read()).to.be.undefined;
       });
@@ -554,6 +558,10 @@ describe('SimpleTransformIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined on read', function () {
@@ -576,6 +584,10 @@ describe('SimpleTransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined on read', function () {
         expect(iterator.read()).to.be.undefined;
       });
@@ -596,6 +608,10 @@ describe('SimpleTransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined on read', function () {
         expect(iterator.read()).to.be.undefined;
       });
@@ -614,6 +630,10 @@ describe('SimpleTransformIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
 
       it('should return the item on read', function () {
@@ -640,6 +660,10 @@ describe('SimpleTransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
       it('should return the item on read', function () {
         expect(iterator.read()).to.equal('d');
       });
@@ -664,6 +688,10 @@ describe('SimpleTransformIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
       it('should return the item on read', function () {
         expect(iterator.read()).to.equal('e');
       });
@@ -686,6 +714,10 @@ describe('SimpleTransformIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined on read', function () {

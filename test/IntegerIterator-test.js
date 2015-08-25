@@ -59,6 +59,10 @@ describe('IntegerIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('when reading elements', function () {
@@ -85,6 +89,10 @@ describe('IntegerIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
   });
 
@@ -106,6 +114,10 @@ describe('IntegerIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -133,6 +145,10 @@ describe('IntegerIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('when reading the final element', function () {
@@ -150,6 +166,10 @@ describe('IntegerIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined on read call 5', function () {
@@ -178,6 +198,10 @@ describe('IntegerIterator', function () {
         iterator.ended.should.be.true;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.equal(undefined);
       });
@@ -202,6 +226,10 @@ describe('IntegerIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -229,6 +257,10 @@ describe('IntegerIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('when reading the final element', function () {
@@ -246,6 +278,10 @@ describe('IntegerIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined on read call 5', function () {
@@ -274,6 +310,10 @@ describe('IntegerIterator', function () {
         iterator.ended.should.be.true;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.equal(undefined);
       });
@@ -300,6 +340,10 @@ describe('IntegerIterator', function () {
         iterator.ended.should.be.true;
       });
 
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
       it('should return undefined when read is called', function () {
         expect(iterator.read()).to.equal(undefined);
       });
@@ -324,6 +368,10 @@ describe('IntegerIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when read is called', function () {

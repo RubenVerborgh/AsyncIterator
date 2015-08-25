@@ -211,6 +211,7 @@ AsyncIteratorPrototype.close = function () {
 **/
 AsyncIteratorPrototype._end = function () {
   if (this._changeState(ENDED)) {
+    this._readable = false;
     this.removeAllListeners('readable');
     this.removeAllListeners('data');
     this.removeAllListeners('end');
@@ -235,7 +236,7 @@ function endAsync(self) { setImmediate(end, self); }
 Object.defineProperty(AsyncIteratorPrototype, 'readable', {
   get: function () { return this._readable; },
   set: function (readable) {
-    readable = !!readable;
+    readable = !!readable && !this.ended;
     // Set the readable value only if it has changed
     if (this._readable !== readable) {
       this._readable = readable;
@@ -496,7 +497,7 @@ BufferedIteratorPrototype._init = function (autoStart) {
     // If reading should not start automatically, the iterator doesn't become readable.
     // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
     else
-      self._readable = true;
+      self.readable = true;
     self = null;
   });
 };
@@ -1092,10 +1093,8 @@ function HistoryReader(source) {
     // When the source becomes readable, make all clones readable
     source.on('readable', makeClonesReadable);
     function makeClonesReadable() {
-      for (var i = 0; i < clones.length; i++) {
-        if (!clones[i].ended)
-          clones[i].readable = true;
-      }
+      for (var i = 0; i < clones.length; i++)
+        clones[i].readable = true;
     }
     // When the source ends, close all clones that are fully read
     source.once('end', function () {

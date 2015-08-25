@@ -59,6 +59,10 @@ describe('EmptyIterator', function () {
       iterator.ended.should.be.true;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when read is called', function () {
       expect(iterator.read()).to.be.undefined;
     });

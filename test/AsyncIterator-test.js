@@ -54,11 +54,39 @@ describe('AsyncIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    describe('when readable is set to a truthy value', function () {
+      before(function () { iterator.readable = 'a'; });
+
+      it('should have emitted a `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have true as readable value', function () {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('when readable is set to a falsy value', function () {
+      before(function () { iterator.readable = null; });
+
+      it('should not have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have false as readable value', function () {
+        iterator.readable.should.be.false;
+      });
+    });
+
     describe('after close has been called', function () {
       before(function () { iterator.close(); });
 
-      it('should not have emitted the `readable` event', function () {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should not have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
       });
 
       it('should have emitted the `end` event', function () {
@@ -67,6 +95,15 @@ describe('AsyncIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('cannot be made readable again', function () {
+        iterator.readable = true;
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when trying to read', function () {
@@ -83,8 +120,8 @@ describe('AsyncIterator', function () {
     describe('after close has been called a second time', function () {
       before(function () { iterator.close(); });
 
-      it('should not have emitted the `readable` event', function () {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should not have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
       });
 
       it('should not have emitted the `end` event a second time', function () {
@@ -93,6 +130,10 @@ describe('AsyncIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
 
       it('should return undefined when trying to read', function () {

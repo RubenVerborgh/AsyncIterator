@@ -59,6 +59,10 @@ describe('ArrayIterator', function () {
       iterator.ended.should.be.true;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when read is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
@@ -81,6 +85,10 @@ describe('ArrayIterator', function () {
 
     it('should have ended', function () {
       iterator.ended.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
     });
 
     it('should return undefined when read is called', function () {
@@ -111,6 +119,10 @@ describe('ArrayIterator', function () {
       iterator.ended.should.be.true;
     });
 
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
     it('should return undefined when read is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
@@ -139,6 +151,10 @@ describe('ArrayIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after calling read for the first time', function () {
@@ -158,6 +174,10 @@ describe('ArrayIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
     });
   });
@@ -181,6 +201,10 @@ describe('ArrayIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after calling read for the first time', function () {
@@ -197,6 +221,10 @@ describe('ArrayIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after calling read for the second time', function () {
@@ -212,6 +240,10 @@ describe('ArrayIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -232,6 +264,10 @@ describe('ArrayIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
     });
   });
@@ -255,6 +291,10 @@ describe('ArrayIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after calling read for the first time', function () {
@@ -271,6 +311,10 @@ describe('ArrayIterator', function () {
       it('should not have ended', function () {
         iterator.ended.should.be.false;
       });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
     });
 
     describe('after calling read for the second time', function () {
@@ -286,6 +330,10 @@ describe('ArrayIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
       });
     });
 
@@ -306,6 +354,10 @@ describe('ArrayIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
       });
     });
   });

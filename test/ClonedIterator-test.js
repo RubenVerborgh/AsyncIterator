@@ -88,6 +88,10 @@ describe('ClonedIterator', function () {
         getClone().ended.should.be.true;
       });
 
+      it('should not be readable', function () {
+        getClone().readable.should.be.false;
+      });
+
       it('should return undefined on read', function () {
         expect(getClone().read()).to.be.undefined;
       });
@@ -118,6 +122,10 @@ describe('ClonedIterator', function () {
         });
 
         if (index === 0) {
+          it('should not be readable', function () {
+            getClone().readable.should.be.false;
+          });
+
           it('should return undefined on read', function () {
             expect(getClone().read()).to.be.undefined;
           });
@@ -142,6 +150,10 @@ describe('ClonedIterator', function () {
           getClone().ended.should.be.false;
         });
 
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
+
         it('should read the item', function () {
           expect(getClone().read()).to.equal('a');
         });
@@ -163,6 +175,10 @@ describe('ClonedIterator', function () {
 
         it('should have ended', function () {
           getClone().ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
         });
 
         it('should return undefined on read', function () {
@@ -208,6 +224,10 @@ describe('ClonedIterator', function () {
         it('should not have ended', function () {
           getClone().ended.should.be.false;
         });
+
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
       });
     }
 
@@ -230,6 +250,10 @@ describe('ClonedIterator', function () {
 
         it('should have ended', function () {
           getClone().ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
         });
 
         it('should return undefined on read', function () {
@@ -273,6 +297,10 @@ describe('ClonedIterator', function () {
         it('should not have ended', function () {
           getClone().ended.should.be.false;
         });
+
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
       });
     }
 
@@ -296,6 +324,10 @@ describe('ClonedIterator', function () {
         it('should not have ended', function () {
           getClone().ended.should.be.false;
         });
+
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
       });
     }
 
@@ -318,6 +350,10 @@ describe('ClonedIterator', function () {
 
         it('should have ended', function () {
           getClone().ended.should.be.true;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
         });
 
         it('should return undefined on read', function () {
