@@ -465,7 +465,7 @@ function BufferedIterator(options) {
   this._buffer = [];
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
 
-  // Initialize the iterator
+  // Acquire reading lock to read initialization elements
   this._state = INIT;
   this._reading = true;
   setImmediate(init, this, autoStart === undefined || autoStart);
@@ -605,16 +605,15 @@ BufferedIteratorPrototype._fillBuffer = function () {
     });
   }
 };
-function fillBuffer(self) { self._fillBuffer(); }
 function fillBufferAsync(self) {
-  // Take reading lock to avoid recursive reads
+  // Acquire reading lock to avoid recursive reads
   if (!self._reading) {
     self._reading = true;
     setImmediate(fillBufferAsyncCallback, self);
   }
 }
 function fillBufferAsyncCallback(self) {
-  // Free reading lock so _fillBuffer` can take it
+  // Release reading lock so _fillBuffer` can take it
   self._reading = false;
   self._fillBuffer();
 }
@@ -1027,8 +1026,13 @@ AsyncIteratorPrototype.range = function (start, end) {
 function ClonedIterator(source) {
   if (!(this instanceof ClonedIterator))
     return new ClonedIterator(source);
-  TransformIterator.call(this, source);
+  // Although ClonedIterator inherits from TransformIterator and hence BufferedIterator,
+  // we do not need the buffering because items arrive directly from a history buffer.
+  // Therefore, initialize as an AsyncIterator, which does not set up buffering.
+  AsyncIterator.call(this);
+
   this._readPosition = 0;
+  if (source) this.source = source;
 }
 var ClonedIteratorPrototype = TransformIterator.createPrototypeFor(ClonedIterator);
 
@@ -1043,12 +1047,16 @@ Object.defineProperty(ClonedIteratorPrototype, 'source', {
     if (!history)
       history = source._destination = new HistoryReader(source);
 
-    // Close this iterator if history is empty and the source has ended
+    // Close this clone if history is empty and the source has ended
     if (history.endsAt(0))
       this.close();
-    // Otherwise, subscribe to history events
-    else
+    else {
+      // Subscribe to history events
       history.register(this);
+      // If there are already items in history, this clone is readable
+      if (history.readAt(0) !== undefined)
+        this.readable = true;
+    }
   },
   get: getSource,
   enumerable: true,
@@ -1078,34 +1086,44 @@ function HistoryReader(source) {
     clones = clones && clones.filter(function (c) { return c !== clone; });
   };
 
-  // Listen to source events to trigger history updates in subscribed clones
+  // Listen to source events to trigger events in subscribed clones
   if (!source.ended) {
     clones = [];
-    source.on('readable', updateClones);
+    // When the source becomes readable, make all clones readable
+    source.on('readable', makeClonesReadable);
+    function makeClonesReadable() {
+      for (var i = 0; i < clones.length; i++) {
+        if (!clones[i].ended)
+          clones[i].readable = true;
+      }
+    }
+    // When the source ends, close all clones that are fully read
     source.once('end', function () {
-      source.removeListener('readable', updateClones);
-      updateClones();
+      for (var i = 0; i < clones.length; i++) {
+        if (clones[i]._readPosition === history.length)
+          clones[i].close();
+      }
       clones = null;
+      source.removeListener('readable', makeClonesReadable);
     });
   }
-  function updateClones() { clones.forEach(fillBuffer); }
 }
 
 /* Tries to read an item */
-ClonedIteratorPrototype._read = function (count, done) {
+ClonedIteratorPrototype.read = function () {
+  if (this.ended) return;
+
   // Try to read items from history
   var source = this._source;
   if (source) {
     var history = source._destination, item;
-    while ((count-- > 0) && (item = history.readAt(this._readPosition)) !== undefined) {
+    if ((item = history.readAt(this._readPosition)) !== undefined)
       this._readPosition++;
-      this._push(item);
-    }
     // Close the iterator if we are at the end of the source
     if (history.endsAt(this._readPosition))
       this.close();
+    return item;
   }
-  done();
 };
 
 /* End the iterator and cleans up. */
@@ -1118,6 +1136,9 @@ ClonedIteratorPrototype._end = function () {
   // as it would make the source inaccessible for other clones
   BufferedIteratorPrototype._end.call(this);
 };
+
+// Disable buffer cleanup
+ClonedIteratorPrototype.close = AsyncIteratorPrototype.close;
 
 /**
   Creates a copy of the current iterator,
