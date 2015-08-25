@@ -605,6 +605,7 @@ BufferedIteratorPrototype._fillBuffer = function () {
     });
   }
 };
+function fillBuffer(self) { self._fillBuffer(); }
 function fillBufferAsync(self) {
   // Take reading lock to avoid recursive reads
   if (!self._reading) {
@@ -711,35 +712,49 @@ var TransformIteratorPrototype = BufferedIterator.createPrototypeFor(TransformIt
 /**
   The source this iterator generates items from
 
-  @function
   @name AsyncIterator#source
   @type AsyncIterator
 **/
-Object.defineProperty(TransformIterator.prototype, 'source', {
+Object.defineProperty(TransformIteratorPrototype, 'source', {
   set: function (source) {
-    // Verify and set source
-    if (this._source)
-      throw new Error('The source cannot be changed after it has been set');
-    if (!source || !isFunction(source.read) || !isFunction(source.on))
-      throw new Error('Invalid source: ' + source);
-    if (source._destination)
-      throw new Error('The source already has a destination');
+    // Validate and set source
+    this._validateSource(source);
     this._source = source;
     source._destination = this;
 
     // Close this iterator if the source has already ended
     if (source.ended)
-      return this.close();
-
-    // React to source events
-    source.once('end', destinationClose);
-    source.on('readable', destinationFillBuffer);
+      this.close();
+    // Otherwise, react to source events
+    else {
+      source.once('end', destinationClose);
+      source.on('readable', destinationFillBuffer);
+    }
   },
-  get: function () { return this._source; },
+  get: getSource,
   enumerable: true,
 });
+function getSource() { return this._source; }
 function destinationClose() { this._destination.close(); }
 function destinationFillBuffer() { this._destination._fillBuffer(); }
+
+/**
+  Validates whether the given iterator can be used as a source.
+
+  @protected
+  @function
+  @name TransformIterator#_validateSource
+  @param {object} source The source to validate
+  @param {boolean} allowDestination Whether the source can already have a destination
+**/
+TransformIteratorPrototype._validateSource = function (source, allowDestination) {
+  if (this._source)
+    throw new Error('The source cannot be changed after it has been set');
+  if (!source || !isFunction(source.read) || !isFunction(source.on))
+    throw new Error('Invalid source: ' + source);
+  if (!allowDestination && source._destination)
+    throw new Error('The source already has a destination');
+};
 
 /* Tries to read and transform an item */
 TransformIteratorPrototype._read = function (count, done) {
@@ -1001,6 +1016,133 @@ AsyncIteratorPrototype.range = function (start, end) {
 
 
 
+/**
+  Creates a new `ClonedIterator`.
+
+  @constructor
+  @classdesc An iterator that copies items from another iterator.
+  @param {AsyncIterator} [source] The source this iterator copies items from
+  @extends TransformIterator
+**/
+function ClonedIterator(source) {
+  if (!(this instanceof ClonedIterator))
+    return new ClonedIterator(source);
+  TransformIterator.call(this, source);
+  this._readPosition = 0;
+}
+var ClonedIteratorPrototype = TransformIterator.createPrototypeFor(ClonedIterator);
+
+// The source this iterator copies items from
+Object.defineProperty(ClonedIteratorPrototype, 'source', {
+  set: function (source) {
+    // Validate and set the source
+    var history = source && source._destination;
+    this._validateSource(source, !history || history instanceof HistoryReader);
+    this._source = source;
+    // Create a history reader for the source if none already existed
+    if (!history)
+      history = source._destination = new HistoryReader(source);
+
+    // Close this iterator if history is empty and the source has ended
+    if (history.endsAt(0))
+      this.close();
+    // Otherwise, subscribe to history events
+    else
+      history.register(this);
+  },
+  get: getSource,
+  enumerable: true,
+});
+
+// Stores the history of a source, so it can be cloned
+function HistoryReader(source) {
+  var history = [], clones;
+
+  // Tries to read the element at the given history position
+  this.readAt = function (pos) {
+    var item;
+    // Read a new item from the source when necessary
+    if (pos === history.length && !source.ended && (item = source.read()) !== undefined)
+      history[pos] = item;
+    return history[pos];
+  };
+
+  // Determines whether the given position is the end of the source
+  this.endsAt = function (pos) { return pos === history.length && source.ended; };
+
+  // Registers a clone for history updates
+  this.register = function (clone) { clones && clones.push(clone); };
+
+  // Unregisters a clone for history updates
+  this.unregister = function (clone) {
+    clones = clones && clones.filter(function (c) { return c !== clone; });
+  };
+
+  // Listen to source events to trigger history updates in subscribed clones
+  if (!source.ended) {
+    clones = [];
+    source.on('readable', updateClones);
+    source.once('end', function () {
+      source.removeListener('readable', updateClones);
+      updateClones();
+      clones = null;
+    });
+  }
+  function updateClones() { clones.forEach(fillBuffer); }
+}
+
+/* Tries to read an item */
+ClonedIteratorPrototype._read = function (count, done) {
+  // Try to read items from history
+  var source = this._source;
+  if (source) {
+    var history = source._destination, item;
+    while ((count-- > 0) && (item = history.readAt(this._readPosition)) !== undefined) {
+      this._readPosition++;
+      this._push(item);
+    }
+    // Close the iterator if we are at the end of the source
+    if (history.endsAt(this._readPosition))
+      this.close();
+  }
+  done();
+};
+
+/* End the iterator and cleans up. */
+ClonedIteratorPrototype._end = function () {
+  // Unregister from a possible history reader
+  var history = this._source && this._source._destination;
+  if (history) history.unregister(this);
+
+  // Don't call TransformIterator#_end,
+  // as it would make the source inaccessible for other clones
+  BufferedIteratorPrototype._end.call(this);
+};
+
+/**
+  Creates a copy of the current iterator,
+  containing all items emitted from this point onward.
+
+  Further copies can be created; they will all start from this same point.
+  After this operation, only read the returned copies instead of the original iterator.
+
+  @function
+  @name AsyncIterator#clone
+  @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+**/
+AsyncIteratorPrototype.clone = function () {
+  return new ClonedIterator(this);
+};
+
+// Creates a copy of the current iterator
+ClonedIteratorPrototype.clone = function () {
+  // Instead of creating a clone of a clone, try to create a clone from its source
+  return this._source ? this._source.clone() : new ClonedIterator(this);
+};
+
+
+
+
 // Determines whether the given object is a function
 function isFunction(object) { return typeof object === 'function'; }
 
@@ -1014,4 +1156,5 @@ module.exports = {
   BufferedIterator: BufferedIterator,
   TransformIterator: TransformIterator,
   SimpleTransformIterator: SimpleTransformIterator,
+  ClonedIterator: ClonedIterator,
 };
