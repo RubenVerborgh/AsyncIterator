@@ -378,6 +378,88 @@ describe('ClonedIterator', function () {
       describeClones(clones, afterReadingSecond);
     });
   });
+
+  describe('Cloning an iterator that errors', function () {
+    var iterator, clones;
+    before(function () {
+      iterator = new AsyncIterator();
+      clones = [iterator.clone(), iterator.clone()];
+      clones[2] = clones[1].clone();
+      clones[3] = clones[2].clone();
+      clones.forEach(function (clone) {
+        clone.errorHandler = sinon.stub();
+        clone.on('error', clone.errorHandler);
+      });
+    });
+
+    describe('before an error occurs', function () {
+      it('non of the clones should have emitted any error', function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.should.not.have.been.called;
+        });
+      });
+    });
+
+    describe('after a first error occurs', function () {
+      var error1;
+      before(function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.reset();
+        });
+        iterator.emit('error', error1 = new Error('error1'));
+      });
+
+      it('all clones should re-emit the error', function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.should.have.been.calledOnce;
+          clone.errorHandler.should.have.been.calledWith(error1);
+        });
+      });
+    });
+
+    describe('after a second error occurs', function () {
+      var error2;
+      before(function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.reset();
+        });
+        iterator.emit('error', error2 = new Error('error2'));
+      });
+
+      it('all clones should re-emit the error', function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.should.have.been.calledOnce;
+          clone.errorHandler.should.have.been.calledWith(error2);
+        });
+      });
+    });
+
+    describe('after the iterator has ended and errors again', function () {
+      before(function (done) {
+        clones.forEach(function (clone) {
+          clone.errorHandler.reset();
+        });
+        iterator.close();
+        iterator.on('end', function () {
+          function noop() {}
+          iterator.on('error', noop); // avoid triggering the default error handler
+          iterator.emit('error', new Error('error3'));
+          iterator.removeListener('error', noop);
+          done();
+        });
+      });
+
+      it('no clone should re-emit the error', function () {
+        clones.forEach(function (clone) {
+          clone.errorHandler.should.not.have.been.called;
+        });
+      });
+
+      it('should not leave any error handlers attached', function () {
+        iterator.listenerCount('error').should.equal(0);
+      });
+    });
+  });
 });
 
 // Returns a wrapper function that remembers its return value for subsequent calls

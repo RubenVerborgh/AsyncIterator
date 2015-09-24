@@ -545,4 +545,67 @@ describe('TransformIterator', function () {
       });
     });
   });
+
+  describe('A TransformIterator with a source that errors', function () {
+    var iterator, source, errorHandler;
+    before(function () {
+      source = new AsyncIterator();
+      iterator = new TransformIterator(source);
+      iterator.on('error', errorHandler = sinon.stub());
+    });
+
+    describe('before an error occurs', function () {
+      it('should not have emitted any error', function () {
+        errorHandler.should.not.have.been.called;
+      });
+    });
+
+    describe('after a first error occurs', function () {
+      var error1;
+      before(function () {
+        errorHandler.reset();
+        source.emit('error', error1 = new Error('error1'));
+      });
+
+      it('should re-emit the error', function () {
+        errorHandler.should.have.been.calledOnce;
+        errorHandler.should.have.been.calledWith(error1);
+      });
+    });
+
+    describe('after a second error occurs', function () {
+      var error2;
+      before(function () {
+        errorHandler.reset();
+        source.emit('error', error2 = new Error('error2'));
+      });
+
+      it('should re-emit the error', function () {
+        errorHandler.should.have.been.calledOnce;
+        errorHandler.should.have.been.calledWith(error2);
+      });
+    });
+
+    describe('after the source has ended and errors again', function () {
+      before(function (done) {
+        errorHandler.reset();
+        source.close();
+        iterator.on('end', function () {
+          function noop() {}
+          source.on('error', noop); // avoid triggering the default error handler
+          source.emit('error', new Error('error3'));
+          source.removeListener('error', noop);
+          done();
+        });
+      });
+
+      it('should not re-emit the error', function () {
+        errorHandler.should.not.have.been.called;
+      });
+
+      it('should not leave any error handlers attached', function () {
+        source.listenerCount('error').should.equal(0);
+      });
+    });
+  });
 });

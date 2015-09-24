@@ -727,7 +727,8 @@ Object.defineProperty(TransformIteratorPrototype, 'source', {
       this.close();
     // Otherwise, react to source events
     else {
-      source.once('end', destinationClose);
+      source.once('end',    destinationClose);
+      source.on('error',    destinationEmitError);
       source.on('readable', destinationFillBuffer);
     }
   },
@@ -735,6 +736,7 @@ Object.defineProperty(TransformIteratorPrototype, 'source', {
   enumerable: true,
 });
 function getSource() { return this._source; }
+function destinationEmitError(error) { this._destination.emit('error', error); }
 function destinationClose() { this._destination.close(); }
 function destinationFillBuffer() { this._destination._fillBuffer(); }
 
@@ -787,6 +789,7 @@ TransformIteratorPrototype._transform = function (item, done) {
 TransformIteratorPrototype._end = function () {
   var source = this._source;
   if (source) {
+    source.removeListener('error',    destinationEmitError);
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
   }
@@ -1091,20 +1094,28 @@ function HistoryReader(source) {
   if (!source.ended) {
     clones = [];
     // When the source becomes readable, make all clones readable
-    source.on('readable', makeClonesReadable);
-    function makeClonesReadable() {
+    source.on('readable', clonesMakeReadable);
+    function clonesMakeReadable() {
       for (var i = 0; i < clones.length; i++)
         clones[i].readable = true;
     }
     // When the source ends, close all clones that are fully read
-    source.once('end', function () {
+    source.once('end', clonesEnd);
+    function clonesEnd() {
       for (var i = 0; i < clones.length; i++) {
         if (clones[i]._readPosition === history.length)
           clones[i].close();
       }
       clones = null;
-      source.removeListener('readable', makeClonesReadable);
-    });
+      source.removeListener('error', clonesEmitError);
+      source.removeListener('readable', clonesMakeReadable);
+    }
+    // When the source errors, re-emit the error
+    source.on('error', clonesEmitError);
+    function clonesEmitError(error) {
+      for (var i = 0; i < clones.length; i++)
+        clones[i].emit('error', error);
+    }
   }
 }
 
