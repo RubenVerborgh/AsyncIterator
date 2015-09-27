@@ -379,6 +379,161 @@ describe('ClonedIterator', function () {
     });
   });
 
+  describe('Cloning an iterator with properties', function () {
+    var iterator, clone;
+    before(function () {
+      iterator = new AsyncIterator();
+      iterator.setProperty('foo', 'FOO');
+      iterator.setProperty('bar', 'BAR');
+      clone = iterator.clone();
+    });
+
+    describe('before a property is set on the clone', function () {
+      var callback;
+      before(function () {
+        callback = sinon.stub();
+        clone.getProperty('foo', callback);
+      });
+
+      it('should return the property from the original without callback', function () {
+        expect(clone.getProperty('foo')).to.equal('FOO');
+      });
+
+      it('should return the property from the original with callback', function () {
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWith('FOO');
+      });
+    });
+
+    describe('after a property is changed on the original', function () {
+      var callback;
+      before(function () {
+        iterator.setProperty('foo', 'FOO2');
+        callback = sinon.stub();
+        clone.getProperty('foo', callback);
+      });
+
+      it('should return the property from the original without callback', function () {
+        expect(clone.getProperty('foo')).to.equal('FOO2');
+      });
+
+      it('should return the property from the original with callback', function () {
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWith('FOO2');
+      });
+    });
+
+    describe('after a property is set on the clone', function () {
+      var callback;
+      before(function () {
+        clone.setProperty('bar', 'NEWBAR');
+        callback = sinon.stub();
+        clone.getProperty('bar', callback);
+      });
+
+      it('should not have changed the original', function () {
+        expect(iterator.getProperty('bar')).to.equal('BAR');
+      });
+
+      it('should return the new property without callback', function () {
+        expect(clone.getProperty('bar')).to.equal('NEWBAR');
+      });
+
+      it('should return the new property with callback', function () {
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWith('NEWBAR');
+      });
+    });
+
+    describe('a property callback for a property first set on the clone', function () {
+      var callback;
+      before(function () {
+        callback = sinon.stub();
+        clone.getProperty('cloneFirst', callback);
+      });
+
+      describe('before the property is set', function () {
+        it('should not call the callback', function () {
+          callback.should.not.have.been.called;
+        });
+      });
+
+      describe('after the property is set on the clone', function () {
+        before(function () {
+          clone.setProperty('cloneFirst', 'CLONE');
+          callback.should.not.have.been.called;
+        });
+
+        it('should call the callback with the value', function () {
+          callback.should.have.been.calledOnce;
+          callback.should.have.been.calledWith('CLONE');
+        });
+
+        it("should return the clone's property value", function () {
+          expect(clone.getProperty('cloneFirst')).to.equal('CLONE');
+        });
+      });
+
+      describe('after the property is set on the original', function () {
+        before(function () {
+          iterator.setProperty('cloneFirst', 'ORIGINAL');
+        });
+
+        it('should not call the callback anymore', function () {
+          callback.should.have.been.calledOnce;
+        });
+
+        it("should return the clone's property value", function () {
+          expect(clone.getProperty('cloneFirst')).to.equal('CLONE');
+        });
+      });
+    });
+
+    describe('a property callback for a property first set on the original', function () {
+      var callback;
+      before(function () {
+        callback = sinon.stub();
+        clone.getProperty('originalFirst', callback);
+      });
+
+      describe('before the property is set', function () {
+        it('should not call the callback', function () {
+          callback.should.not.have.been.called;
+        });
+      });
+
+      describe('after the property is set on the original', function () {
+        before(function () {
+          iterator.setProperty('originalFirst', 'ORIGINAL');
+          callback.should.not.have.been.called;
+        });
+
+        it('should call the callback with the value', function () {
+          callback.should.have.been.calledOnce;
+          callback.should.have.been.calledWith('ORIGINAL');
+        });
+
+        it('should return the original property value', function () {
+          expect(clone.getProperty('originalFirst')).to.equal('ORIGINAL');
+        });
+      });
+
+      describe('after the property is set on the clone', function () {
+        before(function () {
+          iterator.setProperty('originalFirst', 'CLONE');
+        });
+
+        it('should not call the callback anymore', function () {
+          callback.should.have.been.calledOnce;
+        });
+
+        it("should return the clone's property value", function () {
+          expect(clone.getProperty('originalFirst')).to.equal('CLONE');
+        });
+      });
+    });
+  });
+
   describe('Cloning an iterator that errors', function () {
     var iterator, clones;
     before(function () {

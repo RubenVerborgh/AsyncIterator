@@ -1142,6 +1142,26 @@ Object.defineProperty(ClonedIteratorPrototype, 'source', {
   enumerable: true,
 });
 
+// Retrieves the property with the given name from the clone or its source.
+ClonedIteratorPrototype.getProperty = function (propertyName, callback) {
+  var properties = this._properties, source = this._source,
+      hasProperty = properties && (propertyName in properties);
+  // If no callback was passed, return the property value
+  if (!callback)
+    return hasProperty ? properties[propertyName] : source.getProperty(propertyName);
+  // Try to look up the property in this clone
+  AsyncIteratorPrototype.getProperty.call(this, propertyName, callback);
+  // If the property is not set on this clone, it might become set on the source first
+  if (!hasProperty) {
+    var clone = this;
+    source.getProperty(propertyName, function (value) {
+      // Only send the source's property if it was not set on the clone in the meantime
+      if (!clone._properties || !(propertyName in clone._properties))
+        callback(value);
+    });
+  }
+};
+
 // Stores the history of a source, so it can be cloned
 function HistoryReader(source) {
   var history = [], clones;
