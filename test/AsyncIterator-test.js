@@ -353,6 +353,232 @@ describe('AsyncIterator', function () {
     });
   });
 
+  describe('An AsyncIterator with properties', function () {
+    var iterator;
+    before(function () {
+      iterator = new AsyncIterator();
+    });
+
+    describe('when getProperties is called', function () {
+      describe('before any property is set', function () {
+        it('should return an empty object', function () {
+          expect(iterator.getProperties()).to.deep.equal({});
+        });
+      });
+
+      describe('when the return value is modified', function () {
+        before(function () {
+          var properties = iterator.getProperties();
+          properties.a = 'A';
+          properties.b = 'B';
+        });
+
+        it('should still return an empty object', function () {
+          expect(iterator.getProperties()).to.deep.equal({});
+        });
+      });
+
+      describe('after a property is set', function () {
+        before(function () {
+          iterator.setProperty('test', 'xyz');
+        });
+        it('should return an object with the properties', function () {
+          expect(iterator.getProperties()).to.deep.equal({
+            test: 'xyz',
+          });
+        });
+      });
+
+      describe('after the property is changed', function () {
+        before(function () {
+          iterator.setProperty('test', 'abc');
+        });
+
+        it('should return an object with the new properties', function () {
+          expect(iterator.getProperties()).to.deep.equal({
+            test: 'abc',
+          });
+        });
+      });
+    });
+
+    describe('when getProperty is called without callback', function () {
+      describe('before the property is set', function () {
+        it('should return undefined', function () {
+          expect(iterator.getProperty('foo')).to.be.undefined;
+        });
+      });
+
+      describe('after the property is set', function () {
+        before(function () {
+          iterator.setProperty('foo', 'FOO');
+        });
+
+        it('should return value of the property', function () {
+          expect(iterator.getProperty('foo')).to.equal('FOO');
+        });
+      });
+
+      describe('after the property is changed', function () {
+        before(function () {
+          iterator.setProperty('foo', 'FOOFOO');
+        });
+
+        it('should return new value of the property', function () {
+          expect(iterator.getProperty('foo')).to.equal('FOOFOO');
+        });
+      });
+    });
+
+    describe('when getProperty is called with a callback', function () {
+      var result, callback;
+      before(function () {
+        callback = sinon.stub();
+        result = iterator.getProperty('bar', callback);
+      });
+
+      describe('before the property is set', function () {
+        it('should return undefined', function () {
+          expect(result).to.be.undefined;
+        });
+
+        it('should not call the callback', function () {
+          callback.should.not.have.been.called;
+        });
+      });
+
+      describe('after the property is set', function () {
+        before(function () {
+          iterator.setProperty('bar', 'BAR');
+          callback.should.not.have.been.called;
+        });
+
+        it('should call the callback with the value', function () {
+          callback.should.have.been.calledOnce;
+          callback.should.have.been.calledWith('BAR');
+        });
+
+        describe('if a new callback is attached', function () {
+          var callback;
+          before(function () {
+            callback = sinon.stub();
+            result = iterator.getProperty('bar', callback);
+            callback.should.not.have.been.called;
+          });
+
+          it('should call the callback with the value', function () {
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWith('BAR');
+          });
+        });
+      });
+
+      describe('after the property is changed', function () {
+        before(function () {
+          iterator.setProperty('bar', 'BARBAR');
+        });
+
+        it('should not call the callback anymore', function () {
+          callback.should.have.been.calledOnce;
+        });
+
+        describe('if a new callback is attached', function () {
+          var callback;
+          before(function () {
+            callback = sinon.stub();
+            result = iterator.getProperty('bar', callback);
+            callback.should.not.have.been.called;
+          });
+
+          it('should call the callback with the value', function () {
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWith('BARBAR');
+          });
+        });
+      });
+    });
+
+    describe('when getProperty is called multiple times with a callback', function () {
+      var result, callbacks = [];
+      before(function () {
+        for (var i = 0; i < 5; i++) {
+          callbacks[i] = sinon.stub();
+          result = iterator.getProperty('bax', callbacks[i]);
+        }
+      });
+
+      describe('before the property is set', function () {
+        it('should return undefined', function () {
+          expect(result).to.be.undefined;
+        });
+
+        it('should not call any callback', function () {
+          for (var i = 0; i < callbacks.length; i++)
+            callbacks[i].should.not.have.been.called;
+        });
+      });
+
+      describe('after the property is set', function () {
+        before(function () {
+          iterator.setProperty('bax', 'BAX');
+          for (var i = 0; i < callbacks.length; i++)
+            callbacks[i].should.not.have.been.called;
+        });
+
+        it('should call the callbacks with the value', function () {
+          for (var i = 0; i < callbacks.length; i++) {
+            callbacks[i].should.have.been.calledOnce;
+            callbacks[i].should.have.been.calledWith('BAX');
+          }
+        });
+
+        it('should call the callbacks in order', function () {
+          for (var i = 1; i < callbacks.length; i++)
+            callbacks[i].should.have.been.calledAfter(callbacks[i - 1]);
+        });
+
+        describe('if a new callback is attached', function () {
+          var callback;
+          before(function () {
+            callback = sinon.stub();
+            result = iterator.getProperty('bax', callback);
+            callback.should.not.have.been.called;
+          });
+
+          it('should call the callback with the value', function () {
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWith('BAX');
+          });
+        });
+      });
+
+      describe('after the property is changed', function () {
+        before(function () {
+          iterator.setProperty('bax', 'BAXBAX');
+        });
+
+        it('should not call any callback anymore', function () {
+          for (var i = 0; i < callbacks.length; i++)
+            callbacks[i].should.have.been.calledOnce;
+        });
+
+        describe('if a new callback is attached', function () {
+          var callback;
+          before(function () {
+            callback = sinon.stub();
+            result = iterator.getProperty('bax', callback);
+            callback.should.not.have.been.called;
+          });
+
+          it('should call the callback with the value', function () {
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWith('BAXBAX');
+          });
+        });
+      });
+    });
+  });
+
   describe('The AsyncIterator#each function', function () {
     it('should be a function', function () {
       expect(AsyncIterator.prototype.each).to.be.a('function');

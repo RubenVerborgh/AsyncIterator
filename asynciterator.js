@@ -311,6 +311,83 @@ function emitData() {
 // Calls the given function with the specified argument as `this` value
 function call(func, self) { func.call(self); }
 
+/**
+  Retrieves the property with the given name from the iterator.
+
+  If no callback is passed, it returns the value of the property
+  or `undefined` if the property is not set.
+
+  If a callback is passed, it returns `undefined`
+  and calls the callback with the property the moment it is set.
+
+  @function
+  @name AsyncIterator#getProperty
+  @param {string} propertyName The name of the property to retrieve
+  @param {Function} [callback] A one-argument callback to receive the property value
+  @returns {object?} The value of the property (if set and no callback is given)
+**/
+AsyncIteratorPrototype.getProperty = function (propertyName, callback) {
+  var properties = this._properties, propertyCallbacks;
+  // If no callback was passed, return the property value
+  if (!callback)
+    return properties && properties[propertyName];
+  // If the value has been set, send it through the callback
+  if (properties && (propertyName in properties))
+    setImmediate(callback, properties[propertyName]);
+  // If the value was not set, store the callback for when the value will be set
+  else {
+    if (!(propertyCallbacks = this._propertyCallbacks))
+      this._propertyCallbacks = propertyCallbacks = Object.create(null);
+    if (propertyName in propertyCallbacks)
+      propertyCallbacks[propertyName].push(callback);
+    else
+      propertyCallbacks[propertyName] = [callback];
+  }
+};
+
+/**
+  Sets the property with the given name to the value.
+
+  @function
+  @name AsyncIterator#setProperty
+  @param {string} propertyName The name of the property to set
+  @param {object?} value The new value of the property
+**/
+AsyncIteratorPrototype.setProperty = function (propertyName, value) {
+  var properties = this._properties || (this._properties = Object.create(null));
+  properties[propertyName] = value;
+  // Execute getter callbacks that were waiting for this property to be set
+  var propertyCallbacks = this._propertyCallbacks, callbacks;
+  if (callbacks = propertyCallbacks && propertyCallbacks[propertyName]) {
+    delete propertyCallbacks[propertyName];
+    if (callbacks.length === 1)
+      setImmediate(callbacks[0], value);
+    else {
+      setImmediate(function () {
+        for (var i = 0; i < callbacks.length; i++)
+          callbacks[i](value);
+      });
+    }
+    // Remove _propertyCallbacks if no pending callbacks are left
+    for (propertyName in propertyCallbacks) return;
+    delete this._propertyCallbacks;
+  }
+};
+
+/**
+  Retrieves all properties of the iterator.
+
+  @function
+  @name AsyncIterator#getProperties
+  @returns {object} An object with property names as keys.
+**/
+AsyncIteratorPrototype.getProperties = function () {
+  var properties = this._properties, copy = {};
+  for (var name in properties)
+    copy[name] = properties[name];
+  return copy;
+};
+
 
 
 /**
