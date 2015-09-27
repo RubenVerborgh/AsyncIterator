@@ -271,17 +271,16 @@ Object.defineProperty(AsyncIteratorPrototype, 'ended', {
 });
 
 /**
-  Emitted when a new item is available on the iterator.
+  The iterator emits a `data` event with a new item as soon as it becomes available.
 
-  As soon as one or more listeners are attached to the `data` event,
+  When one or more listeners are attached to the `data` event,
   the iterator switches to _flow mode_,
   generating and emitting new items as fast as possible.
   This drains the source and might create backpressure on the consumers,
   so only subscribe to this event if this behavior is intended.
   In flow mode, don't use the {@link AsyncIterator#read} method.
 
-  To switch back to _on-demand mode_,
-  remove all listeners from the `data` event.
+  To switch back to _on-demand mode_, remove all listeners from the `data` event.
   You can then obtain items through {@link AsyncIterator#read} again.
 
   @event AsyncIterator.data
