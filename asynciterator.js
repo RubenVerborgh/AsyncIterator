@@ -1137,6 +1137,14 @@ Object.defineProperty(ClonedIteratorPrototype, 'source', {
       if (history.readAt(0) !== undefined)
         this.readable = true;
     }
+
+    // Hook pending property callbacks to the source
+    var propertyCallbacks = this._propertyCallbacks;
+    for (var propertyName in propertyCallbacks) {
+      var callbacks = propertyCallbacks[propertyName];
+      for (var i = 0; i < callbacks.length; i++)
+        getSourceProperty(this, source, propertyName, callbacks[i]);
+    }
   },
   get: getSource,
   enumerable: true,
@@ -1148,18 +1156,28 @@ ClonedIteratorPrototype.getProperty = function (propertyName, callback) {
       hasProperty = properties && (propertyName in properties);
   // If no callback was passed, return the property value
   if (!callback)
-    return hasProperty ? properties[propertyName] : source.getProperty(propertyName);
+    return hasProperty ? properties[propertyName] : source && source.getProperty(propertyName);
   // Try to look up the property in this clone
   AsyncIteratorPrototype.getProperty.call(this, propertyName, callback);
   // If the property is not set on this clone, it might become set on the source first
-  if (!hasProperty) {
-    var clone = this;
-    source.getProperty(propertyName, function (value) {
-      // Only send the source's property if it was not set on the clone in the meantime
-      if (!clone._properties || !(propertyName in clone._properties))
-        callback(value);
-    });
-  }
+  if (source && !hasProperty)
+    getSourceProperty(this, source, propertyName, callback);
+};
+// Retrieves the property with the given name from the source
+function getSourceProperty(clone, source, propertyName, callback) {
+  source.getProperty(propertyName, function (value) {
+    // Only send the source's property if it was not set on the clone in the meantime
+    if (!clone._properties || !(propertyName in clone._properties))
+      callback(value);
+  });
+}
+
+// Retrieves all properties of the iterator and its source.
+ClonedIteratorPrototype.getProperties = function () {
+  var base = this._source ? this._source.getProperties() : {}, properties = this._properties;
+  for (var name in properties)
+    base[name] = properties[name];
+  return base;
 };
 
 // Stores the history of a source, so it can be cloned
@@ -1183,7 +1201,9 @@ function HistoryReader(source) {
 
   // Unregisters a clone for history updates
   this.unregister = function (clone) {
-    clones = clones && clones.filter(function (c) { return c !== clone; });
+    var cloneIndex;
+    if (clones && (cloneIndex = clones.indexOf(clone)) >= 0)
+      clones.splice(cloneIndex, 1);
   };
 
   // Listen to source events to trigger events in subscribed clones

@@ -60,6 +60,78 @@ describe('ClonedIterator', function () {
     });
   });
 
+  describe('A ClonedIterator without source', function () {
+    var clone;
+    before(function () {
+      clone = new ClonedIterator();
+      captureEvents(clone, 'readable', 'end');
+    });
+
+    describe('before closing', function () {
+      it('should have undefined as `source` property', function () {
+        expect(clone.source).to.be.undefined;
+      });
+
+      it('should not have emitted the `readable` event', function () {
+        clone._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        clone._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        clone.ended.should.be.false;
+      });
+
+      it('should not be readable', function () {
+        clone.readable.should.be.false;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(clone.read()).to.be.undefined;
+      });
+
+      it('should return an empty property set', function () {
+        clone.getProperties().should.deep.equal({});
+      });
+    });
+
+    describe('after closing', function () {
+      before(function () {
+        clone.close();
+      });
+
+      it('should have undefined as `source` property', function () {
+        expect(clone.source).to.be.undefined;
+      });
+
+      it('should not have emitted the `readable` event', function () {
+        clone._eventCounts.readable.should.equal(0);
+      });
+
+      it('should have emitted the `end` event', function () {
+        clone._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        clone.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        clone.readable.should.be.false;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(clone.read()).to.be.undefined;
+      });
+
+      it('should return an empty property set', function () {
+        clone.getProperties().should.deep.equal({});
+      });
+    });
+  });
+
   describe('Cloning an iterator that already has a destination', function () {
     it('should throw an exception', function () {
       var source = new AsyncIterator(), destination = new TransformIterator(source);
@@ -337,7 +409,8 @@ describe('ClonedIterator', function () {
         before(function () { item = getClone().read(); });
 
         it('should have read the item', function () {
-          expect(item).to.equal('b');
+          if (!getClone().closedBeforeReadingElement2)
+            expect(item).to.equal('b');
         });
 
         it('should not have emitted the `readable` event anymore', function () {
@@ -377,6 +450,19 @@ describe('ClonedIterator', function () {
       describeClones(clones, afterReadingFirst);
       describeClones(clones, afterReadingSecond);
     });
+
+    describe('reading when one clone is closed', function () {
+      var clones = createClones(createIterator);
+      describeClones(clones, beforeReading);
+      describeClones(clones, afterReadingFirst);
+      describe('after clone 2 is closed', function () {
+        before(function () {
+          clones['clone 2']().close();
+          clones['clone 2']().closedBeforeReadingElement2 = true;
+        });
+        describeClones(clones, afterReadingSecond);
+      });
+    });
   });
 
   describe('Cloning an iterator with properties', function () {
@@ -395,6 +481,10 @@ describe('ClonedIterator', function () {
         clone.getProperty('foo', callback);
       });
 
+      it('should return all properties from the original', function () {
+        clone.getProperties().should.deep.equal({ foo: 'FOO', bar: 'BAR' });
+      });
+
       it('should return the property from the original without callback', function () {
         expect(clone.getProperty('foo')).to.equal('FOO');
       });
@@ -411,6 +501,10 @@ describe('ClonedIterator', function () {
         iterator.setProperty('foo', 'FOO2');
         callback = sinon.stub();
         clone.getProperty('foo', callback);
+      });
+
+      it('should return all properties from the original', function () {
+        clone.getProperties().should.deep.equal({ foo: 'FOO2', bar: 'BAR' });
       });
 
       it('should return the property from the original without callback', function () {
@@ -433,6 +527,10 @@ describe('ClonedIterator', function () {
 
       it('should not have changed the original', function () {
         expect(iterator.getProperty('bar')).to.equal('BAR');
+      });
+
+      it('should return all properties', function () {
+        clone.getProperties().should.deep.equal({ foo: 'FOO2', bar: 'NEWBAR' });
       });
 
       it('should return the new property without callback', function () {
@@ -535,65 +633,54 @@ describe('ClonedIterator', function () {
   });
 
   describe('Cloning an iterator that errors', function () {
-    var iterator, clones;
+    var clones = createClones(function () { return new AsyncIterator(); }), iterator;
     before(function () {
-      iterator = new AsyncIterator();
-      clones = [iterator.clone(), iterator.clone()];
-      clones[2] = clones[1].clone();
-      clones[3] = clones[2].clone();
-      clones.forEach(function (clone) {
-        clone.errorHandler = sinon.stub();
-        clone.on('error', clone.errorHandler);
-      });
+      iterator = clones.iterator();
     });
 
     describe('before an error occurs', function () {
-      it('non of the clones should have emitted any error', function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.should.not.have.been.called;
+      describeClones(clones, function (getClone) {
+        before(function () {
+          getClone().errorHandler = sinon.stub();
+          getClone().on('error', getClone().errorHandler);
+        });
+
+        it('should not have emitted an error', function () {
+          getClone().errorHandler.should.not.have.been.called;
         });
       });
     });
 
     describe('after a first error occurs', function () {
-      var error1;
+      var error;
       before(function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.reset();
-        });
-        iterator.emit('error', error1 = new Error('error1'));
+        iterator.emit('error', error = new Error('error1'));
       });
 
-      it('all clones should re-emit the error', function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.should.have.been.calledOnce;
-          clone.errorHandler.should.have.been.calledWith(error1);
+      describeClones(clones, function (getClone) {
+        it('should re-emit the error', function () {
+          getClone().errorHandler.should.have.been.calledOnce;
+          getClone().errorHandler.should.have.been.calledWith(error);
         });
       });
     });
 
     describe('after a second error occurs', function () {
-      var error2;
+      var error;
       before(function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.reset();
-        });
-        iterator.emit('error', error2 = new Error('error2'));
+        iterator.emit('error', error = new Error('error2'));
       });
 
-      it('all clones should re-emit the error', function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.should.have.been.calledOnce;
-          clone.errorHandler.should.have.been.calledWith(error2);
+      describeClones(clones, function (getClone) {
+        it('should re-emit the error', function () {
+          getClone().errorHandler.should.have.been.calledTwice;
+          getClone().errorHandler.should.have.been.calledWith(error);
         });
       });
     });
 
     describe('after the iterator has ended and errors again', function () {
       before(function (done) {
-        clones.forEach(function (clone) {
-          clone.errorHandler.reset();
-        });
         iterator.close();
         iterator.on('end', function () {
           function noop() {}
@@ -604,14 +691,121 @@ describe('ClonedIterator', function () {
         });
       });
 
-      it('no clone should re-emit the error', function () {
-        clones.forEach(function (clone) {
-          clone.errorHandler.should.not.have.been.called;
+      it('should not leave any error handlers attached', function () {
+        iterator.listenerCount('error').should.equal(0);
+      });
+
+      describeClones(clones, function (getClone) {
+        it('should not re-emit the error', function () {
+          getClone().errorHandler.should.have.been.calledTwice;
+        });
+      });
+    });
+  });
+
+  describe('Cloning an iterator without source', function () {
+    var clones = createClones(function () {}), iterator;
+
+    describe('before a source is set', function () {
+      describeClones(clones, function (getClone) {
+        before(function () {
+          getClone().getProperty('a', getClone().callbackA = sinon.stub());
+          getClone().getProperty('b', getClone().callbackB = sinon.stub());
+          getClone().getProperty('c', getClone().callbackC = sinon.stub());
+        });
+
+        it('should not have emitted the `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(0);
+        });
+
+        it('should not have emitted the `end` event', function () {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('should not have ended', function () {
+          getClone().ended.should.be.false;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
+        });
+
+        it('should return undefined on read', function () {
+          expect(getClone().read()).to.be.undefined;
+        });
+
+        it('should not have called a property callback for a non-set property', function () {
+          getClone().callbackA.should.not.have.been.called;
+          getClone().callbackB.should.not.have.been.called;
+          getClone().callbackC.should.not.have.been.called;
+        });
+      });
+    });
+
+    describe('after a source is set', function () {
+      before(function () {
+        iterator = new AsyncIterator();
+        iterator.setProperty('a', 'A');
+        iterator.setProperty('b', 'B');
+
+        clones['clone 1']().source = iterator;
+        clones['clone 2']().source = iterator;
+
+        clones['clone 1']().setProperty('a', 'AAA');
+        clones['clone 2']().setProperty('a', 'AAA');
+
+        forEachClone(clones, function (getClone) {
+          getClone().callbackA.should.not.have.been.called;
+          getClone().callbackB.should.not.have.been.called;
         });
       });
 
-      it('should not leave any error handlers attached', function () {
-        iterator.listenerCount('error').should.equal(0);
+      describeClones(clones, function (getClone) {
+        it('should not have emitted the `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(0);
+        });
+
+        it('should not have emitted the `end` event', function () {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('should not have ended', function () {
+          getClone().ended.should.be.false;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
+        });
+
+        it('should return undefined on read', function () {
+          expect(getClone().read()).to.be.undefined;
+        });
+
+        it('should have called a property callback for a property in the source', function () {
+          getClone().callbackA.should.have.been.calledOnce;
+          getClone().callbackA.should.have.been.calledWith('AAA');
+        });
+
+        it('should have called a property callback for a property in the clone', function () {
+          getClone().callbackB.should.have.been.calledOnce;
+          getClone().callbackB.should.have.been.calledWith('B');
+        });
+      });
+    });
+
+    describe('after a property is set on the source', function () {
+      before(function () {
+        iterator.setProperty('c', 'C');
+        forEachClone(clones, function (getClone) {
+          getClone().callbackC.should.not.have.been.called;
+        });
+      });
+
+      describeClones(clones, function (getClone) {
+        it('should have called the property callback for that property', function () {
+          getClone().callbackC.should.have.been.calledOnce;
+          getClone().callbackC.should.have.been.calledWith('C');
+        });
       });
     });
   });
@@ -625,7 +819,7 @@ function memoize(func, arg) {
 
 // Creates a single clone
 function createClone(getSource) {
-  var clone = getSource().clone();
+  var clone = getSource() ? getSource().clone() : new ClonedIterator();
   captureEvents(clone, 'readable', 'end');
   return clone;
 }
@@ -642,15 +836,19 @@ function createClones(createIterator) {
 
 // Returns a `describe` environment for each of the clones
 function describeClones(clones, describeClone) {
+  forEachClone(clones, function (getClone, id, index) {
+    describe(id, function () {
+     // Pre-load the clone so events can fire
+      before(function () { getClone(); });
+      describeClone(getClone, clones.iterator, index);
+    });
+  });
+}
+
+function forEachClone(clones, f) {
   Object.keys(clones).forEach(function (id, index) {
     // The item at index 0 is the iterator creation function
-    if (index > 0) {
-      var getClone = clones[id];
-      describe(id, function () {
-       // Pre-load the clone so events can fire
-        before(function () { getClone(); });
-        describeClone(getClone, clones.iterator, index - 1);
-      });
-    }
+    if (index > 0)
+      f(clones[id], id, index - 1);
   });
 }

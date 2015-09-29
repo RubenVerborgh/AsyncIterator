@@ -665,4 +665,64 @@ describe('AsyncIterator', function () {
       });
     });
   });
+
+  describe('The AsyncIterator#_addSingleListener function', function () {
+    var iterator, listenerA, listenerB, listenerC;
+    before(function () {
+      iterator = new AsyncIterator();
+      listenerA = sinon.stub();
+      listenerB = sinon.stub();
+      listenerC = sinon.stub();
+    });
+
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype._addSingleListener).to.be.a('function');
+    });
+
+    describe('when called for an event that has no listeners', function () {
+      before(function () {
+        iterator._addSingleListener('event1', listenerA);
+      });
+
+      it('should add the listener', function () {
+        iterator.listeners('event1').should.deep.equal([listenerA]);
+      });
+    });
+
+    describe('when called for an event that has the same listener', function () {
+      before(function () {
+        iterator.addListener('event3', listenerA);
+        iterator._addSingleListener('event3', listenerA);
+      });
+
+      it('should not add the listener', function () {
+        iterator.listeners('event3').should.deep.equal([listenerA]);
+      });
+    });
+
+    describe('when called for an event that has other listeners', function () {
+      before(function () {
+        iterator.addListener('event2', listenerA);
+        iterator.addListener('event2', listenerB);
+        iterator._addSingleListener('event2', listenerC);
+      });
+
+      it('should add the listener', function () {
+        iterator.listeners('event2').should.deep.equal([listenerA, listenerB, listenerC]);
+      });
+    });
+
+    describe('when called for an event that has the same and other listeners', function () {
+      before(function () {
+        iterator.addListener('event4', listenerA);
+        iterator.addListener('event4', listenerB);
+        iterator.addListener('event4', listenerC);
+        iterator._addSingleListener('event4', listenerB);
+      });
+
+      it('should not add the listener', function () {
+        iterator.listeners('event4').should.deep.equal([listenerA, listenerB, listenerC]);
+      });
+    });
+  });
 });

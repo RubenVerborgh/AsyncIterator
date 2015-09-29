@@ -111,35 +111,67 @@ describe('TransformIterator', function () {
     });
   });
 
-  describe('A TransformIterator without arguments', function () {
+  describe('A TransformIterator without source', function () {
     var iterator;
     before(function () {
       iterator = new TransformIterator();
       captureEvents(iterator, 'readable', 'end');
     });
 
-    it('should have undefined as `source` property', function () {
-      expect(iterator.source).to.be.undefined;
+    describe('before closing', function () {
+      it('should have undefined as `source` property', function () {
+        expect(iterator.source).to.be.undefined;
+      });
+
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
     });
 
-    it('should not have emitted the `readable` event', function () {
-      iterator._eventCounts.readable.should.equal(0);
-    });
+    describe('after closing', function () {
+      before(function () {
+        iterator.close();
+      });
 
-    it('should not have emitted the `end` event', function () {
-      iterator._eventCounts.end.should.equal(0);
-    });
+      it('should have undefined as `source` property', function () {
+        expect(iterator.source).to.be.undefined;
+      });
 
-    it('should not have ended', function () {
-      iterator.ended.should.be.false;
-    });
+      it('should not have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
 
-    it('should not be readable', function () {
-      iterator.readable.should.be.false;
-    });
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
 
-    it('should return undefined when `read` is called', function () {
-      expect(iterator.read()).to.be.undefined;
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return undefined when `read` is called', function () {
+        expect(iterator.read()).to.be.undefined;
+      });
     });
   });
 

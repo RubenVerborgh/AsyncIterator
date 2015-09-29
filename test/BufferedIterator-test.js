@@ -66,6 +66,29 @@ describe('BufferedIterator', function () {
     it('should return undefined when `read` is called', function () {
       expect(iterator.read()).to.be.undefined;
     });
+
+    describe('after `close` is called', function () {
+      before(function () {
+        iterator.close();
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should nhave ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should not allow pushing', function () {
+        (function () { iterator._push(1); })
+        .should.throw('Cannot push after the iterator was ended.');
+      });
+    });
   });
 
   describe('A BufferedIterator that closes itself synchronously on read', function () {
@@ -1203,6 +1226,64 @@ describe('BufferedIterator', function () {
       it('should return undefined when `read` is called', function () {
         expect(iterator.read()).to.be.undefined;
       });
+    });
+  });
+
+  describe('A BufferedIterator that pushes less than `bufferSize` items before _read', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      for (var i = 0; i < 3; i++)
+        iterator._push(i);
+      sinon.spy(iterator, '_read');
+    });
+
+    it('should call _read with the remaining number of elements', function () {
+      iterator._read.should.have.been.calledOnce;
+      iterator._read.should.have.been.calledWith(1);
+    });
+  });
+
+  describe('A BufferedIterator that pushes `bufferSize` items before _read', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      for (var i = 0; i < 4; i++)
+        iterator._push(i);
+      sinon.spy(iterator, '_read');
+    });
+
+    it('should not call _read', function () {
+      iterator._read.should.not.have.been.called;
+    });
+  });
+
+  describe('A BufferedIterator that starts reading before _read is called', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      // Forcibly change the status to 'reading',
+      // to test if the iterator deals with such an exceptional situation
+      iterator._changeState = function () { iterator._reading = true; };
+      sinon.spy(iterator, '_read');
+    });
+
+    it('should not call _read', function () {
+      iterator._read.should.not.have.been.called;
+    });
+  });
+
+  describe('A BufferedIterator that closes before _completeClose is called', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator.close();
+      iterator._changeState(AsyncIterator.CLOSED);
+      sinon.spy(iterator, '_flush');
+    });
+
+    it('should not call _flush', function () {
+      iterator._flush.should.not.have.been.called;
     });
   });
 
