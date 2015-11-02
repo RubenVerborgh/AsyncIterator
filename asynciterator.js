@@ -899,6 +899,7 @@ TransformIteratorPrototype._end = function () {
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
+  @param {Function} [options.map] A function to synchronously filter elements from the source
   @param {Function} [options.map] A function to synchronously transform elements from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
@@ -912,14 +913,16 @@ function SimpleTransformIterator(source, options) {
   // Set transformation steps from the options
   if (options = options || !isFunction(source && source.read) && source) {
     var limit = options.limit, offset = options.offset,
-        map = options.map, prepend = options.prepend, append = options.append;
+        filter = options.filter, map = options.map,
+        prepend = options.prepend, append = options.append;
     // Don't emit any items when bounds are unreachable
     if (offset === Infinity || limit === -Infinity)
       this._limit = 0;
     else {
-      if (isFinite(offset)) this._offset = Math.max(~~offset, 0);
-      if (isFinite(limit))  this._limit  = Math.max(~~limit,  0);
-      if (isFunction(map))  this._map    = map;
+      if (isFinite(offset))   this._offset = Math.max(~~offset, 0);
+      if (isFinite(limit))    this._limit  = Math.max(~~limit,  0);
+      if (isFunction(filter)) this._filter = filter;
+      if (isFunction(map))    this._map    = map;
     }
     if (prepend) this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
     if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
@@ -930,6 +933,7 @@ var SimpleTransformIteratorPrototype = TransformIterator.createPrototypeFor(Simp
 // Default settings
 SimpleTransformIteratorPrototype._offset = 0;
 SimpleTransformIteratorPrototype._limit = Infinity;
+SimpleTransformIteratorPrototype._filter = function ()  { return true; };
 SimpleTransformIteratorPrototype._map = function (item) { return item; };
 
 /* Tries to read and transform an item */
@@ -943,12 +947,15 @@ SimpleTransformIteratorPrototype._read = function (count, done) {
     else {
       // Try to read the next item
       while ((item = source.read()) !== undefined) {
-        // Verify we are past the offset
-        if (this._offset === 0) {
-          this._limit--;
-          return this._transform(item, done);
+        // Verify the item passes the filter
+        if (this._filter(item)) {
+          // Verify we are past the offset
+          if (this._offset === 0) {
+            this._limit--;
+            return this._transform(item, done);
+          }
+          this._offset--;
         }
-        this._offset--;
       }
     }
   }
@@ -1015,6 +1022,21 @@ AsyncIteratorPrototype.transform = function (options) {
 **/
 AsyncIteratorPrototype.map = function (mapper, self) {
   return this.transform({ map: self === undefined ? mapper : mapper.bind(self) });
+};
+
+/**
+  Return items from this iterator that match the filter.
+
+  After this operation, only read the returned iterator instead of the current one.
+
+  @function
+  @name AsyncIterator#filter
+  @param {Function} filter A filter function to call on this iterator's (remaining) items
+  @param {object?} self The `this` pointer for the filter function
+  @returns {AsyncIterator} A new iterator that filters items from this iterator
+**/
+AsyncIteratorPrototype.filter = function (filter, self) {
+  return this.transform({ filter: self === undefined ? filter : filter.bind(self) });
 };
 
 /**

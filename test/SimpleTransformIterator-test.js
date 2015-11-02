@@ -111,6 +111,35 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
+  describe('A SimpleTransformIterator with a filter function', function () {
+    var iterator, source, filter;
+    before(function () {
+      source = new ArrayIterator(['a', 'b', 'c']);
+      filter = sinon.spy(function (item) { return item !== 'b'; });
+      iterator = new SimpleTransformIterator(source, { filter: filter });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should execute the filter function on all items in order', function () {
+        items.should.deep.equal(['a', 'c']);
+      });
+
+      it('should have called the filter function once for each item', function () {
+        filter.should.have.been.calledThrice;
+      });
+
+      it('should have called the filter function with the iterator as `this`', function () {
+        filter.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+  });
+
   describe('A SimpleTransformIterator with a prepend array', function () {
     var iterator, source, prepend;
     before(function () {
@@ -726,17 +755,18 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
-  describe('A SimpleTransformIterator with map/prepend/append/offset/limit', function () {
-    var iterator, source, map, prepend, append;
+  describe('A SimpleTransformIterator with filter/map/prepend/append/offset/limit', function () {
+    var iterator, source, filter, map, prepend, append;
     before(function () {
       var i = 0;
-      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f', 'g']);
       sinon.spy(source, 'read');
+      filter = sinon.spy(function (item) { return item !== 'd'; });
       map = sinon.spy(function (item) { return item + (++i); });
       prepend = new ArrayIterator(['i', 'ii', 'iii']);
       append  = new ArrayIterator(['I', 'II', 'III']);
       iterator = new SimpleTransformIterator(source, {
-        map: map, prepend: prepend, append: append,
+        filter: filter, map: map, prepend: prepend, append: append,
         offset: 2, limit: 3,
       });
     });
@@ -749,15 +779,19 @@ describe('SimpleTransformIterator', function () {
       });
 
       it('should return the processed items', function () {
-        items.should.deep.equal(['i', 'ii', 'iii', 'c1', 'd2', 'e3', 'I', 'II', 'III']);
+        items.should.deep.equal(['i', 'ii', 'iii', 'c1', 'e2', 'f3', 'I', 'II', 'III']);
       });
 
-      it('should have called the map function once for each original item', function () {
+      it('should have called the filter function once for each needed item', function () {
+        filter.should.have.callCount(6);
+      });
+
+      it('should have called the map function once for each needed item', function () {
         map.should.have.been.calledThrice;
       });
 
-      it('should call `read` on the source 5 times', function () {
-        source.read.should.have.callCount(5);
+      it('should call `read` on the source 6 times', function () {
+        source.read.should.have.callCount(6);
       });
 
       it('should have called the map function with the iterator as `this`', function () {
@@ -835,6 +869,78 @@ describe('SimpleTransformIterator', function () {
 
         it('should call the map function with the passed argument as `this`', function () {
           map.alwaysCalledOn(self).should.be.true;
+        });
+      });
+    });
+  });
+
+  describe('The AsyncIterator#filter function', function () {
+    it('should be a function', function () {
+      expect(AsyncIterator.prototype.filter).to.be.a('function');
+    });
+
+    describe('when called on an iterator', function () {
+      var iterator, filter, result;
+      before(function () {
+        iterator = new ArrayIterator(['a', 'b', 'c']);
+        filter = sinon.spy(function (item) { return item !== 'b'; });
+        result = iterator.filter(filter);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should execute the filter function on all items in order', function () {
+          items.should.deep.equal(['a', 'c']);
+        });
+
+        it('should call the filter function once for each item', function () {
+          filter.should.have.been.calledThrice;
+        });
+
+        it('should call the filter function with the returned iterator as `this`', function () {
+          filter.alwaysCalledOn(result).should.be.true;
+        });
+      });
+    });
+
+    describe('when called on an iterator with a `this` argument', function () {
+      var iterator, filter, result, self = {};
+      before(function () {
+        iterator = new ArrayIterator(['a', 'b', 'c']);
+        filter = sinon.spy(function (item) { return item !== 'b'; });
+        result = iterator.filter(filter, self);
+      });
+
+      describe('the return value', function () {
+        var items = [];
+        before(function (done) {
+          result.on('data', function (item) { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a SimpleTransformIterator', function () {
+          result.should.be.an.instanceof(SimpleTransformIterator);
+        });
+
+        it('should execute the filter function on all items in order', function () {
+          items.should.deep.equal(['a', 'c']);
+        });
+
+        it('should call the filter function once for each item', function () {
+          filter.should.have.been.calledThrice;
+        });
+
+        it('should call the filter function with the passed argument as `this`', function () {
+          filter.alwaysCalledOn(self).should.be.true;
         });
       });
     });
