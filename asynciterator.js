@@ -803,9 +803,9 @@ Object.defineProperty(TransformIteratorPrototype, 'source', {
       this.close();
     // Otherwise, react to source events
     else {
-      source.once('end',    destinationClose);
-      source.on('error',    destinationEmitError);
+      source.once('end',    destinationCloseWhenDone);
       source.on('readable', destinationFillBuffer);
+      source.on('error',    destinationEmitError);
     }
   },
   get: getSource,
@@ -813,8 +813,8 @@ Object.defineProperty(TransformIteratorPrototype, 'source', {
 });
 function getSource() { return this._source; }
 function destinationEmitError(error) { this._destination.emit('error', error); }
-function destinationClose() { this._destination.close(); }
-function destinationFillBuffer() { this._destination._fillBuffer(); }
+function destinationCloseWhenDone()  { this._destination._closeWhenDone(); }
+function destinationFillBuffer()     { this._destination._fillBuffer(); }
 
 /**
   Validates whether the given iterator can be used as a source.
@@ -859,6 +859,17 @@ TransformIteratorPrototype._read = function (count, done) {
 **/
 TransformIteratorPrototype._transform = function (item, done) {
   this._push(item), done();
+};
+
+/**
+  Closes the iterator when pending items are transformed.
+
+  @protected
+  @function
+  @name TransformIterator#_closeWhenDone
+**/
+TransformIteratorPrototype._closeWhenDone = function () {
+  this.close();
 };
 
 /* Cleans up the source iterator and ends. */
@@ -1096,6 +1107,83 @@ AsyncIteratorPrototype.range = function (start, end) {
 
 
 /**
+  Creates a new `MultiTransformIterator`.
+
+  @constructor
+  @classdesc An iterator that generates items by transforming each item of a source
+             with a different iterator.
+  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {object} [options] Settings of the iterator
+  @extends TransformIterator
+**/
+function MultiTransformIterator(source, options) {
+  if (!(this instanceof MultiTransformIterator))
+    return new MultiTransformIterator(source, options);
+  TransformIterator.call(this, source, options);
+  this._transformers = [];
+}
+var MultiTransformIteratorPrototype = TransformIterator.createPrototypeFor(MultiTransformIterator);
+
+/* Tries to read and transform an item */
+MultiTransformIteratorPrototype._read = function (count, done) {
+  // Remove transformers that have ended
+  var item, transformer, transformers = this._transformers, source = this._source;
+  while ((transformer = transformers[0]) && transformer.ended) {
+    transformer = transformers.shift();
+    transformer.removeListener('readable', destinationFillBuffer);
+    transformer.removeListener('error',    destinationEmitError);
+  }
+
+  // Create new transformers if there are less than bufferSize
+  while (source && !source.ended && transformers.length < this._bufferSize) {
+    // Read an item to create the next transformer
+    item = this._source.read();
+    if (item === undefined)
+      break;
+    // Create the transformer and listen to its events
+    transformer = this._createTransformer(item);
+    if (transformer && !transformer.ended) {
+      transformer._destination = this;
+      transformer.once('end',    destinationFillBuffer);
+      transformer.on('readable', destinationFillBuffer);
+      transformer.on('error',    destinationEmitError);
+      transformers.push(transformer);
+    }
+  }
+
+  // Try to read `count` items from the transformer
+  transformer = transformers[0];
+  if (transformer) {
+    while (count-- > 0 && (item = transformer.read()) !== undefined)
+      this._push(item);
+  }
+  // End the iterator if the source has ended
+  else if (source && source.ended)
+    this.close();
+  done();
+};
+
+/**
+  Creates a transformer for the given item.
+
+  @function
+  @name MultiTransformIterator#_createTransformer
+  @param {object} item The last read item from the source
+  @returns {AsyncIterator} An iterator that transforms the given item
+**/
+MultiTransformIteratorPrototype._createTransformer = SingletonIterator;
+
+/* Closes the iterator when pending items are transformed. */
+MultiTransformIteratorPrototype._closeWhenDone = function () {
+  // Only close if all transformers are read
+  if (!this._transformers.length)
+    this.close();
+};
+
+
+
+
+/**
   Creates a new `ClonedIterator`.
 
   @constructor
@@ -1297,5 +1385,6 @@ module.exports = {
   BufferedIterator: BufferedIterator,
   TransformIterator: TransformIterator,
   SimpleTransformIterator: SimpleTransformIterator,
+  MultiTransformIterator: MultiTransformIterator,
   ClonedIterator: ClonedIterator,
 };
