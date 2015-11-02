@@ -828,8 +828,7 @@ function createClone(getSource) {
 function createClones(createIterator) {
   var clones = { iterator: memoize(createIterator) };
   ['clone 1', 'clone 2'].forEach(function (id) {
-    var getClone = clones[id] = memoize(createClone, clones.iterator);
-    clones['clone of ' +  id] = memoize(createClone, getClone);
+    clones[id] = memoize(createClone, clones.iterator);
   });
   return clones;
 }

@@ -1281,12 +1281,6 @@ AsyncIteratorPrototype.clone = function () {
   return new ClonedIterator(this);
 };
 
-// Creates a copy of the current iterator
-ClonedIteratorPrototype.clone = function () {
-  // Instead of creating a clone of a clone, try to create a clone from its source
-  return this._source ? this._source.clone() : new ClonedIterator(this);
-};
-
 
 
 
