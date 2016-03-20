@@ -935,7 +935,7 @@ TransformIteratorPrototype._end = function () {
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
-  @param {Function} [options.map] A function to synchronously filter elements from the source
+  @param {Function} [options.filter] A function to synchronously filter elements from the source
   @param {Function} [options.map] A function to synchronously transform elements from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
