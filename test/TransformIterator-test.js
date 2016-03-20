@@ -578,6 +578,39 @@ describe('TransformIterator', function () {
     });
   });
 
+  describe('A TransformIterator that synchronously transforms a three-item source but asynchronously completes', function () {
+    var iterator, source;
+    before(function () {
+      var i = 0;
+      source = new ArrayIterator(['a', 'b', 'c']);
+      iterator = new TransformIterator(source);
+      iterator._transform = sinon.spy(function (item, done) {
+        this._push(item + (++i));
+        setImmediate(done);
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should execute the transform function on all items in order', function () {
+        items.should.deep.equal(['a1', 'b2', 'c3']);
+      });
+
+      it('should have called _transform once for each item', function () {
+        iterator._transform.should.have.been.calledThrice;
+      });
+
+      it('should have called _transform function with the iterator as `this`', function () {
+        iterator._transform.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+  });
+
   describe('A TransformIterator with a source that errors', function () {
     var iterator, source, errorHandler;
     before(function () {

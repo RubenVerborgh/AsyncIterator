@@ -676,7 +676,7 @@ BufferedIteratorPrototype._push = function (item) {
   if (this.ended)
     throw new Error('Cannot push after the iterator was ended.');
   this._buffer.push(item);
-  this.readable = true;
+  this.readable = this._pushed = true;
 };
 
 /**
@@ -700,6 +700,7 @@ BufferedIteratorPrototype._fillBuffer = function () {
   // Otherwise, try to fill empty spaces in the buffer by generating new items
   else if ((neededItems = this._bufferSize - this._buffer.length) > 0) {
     this._reading = true;
+    this._pushed = false;
     this._read(neededItems, function () {
       // Verify the callback is only called once
       if (!neededItems)
@@ -709,6 +710,11 @@ BufferedIteratorPrototype._fillBuffer = function () {
       // If the iterator was closed while reading, complete closing
       if (self.closed)
         self._completeClose();
+      // If the iterator pushed at least one item,
+      // it might still be able to generate new items after completing
+      // (even though all pushed items might already have been read)
+      else if (self._pushed)
+        self.readable = true;
     });
   }
 };
