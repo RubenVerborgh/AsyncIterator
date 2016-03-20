@@ -6,6 +6,7 @@ var EventEmitter = require('events').EventEmitter;
 
   @name AsyncIterator.STATES
   @type String[]
+  @private
 */
 var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
 var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4;
@@ -18,6 +19,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.OPEN
   @type integer
+  @private
 */
 
 /**
@@ -26,6 +28,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.OPEN
   @type integer
+  @private
 */
 
 /**
@@ -34,6 +37,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.CLOSING
   @type integer
+  @private
 */
 
 /**
@@ -43,6 +47,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.CLOSED
   @type integer
+  @private
 */
 
 /**
@@ -51,6 +56,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.ENDED
   @type integer
+  @private
 */
 
 
@@ -59,6 +65,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
   Creates a new `AsyncIterator`.
 
+  @public
   @constructor
   @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
   @extends EventEmitter
@@ -76,6 +83,7 @@ function AsyncIterator() {
   Creates a prototype for the given constructor,
   such that its instances inherit from the current constructor.
 
+  @private
   @function
   @name AsyncIterator.createPrototypeFor
   @param {Function} Constructor The constructor for which to create a prototype
@@ -186,7 +194,7 @@ AsyncIteratorPrototype._addSingleListener = function (eventName, listener) {
 /**
   Stops the iterator from generating new items.
 
-  Already generated items, or terminating items, can still be emitted.
+  Already generated items or terminating items can still be emitted.
   After this, the iterator will end asynchronously.
 
   @function
@@ -830,7 +838,7 @@ var TransformIteratorPrototype = BufferedIterator.createPrototypeFor(TransformIt
 /**
   The source this iterator generates items from
 
-  @name AsyncIterator#source
+  @name TransformIterator#source
   @type AsyncIterator
 **/
 Object.defineProperty(TransformIteratorPrototype, 'source', {
@@ -1037,10 +1045,11 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
 
   @function
   @name AsyncIterator#transform
-  @param {object} [options] Settings of the iterator
+  @param {object|Function} [options] Settings of the iterator, or the transformation function
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
   @param {Function} [options.map] A function to synchronously transform elements from the source
+  @param {Function} [options.transform] A function to asynchronously transform elements from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
@@ -1080,7 +1089,7 @@ AsyncIteratorPrototype.filter = function (filter, self) {
 };
 
 /**
-  Prepends the items to the current iterator.
+  Prepends the items after those of the current iterator.
 
   After this operation, only read the returned iterator instead of the current one.
 
@@ -1094,14 +1103,14 @@ AsyncIteratorPrototype.prepend = function (items) {
 };
 
 /**
-  Appends the items to the current iterator.
+  Appends the items after those of the current iterator.
 
   After this operation, only read the returned iterator instead of the current one.
 
   @function
   @name AsyncIterator#append
   @param {Array|AsyncIterator} items Items to insert after this iterator's (remaining) items
-  @returns {AsyncIterator} A new iterator that prepends items to this iterator
+  @returns {AsyncIterator} A new iterator that appends items to this iterator
 **/
 AsyncIteratorPrototype.append = function (items) {
   return this.transform({ append: items });
@@ -1425,7 +1434,7 @@ ClonedIteratorPrototype.close = AsyncIteratorPrototype.close;
 
   @function
   @name AsyncIterator#clone
-  @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+  @returns {AsyncIterator} A new iterator that contains all future items of this iterator
 **/
 AsyncIteratorPrototype.clone = function () {
   return new ClonedIterator(this);
