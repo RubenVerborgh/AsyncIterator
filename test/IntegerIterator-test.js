@@ -47,6 +47,10 @@ describe('IntegerIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (0...Infinity)]');
+    });
+
     describe('before reading', function () {
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
@@ -101,6 +105,10 @@ describe('IntegerIterator', function () {
     before(function () {
       iterator = new IntegerIterator({ start: -5, end: 10, step: 5 });
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (-5...10)]');
     });
 
     describe('before reading', function () {
@@ -185,6 +193,10 @@ describe('IntegerIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (10...-5)]');
+    });
+
     describe('before reading', function () {
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -213,6 +225,10 @@ describe('IntegerIterator', function () {
     before(function () {
       iterator = new IntegerIterator({ start: 10, end: -5, step: -5 });
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (10...-5)]');
     });
 
     describe('before reading', function () {
@@ -297,6 +313,10 @@ describe('IntegerIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (Infinity...Infinity)]');
+    });
+
     describe('before reading', function () {
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -327,6 +347,10 @@ describe('IntegerIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (-Infinity...Infinity)]');
+    });
+
     describe('before reading', function () {
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -355,6 +379,10 @@ describe('IntegerIterator', function () {
     before(function () {
       iterator = new IntegerIterator({ end: -Infinity });
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[IntegerIterator (0...-Infinity)]');
     });
 
     describe('before reading', function () {

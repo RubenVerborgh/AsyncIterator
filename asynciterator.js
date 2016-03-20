@@ -388,6 +388,21 @@ AsyncIteratorPrototype.getProperties = function () {
   return copy;
 };
 
+/* Generates a textual representation of the iterator. */
+AsyncIteratorPrototype.toString = function () {
+  var details = this._toStringDetails();
+  return '[' + this.constructor.name + (details ? ' ' + details + ']' : ']');
+};
+
+/**
+  Generates details for a textual representation of the iterator.
+
+  @protected
+  @function
+  @name AsyncIterator#_toStringDetails
+**/
+AsyncIteratorPrototype._toStringDetails = function () { };
+
 
 
 /**
@@ -435,6 +450,11 @@ SingletonIteratorPrototype.read = function () {
   return item;
 };
 
+/* Generates details for a textual representation of the iterator. */
+SingletonIteratorPrototype._toStringDetails = function () {
+  return this._item === undefined ? '' : '(' + this._item + ')';
+};
+
 
 
 /**
@@ -469,6 +489,11 @@ ArrayIteratorPrototype.read = function () {
     }
     return item;
   }
+};
+
+/* Generates details for a textual representation of the iterator. */
+ArrayIteratorPrototype._toStringDetails = function () {
+  return '(' + (this._buffer && this._buffer.length || 0) + ')';
 };
 
 
@@ -513,6 +538,11 @@ IntegerIteratorPrototype.read = function () {
       this.close();
     return current;
   }
+};
+
+/* Generates details for a textual representation of the iterator. */
+IntegerIteratorPrototype._toStringDetails = function () {
+  return '(' + this._next + '...' + this._last + ')';
 };
 
 
@@ -754,6 +784,12 @@ BufferedIteratorPrototype._completeClose = function () {
   @param {function} done To be called when termination is complete
 **/
 BufferedIteratorPrototype._flush = function (done) { done(); };
+
+/* Generates details for a textual representation of the iterator. */
+BufferedIteratorPrototype._toStringDetails = function () {
+  var buffer = this._buffer, length = buffer.length;
+  return '{' + (length ? 'next: ' + buffer[0] + ', ' : '') + 'buffer: ' + length + '}';
+};
 
 
 

@@ -47,6 +47,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+    });
+
     it('should not have emitted the `readable` event', function () {
       iterator._eventCounts.readable.should.equal(0);
     });
@@ -404,6 +408,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+    });
+
     describe('before it has been closed', function () {
       it('should not have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(0);
@@ -455,6 +463,10 @@ describe('BufferedIterator', function () {
     describe('when the iterator is closed synchronously after `read` is called', function () {
       before(createIterator);
 
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+      });
+
       describe('before the iterator has been closed', function () {
         it('should not have emitted the `end` event', function () {
           iterator._eventCounts.end.should.equal(0);
@@ -493,6 +505,10 @@ describe('BufferedIterator', function () {
 
     describe('when the iterator is closed asynchronously after `read` is called', function () {
       before(createIterator);
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+      });
 
       describe('before the iterator has been closed', function () {
         it('should not have emitted the `end` event', function () {
@@ -533,6 +549,10 @@ describe('BufferedIterator', function () {
       before(createIterator);
 
       describe('before the iterator has been closed', function () {
+        it('should provide a readable `toString` representation', function () {
+          iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+        });
+
         it('should have emitted the `readable` event', function () {
           iterator._eventCounts.readable.should.equal(1);
         });
@@ -560,6 +580,10 @@ describe('BufferedIterator', function () {
 
       describe('after an item is pushed', function () {
         before(function () { iterator._push('a'); });
+
+        it('should provide a readable `toString` representation', function () {
+          iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 1}]');
+        });
 
         it('should have emitted another `readable` event', function () {
           iterator._eventCounts.readable.should.equal(2);
@@ -812,6 +836,10 @@ describe('BufferedIterator', function () {
       var iterator;
       before(function () { iterator = createIterator({ autoStart: false }); });
 
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+      });
+
       describe('before `read` has been called', function () {
         it('should have emitted the `readable` event', function () {
           iterator._eventCounts.readable.should.equal(1);
@@ -928,6 +956,10 @@ describe('BufferedIterator', function () {
       var iterator;
       before(function () { iterator = createIterator(); });
 
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 1}]');
+      });
+
       describe('before `read` has been called', function () {
         it('should have emitted the `readable` event', function () {
           iterator._eventCounts.readable.should.equal(1);
@@ -1000,6 +1032,10 @@ describe('BufferedIterator', function () {
     describe('with autoStart enabled', function () {
       var iterator;
       before(function () { iterator = createIterator(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 3}]');
+      });
 
       describe('before `read` has been called', function () {
         it('should have emitted the `readable` event', function () {
@@ -1151,6 +1187,10 @@ describe('BufferedIterator', function () {
         done();
       };
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: x, buffer: 3}]');
     });
 
     describe('before reading an item', function () {
@@ -1306,6 +1346,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: x, buffer: 3}]');
+    });
+
     describe('before reading an item', function () {
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
@@ -1452,6 +1496,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 3}]');
+    });
+
     describe('before reading an item', function () {
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
@@ -1545,6 +1593,10 @@ describe('BufferedIterator', function () {
         });
       };
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 3}]');
     });
 
     describe('before reading an item', function () {

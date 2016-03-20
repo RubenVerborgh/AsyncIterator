@@ -47,6 +47,10 @@ describe('SingletonIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[SingletonIterator]');
+    });
+
     it('should not have emitted the `readable` event', function () {
       iterator._eventCounts.readable.should.equal(0);
     });
@@ -76,6 +80,10 @@ describe('SingletonIterator', function () {
     });
 
     describe('before calling read', function () {
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[SingletonIterator (1)]');
+      });
+
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
       });
@@ -95,6 +103,10 @@ describe('SingletonIterator', function () {
 
     describe('after calling read for the first time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[SingletonIterator]');
+      });
 
       it('should read the first item of the array', function () {
         item.should.equal(1);

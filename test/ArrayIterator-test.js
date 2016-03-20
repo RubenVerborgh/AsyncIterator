@@ -47,6 +47,10 @@ describe('ArrayIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[ArrayIterator (0)]');
+    });
+
     it('should not have emitted the `readable` event', function () {
       iterator._eventCounts.readable.should.equal(0);
     });
@@ -73,6 +77,10 @@ describe('ArrayIterator', function () {
     before(function () {
       iterator = new ArrayIterator({ foo: 1, bar: 2 });
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[ArrayIterator (0)]');
     });
 
     it('should not have emitted the `readable` event', function () {
@@ -105,6 +113,10 @@ describe('ArrayIterator', function () {
     before(function () {
       iterator = new ArrayIterator([]);
       captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[ArrayIterator (0)]');
     });
 
     it('should not have emitted the `readable` event', function () {
@@ -140,6 +152,10 @@ describe('ArrayIterator', function () {
     });
 
     describe('before calling read', function () {
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (1)]');
+      });
+
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
       });
@@ -159,6 +175,10 @@ describe('ArrayIterator', function () {
 
     describe('after calling read for the first time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (0)]');
+      });
 
       it('should read the first item of the array', function () {
         item.should.equal(1);
@@ -190,6 +210,10 @@ describe('ArrayIterator', function () {
     });
 
     describe('before calling read', function () {
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (3)]');
+      });
+
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
       });
@@ -209,6 +233,10 @@ describe('ArrayIterator', function () {
 
     describe('after calling read for the first time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (2)]');
+      });
 
       it('should read the first item of the array', function () {
         item.should.equal(1);
@@ -230,6 +258,10 @@ describe('ArrayIterator', function () {
     describe('after calling read for the second time', function () {
       before(function () { item = iterator.read(); });
 
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (1)]');
+      });
+
       it('should read the second item of the array', function () {
         item.should.equal(2);
       });
@@ -249,6 +281,10 @@ describe('ArrayIterator', function () {
 
     describe('after calling read for the third time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (0)]');
+      });
 
       it('should read the third item of the array', function () {
         item.should.equal(3);
@@ -280,6 +316,10 @@ describe('ArrayIterator', function () {
     });
 
     describe('before calling read', function () {
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (3)]');
+      });
+
       it('should have emitted the `readable` event', function () {
         iterator._eventCounts.readable.should.equal(1);
       });
@@ -299,6 +339,10 @@ describe('ArrayIterator', function () {
 
     describe('after calling read for the first time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (2)]');
+      });
 
       it('should read the first item of the array', function () {
         item.should.equal(1);
@@ -320,6 +364,10 @@ describe('ArrayIterator', function () {
     describe('after calling read for the second time', function () {
       before(function () { item = iterator.read(); });
 
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (1)]');
+      });
+
       it('should read the second item of the array', function () {
         item.should.equal(2);
       });
@@ -339,6 +387,10 @@ describe('ArrayIterator', function () {
 
     describe('after calling read for the third time', function () {
       before(function () { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', function () {
+        iterator.toString().should.equal('[ArrayIterator (0)]');
+      });
 
       it('should read the third item of the array', function () {
         item.should.equal(3);

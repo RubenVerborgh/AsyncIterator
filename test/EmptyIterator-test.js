@@ -47,6 +47,10 @@ describe('EmptyIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[EmptyIterator]');
+    });
+
     it('should not have emitted the `readable` event', function () {
       iterator._eventCounts.readable.should.equal(0);
     });

@@ -38,6 +38,10 @@ describe('AsyncIterator', function () {
       captureEvents(iterator, 'data', 'readable', 'end');
     });
 
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[AsyncIterator]');
+    });
+
     it('should not have emitted the `readable` event', function () {
       iterator._eventCounts.readable.should.equal(0);
     });
