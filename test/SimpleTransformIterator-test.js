@@ -111,6 +111,69 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
+  describe('A SimpleTransformIterator with a transform function', function () {
+    var iterator, source, transform;
+    before(function () {
+      var i = 0;
+      source = new ArrayIterator(['a', 'b', 'c']);
+      transform = sinon.spy(function (item, done) { this._push(item + (++i)); done(); });
+      iterator = new SimpleTransformIterator(source, { transform: transform });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should execute the transform function on all items in order', function () {
+        items.should.deep.equal(['a1', 'b2', 'c3']);
+      });
+
+      it('should have called the transform function once for each item', function () {
+        transform.should.have.been.calledThrice;
+      });
+
+      it('should have called the transform function with the iterator as `this`', function () {
+        transform.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with a transform function as only option', function () {
+    var iterator, source, transform;
+    before(function () {
+      var i = 0;
+      source = new ArrayIterator(['a', 'b', 'c']);
+      transform = sinon.spy(function (item, done) {
+        this._push(item + (++i));
+        setImmediate(done);
+      });
+      iterator = new SimpleTransformIterator(source, transform);
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should execute the transform function on all items in order', function () {
+        items.should.deep.equal(['a1', 'b2', 'c3']);
+      });
+
+      it('should have called the transform function once for each item', function () {
+        transform.should.have.been.calledThrice;
+      });
+
+      it('should have called the transform function with the iterator as `this`', function () {
+        transform.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+  });
+
   describe('A SimpleTransformIterator with a filter function', function () {
     var iterator, source, filter;
     before(function () {

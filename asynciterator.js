@@ -935,7 +935,7 @@ TransformIteratorPrototype._end = function () {
   @classdesc An iterator that generates items based on a source iterator
              and simple transformation steps passed as arguments.
   @param {AsyncIterator} [source] The source this iterator generates items from
-  @param {object} [options] Settings of the iterator
+  @param {object|Function} [options] Settings of the iterator, or the transformation function
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {AsyncIterator} [options.source] The source this iterator generates items from
@@ -943,6 +943,7 @@ TransformIteratorPrototype._end = function () {
   @param {integer} [options.limit] The maximum number of items
   @param {Function} [options.filter] A function to synchronously filter elements from the source
   @param {Function} [options.map] A function to synchronously transform elements from the source
+  @param {Function} [options.transform] A function to asynchronously transform elements from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @extends TransformIterator
@@ -956,15 +957,17 @@ function SimpleTransformIterator(source, options) {
   if (options = options || !isFunction(source && source.read) && source) {
     var limit = options.limit, offset = options.offset,
         filter = options.filter, map = options.map,
+        transform = isFunction(options) ? options : options.transform,
         prepend = options.prepend, append = options.append;
     // Don't emit any items when bounds are unreachable
     if (offset === Infinity || limit === -Infinity)
       this._limit = 0;
     else {
-      if (isFinite(offset))   this._offset = Math.max(~~offset, 0);
-      if (isFinite(limit))    this._limit  = Math.max(~~limit,  0);
-      if (isFunction(filter)) this._filter = filter;
-      if (isFunction(map))    this._map    = map;
+      if (isFinite(offset))      this._offset    = Math.max(~~offset, 0);
+      if (isFinite(limit))       this._limit     = Math.max(~~limit,  0);
+      if (isFunction(filter))    this._filter    = filter;
+      if (isFunction(map))       this._map       = map;
+      if (isFunction(transform)) this._transform = transform;
     }
     if (prepend) this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
     if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
@@ -994,7 +997,7 @@ SimpleTransformIteratorPrototype._read = function (count, done) {
           // Verify we are past the offset
           if (this._offset === 0) {
             this._limit--;
-            return this._transform(item, done);
+            return this._transform(this._map(item), done);
           }
           this._offset--;
         }
@@ -1002,11 +1005,6 @@ SimpleTransformIteratorPrototype._read = function (count, done) {
     }
   }
   done();
-};
-
-// Transforms items using the mapping function
-SimpleTransformIteratorPrototype._transform = function (item, done) {
-  this._push(this._map(item)), done();
 };
 
 // Prepends items to the iterator
