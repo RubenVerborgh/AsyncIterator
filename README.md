@@ -78,6 +78,50 @@ links.take(30).on('data', console.log);
 In both cases, pages from Wikipedia will only be fetched when needed.
 This is what makes `AsyncIterator` [_lazy_](https://en.wikipedia.org/wiki/Lazy_evaluation).
 
+## Usage
+`AsyncIterator` implements the [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) interface
+and a superset of the [`Stream`](https://nodejs.org/api/stream.html) interface.
+
+### Consuming an AsyncIterator in on-demand mode
+By default, an AsyncIterator is in _on-demand_ mode,
+meaning it only generates items when asked to.
+
+The [`read` method](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#read) returns the next item,
+or `undefined` when no item is available.
+
+```JavaScript
+var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 2 });
+console.log(numbers.read()); // 1
+console.log(numbers.read()); // 2
+console.log(numbers.read()); // undefined
+```
+
+If you receive `undefined`,
+you should wait until the next [`readable` event](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:readable) before reading again.
+This event is not a guarantee that an item _will_ be available.
+
+```JavaScript
+links.on('readable', function () {
+  var link;
+  while (link = links.read())
+    console.log(link);
+});
+```
+
+The [`end` event](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:end) is emitted after you have read the last item from the iterator.
+
+### Consuming an AsyncIterator in flow mode
+An AsyncIterator can be switched to _flow_ mode by listening to the [`data` event](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:data).
+In flow mode, iterators generate items as fast as possible.
+
+```JavaScript
+var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 100 });
+numbers.on('data', function (number) { console.log('number', number); });
+numbers.on('end',  function () { console.log('all done!'); });
+```
+
+To switch back to on-demand mode, simply remove all `data` listeners.
+
 ## License
 The asynciterator library is copyrighted by [Ruben Verborgh](http://ruben.verborgh.org/)
 and released under the [MIT License](http://opensource.org/licenses/MIT).
