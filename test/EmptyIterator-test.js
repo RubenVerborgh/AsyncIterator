@@ -84,8 +84,8 @@ describe('EmptyIterator', function () {
       iterator.readable.should.be.false;
     });
 
-    it('should return undefined when read is called', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null when read is called', function () {
+      expect(iterator.read()).to.be.null;
     });
   });
 });

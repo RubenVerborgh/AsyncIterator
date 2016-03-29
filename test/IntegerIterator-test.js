@@ -180,8 +180,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read call 5', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null on read call 5', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });
@@ -214,8 +214,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });
@@ -300,8 +300,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read call 5', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null on read call 5', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });
@@ -334,8 +334,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });
@@ -368,8 +368,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });
@@ -402,8 +402,8 @@ describe('IntegerIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.equal(undefined);
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.equal(null);
       });
     });
   });

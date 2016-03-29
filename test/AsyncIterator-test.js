@@ -60,8 +60,8 @@ describe('AsyncIterator', function () {
       iterator._eventCounts.end.should.equal(0);
     });
 
-    it('should return undefined when trying to read', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
     });
 
     it('should not have ended', function () {
@@ -120,8 +120,8 @@ describe('AsyncIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when trying to read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when trying to read', function () {
+        expect(iterator.read()).to.be.null;
       });
 
       it('should not have any listeners for data, readable, or end', function () {
@@ -150,8 +150,8 @@ describe('AsyncIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when trying to read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when trying to read', function () {
+        expect(iterator.read()).to.be.null;
       });
 
       it('should not have any listeners for data, readable, or end', function () {
@@ -195,7 +195,7 @@ describe('AsyncIterator', function () {
       var items = [1];
       iterator = new AsyncIterator();
       iterator.readable = true;
-      iterator.read = function () { return items.shift() || iterator.close(); };
+      iterator.read = function () { return items.shift() || iterator.close() || null; };
     });
 
     describe('after a data listener is attached', function () {
@@ -221,7 +221,7 @@ describe('AsyncIterator', function () {
     before(function () {
       iterator = new AsyncIterator();
       iterator.readable = true;
-      iterator.read = sinon.spy(function () { return items.shift(); });
+      iterator.read = sinon.spy(function () { return items.shift() || null; });
     });
 
     describe('after two items are added', function () {
@@ -621,7 +621,7 @@ describe('AsyncIterator', function () {
         var i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = function () { if (i++ < 2) return i; };
+        iterator.read = function () { return i++ < 2 ? i : null; };
         callback = sinon.stub();
         result = iterator.each(callback);
       });
@@ -653,7 +653,7 @@ describe('AsyncIterator', function () {
         var i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = function () { if (i++ < 2) return i; };
+        iterator.read = function () { return i++ < 2 ? i : null; };
         callback = sinon.stub();
         result = iterator.each(callback, self);
       });

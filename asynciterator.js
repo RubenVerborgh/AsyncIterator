@@ -127,7 +127,7 @@ function emit(self, eventName) { self.emit(eventName); }
 
   This is the main method for reading the iterator in _on-demand mode_,
   where new items are only created when needed by consumers.
-  If no items are currently available, this methods returns `undefined`.
+  If no items are currently available, this methods returns `null`.
   The {@link AsyncIterator.event:readable} event will then signal when new items might be ready.
 
   To read all items from the stream,
@@ -136,9 +136,9 @@ function emit(self, eventName) { self.emit(eventName); }
 
   @function
   @name AsyncIterator#read
-  @returns {object?} The next item, or `undefined` if none is available
+  @returns {object?} The next item, or `null` if none is available
 **/
-AsyncIteratorPrototype.read = function () { };
+AsyncIteratorPrototype.read = function () { return null; };
 
 /**
   Emitted when the iterator possibly has new items available,
@@ -158,7 +158,7 @@ AsyncIteratorPrototype.read = function () { };
   @param {object?} self The `this` pointer for the callback
 **/
 AsyncIteratorPrototype.each = function (callback, self) {
-  this.on('data', self === undefined ? callback : callback.bind(self));
+  this.on('data', self ? callback.bind(self) : callback);
 };
 
 /**
@@ -307,7 +307,7 @@ function waitForDataListener(eventName) {
 function emitData() {
   // While there are `data` listeners and items, emit them
   var item;
-  while (this._hasListeners('data') && (item = this.read()) !== undefined)
+  while (this._hasListeners('data') && (item = this.read()) !== null)
     this.emit('data', item);
   // Stop draining the source if there are no more `data` listeners
   if (!this._hasListeners('data')) {
@@ -442,24 +442,25 @@ function SingletonIterator(item) {
     return new SingletonIterator(item);
   AsyncIterator.call(this);
 
-  if (item === undefined)
+  this._item = item;
+  if (item === null)
     this.close();
   else
-    this._item = item, this.readable = true;
+    this.readable = true;
 }
 var SingletonIteratorPrototype = AsyncIterator.subclass(SingletonIterator);
 
 /* Reads the item from the iterator. */
 SingletonIteratorPrototype.read = function () {
   var item = this._item;
-  delete this._item;
+  this._item = null;
   this.close();
   return item;
 };
 
 /* Generates details for a textual representation of the iterator. */
 SingletonIteratorPrototype._toStringDetails = function () {
-  return this._item === undefined ? '' : '(' + this._item + ')';
+  return this._item === null ? '' : '(' + this._item + ')';
 };
 
 
@@ -487,15 +488,16 @@ var ArrayIteratorPrototype = AsyncIterator.subclass(ArrayIterator);
 
 /* Reads an item from the iterator. */
 ArrayIteratorPrototype.read = function () {
-  var buffer = this._buffer;
+  var buffer = this._buffer, item = null;
   if (buffer) {
-    var item = buffer.shift();
+    if (buffer.length)
+      item = buffer.shift();
     if (!buffer.length) {
       this.close();
       delete this._buffer;
     }
-    return item;
   }
+  return item;
 };
 
 /* Generates details for a textual representation of the iterator. */
@@ -539,12 +541,12 @@ var IntegerIteratorPrototype = AsyncIterator.subclass(IntegerIterator);
 
 /* Reads an item from the iterator. */
 IntegerIteratorPrototype.read = function () {
-  if (!this.closed) {
-    var current = this._next, step = this._step, last = this._last, next = this._next += step;
-    if (step >= 0 ? next > last : next < last)
-      this.close();
-    return current;
-  }
+  if (this.closed)
+    return null;
+  var current = this._next, step = this._step, last = this._last, next = this._next += step;
+  if (step >= 0 ? next > last : next < last)
+    this.close();
+  return current;
 };
 
 /* Generates details for a textual representation of the iterator. */
@@ -582,7 +584,7 @@ function BufferedIterator(options) {
   // Acquire reading lock to read initialization elements
   this._state = INIT;
   this._reading = true;
-  setImmediate(init, this, autoStart === undefined || autoStart);
+  setImmediate(init, this, autoStart !== false || autoStart);
 }
 var BufferedIteratorPrototype = AsyncIterator.subclass(BufferedIterator);
 
@@ -634,15 +636,20 @@ BufferedIteratorPrototype._begin = function (done) { done(); };
 
   If the buffer is empty,
   this method calls {@link BufferedIterator#_read} to fetch items.
-  @returns {object?} The next item, or `undefined` if none is available
+  @returns {object?} The next item, or `null` if none is available
 **/
 BufferedIteratorPrototype.read = function () {
-  if (this.ended) return;
+  if (this.ended)
+    return null;
 
   // Try to retrieve an item from the buffer
-  var buffer = this._buffer, item = buffer.shift();
-  if (item === undefined)
+  var buffer = this._buffer, item;
+  if (buffer.length)
+    item = buffer.shift();
+  else {
+    item = null;
     this.readable = false;
+  }
 
   // If the buffer is becoming empty, either fill it or end the iterator
   if (!this._reading && buffer.length < this._bufferSize) {
@@ -888,7 +895,7 @@ TransformIteratorPrototype._read = function (count, done) {
   var source = this._source, item;
   // If the source exists and still can read items,
   // try to read and transform the next item.
-  if (source && !source.ended && (item = source.read()) !== undefined)
+  if (source && !source.ended && (item = source.read()) !== null)
     this._transform(item, done);
   else
     done();
@@ -998,7 +1005,7 @@ SimpleTransformIteratorPrototype._read = function (count, done) {
       this.close();
     else {
       // Try to read the next item
-      while ((item = source.read()) !== undefined) {
+      while ((item = source.read()) !== null) {
         // Verify the item passes the filter
         if (this._filter(item)) {
           // Verify we are past the offset
@@ -1069,7 +1076,7 @@ AsyncIteratorPrototype.transform = function (options) {
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
 **/
 AsyncIteratorPrototype.map = function (mapper, self) {
-  return this.transform({ map: self === undefined ? mapper : mapper.bind(self) });
+  return this.transform({ map: self ? mapper.bind(self) : mapper });
 };
 
 /**
@@ -1084,7 +1091,7 @@ AsyncIteratorPrototype.map = function (mapper, self) {
   @returns {AsyncIterator} A new iterator that filters items from this iterator
 **/
 AsyncIteratorPrototype.filter = function (filter, self) {
-  return this.transform({ filter: self === undefined ? filter : filter.bind(self) });
+  return this.transform({ filter: self ? filter.bind(self) : filter });
 };
 
 /**
@@ -1208,7 +1215,7 @@ MultiTransformIteratorPrototype._read = function (count, done) {
   while (source && !source.ended && transformers.length < this._bufferSize) {
     // Read an item to create the next transformer
     item = this._source.read();
-    if (item === undefined)
+    if (item === null)
       break;
     // Create the transformer and listen to its events
     transformer = this._createTransformer(item);
@@ -1224,7 +1231,7 @@ MultiTransformIteratorPrototype._read = function (count, done) {
   // Try to read `count` items from the transformer
   transformer = transformers[0];
   if (transformer) {
-    while (count-- > 0 && (item = transformer.read()) !== undefined)
+    while (count-- > 0 && (item = transformer.read()) !== null)
       this._push(item);
   }
   // End the iterator if the source has ended
@@ -1292,7 +1299,7 @@ Object.defineProperty(ClonedIteratorPrototype, 'source', {
       // Subscribe to history events
       history.register(this);
       // If there are already items in history, this clone is readable
-      if (history.readAt(0) !== undefined)
+      if (history.readAt(0) !== null)
         this.readable = true;
     }
 
@@ -1346,13 +1353,15 @@ function HistoryReader(source) {
   this.readAt = function (pos) {
     var item;
     // Read a new item from the source when necessary
-    if (pos === history.length && !source.ended && (item = source.read()) !== undefined)
+    if (pos === history.length && !source.ended && (item = source.read()) !== null)
       history[pos] = item;
-    return history[pos];
+    return pos < history.length ? history[pos] : null;
   };
 
   // Determines whether the given position is the end of the source
-  this.endsAt = function (pos) { return pos === history.length && source.ended; };
+  this.endsAt = function (pos) {
+    return pos === history.length && source.ended;
+  };
 
   // Registers a clone for history updates
   this.register = function (clone) { clones && clones.push(clone); };
@@ -1395,19 +1404,17 @@ function HistoryReader(source) {
 
 /* Tries to read an item */
 ClonedIteratorPrototype.read = function () {
-  if (this.ended) return;
-
   // Try to read items from history
-  var source = this._source;
-  if (source) {
-    var history = source._destination, item;
-    if ((item = history.readAt(this._readPosition)) !== undefined)
+  var source = this._source, item = null;
+  if (!this.ended && source) {
+    var history = source._destination;
+    if ((item = history.readAt(this._readPosition)) !== null)
       this._readPosition++;
     // Close the iterator if we are at the end of the source
     if (history.endsAt(this._readPosition))
       this.close();
-    return item;
   }
+  return item;
 };
 
 /* End the iterator and cleans up. */

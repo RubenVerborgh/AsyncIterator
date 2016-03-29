@@ -88,8 +88,8 @@ describe('ClonedIterator', function () {
         clone.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(clone.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(clone.read()).to.be.null;
       });
 
       it('should return an empty property set', function () {
@@ -122,8 +122,8 @@ describe('ClonedIterator', function () {
         clone.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(clone.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(clone.read()).to.be.null;
       });
 
       it('should return an empty property set', function () {
@@ -164,8 +164,8 @@ describe('ClonedIterator', function () {
         getClone().readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(getClone().read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(getClone().read()).to.be.null;
       });
     });
   });
@@ -198,8 +198,8 @@ describe('ClonedIterator', function () {
             getClone().readable.should.be.false;
           });
 
-          it('should return undefined on read', function () {
-            expect(getClone().read()).to.be.undefined;
+          it('should return null on read', function () {
+            expect(getClone().read()).to.be.null;
           });
         }
       });
@@ -253,8 +253,8 @@ describe('ClonedIterator', function () {
           getClone().readable.should.be.false;
         });
 
-        it('should return undefined on read', function () {
-          expect(getClone().read()).to.be.undefined;
+        it('should return null on read', function () {
+          expect(getClone().read()).to.be.null;
         });
       });
     }
@@ -328,8 +328,8 @@ describe('ClonedIterator', function () {
           getClone().readable.should.be.false;
         });
 
-        it('should return undefined on read', function () {
-          expect(getClone().read()).to.be.undefined;
+        it('should return null on read', function () {
+          expect(getClone().read()).to.be.null;
         });
       });
     }
@@ -429,8 +429,8 @@ describe('ClonedIterator', function () {
           getClone().readable.should.be.false;
         });
 
-        it('should return undefined on read', function () {
-          expect(getClone().read()).to.be.undefined;
+        it('should return null on read', function () {
+          expect(getClone().read()).to.be.null;
         });
       });
     }
@@ -730,8 +730,8 @@ describe('ClonedIterator', function () {
           getClone().readable.should.be.false;
         });
 
-        it('should return undefined on read', function () {
-          expect(getClone().read()).to.be.undefined;
+        it('should return null on read', function () {
+          expect(getClone().read()).to.be.null;
         });
 
         it('should not have called a property callback for a non-set property', function () {
@@ -777,8 +777,8 @@ describe('ClonedIterator', function () {
           getClone().readable.should.be.false;
         });
 
-        it('should return undefined on read', function () {
-          expect(getClone().read()).to.be.undefined;
+        it('should return null on read', function () {
+          expect(getClone().read()).to.be.null;
         });
 
         it('should have called a property callback for a property in the source', function () {

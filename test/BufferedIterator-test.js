@@ -67,8 +67,8 @@ describe('BufferedIterator', function () {
       iterator.readable.should.be.false;
     });
 
-    it('should return undefined when `read` is called', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null when `read` is called', function () {
+      expect(iterator.read()).to.be.null;
     });
 
     describe('after `close` is called', function () {
@@ -133,8 +133,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted the `readable` event anymore', function () {
@@ -163,8 +163,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted the `readable` event anymore', function () {
@@ -220,8 +220,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted the `readable` event', function () {
@@ -287,8 +287,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted another `readable` event', function () {
@@ -317,8 +317,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted another `readable` event', function () {
@@ -374,8 +374,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted the `readable` event', function () {
@@ -425,8 +425,8 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -445,8 +445,8 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.true;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -569,8 +569,8 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.true;
         });
 
-        it('should return undefined when `read` is called', function () {
-          expect(iterator.read()).to.be.undefined;
+        it('should return null when `read` is called', function () {
+          expect(iterator.read()).to.be.null;
         });
 
         it('should have called `_read` once', function () {
@@ -678,8 +678,8 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should return undefined when `read` is called', function () {
-          expect(iterator.read()).to.be.undefined;
+        it('should return null when `read` is called', function () {
+          expect(iterator.read()).to.be.null;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -708,8 +708,8 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.true;
         });
 
-        it('should return undefined when `read` is called', function () {
-          expect(iterator.read()).to.be.undefined;
+        it('should return null when `read` is called', function () {
+          expect(iterator.read()).to.be.null;
         });
 
         it('should have called `_read` once', function () {
@@ -813,8 +813,8 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should return undefined when `read` is called', function () {
-          expect(iterator.read()).to.be.undefined;
+        it('should return null when `read` is called', function () {
+          expect(iterator.read()).to.be.null;
         });
 
         it('should not have called `_read` anymore', function () {
@@ -866,8 +866,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should have emitted another `readable` event', function () {
@@ -926,8 +926,8 @@ describe('BufferedIterator', function () {
         var item;
         before(function () { item = iterator.read(); });
 
-        it('should have returned undefined', function () {
-          expect(item).to.be.undefined;
+        it('should have returned null', function () {
+          expect(item).to.be.null;
         });
 
         it('should not have emitted another `readable` event', function () {
@@ -1106,8 +1106,8 @@ describe('BufferedIterator', function () {
         });
 
         it('should have returned all remaining items in the buffer', function () {
-          // plus `undefined` for two reads past the end of the buffer
-          expect(items).to.deep.equal(['c', 'a', 'b', 'c', undefined, undefined]);
+          // plus `null` for two reads past the end of the buffer
+          expect(items).to.deep.equal(['c', 'a', 'b', 'c', null, null]);
         });
 
         it('should have emitted another `readable` event', function () {
@@ -1150,8 +1150,8 @@ describe('BufferedIterator', function () {
       expect(iterator.read()).to.equal('a');
     });
 
-    it('should return undefined on subsequent reads', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null on subsequent reads', function () {
+      expect(iterator.read()).to.be.null;
     });
   });
 
@@ -1167,8 +1167,8 @@ describe('BufferedIterator', function () {
       expect(iterator.read()).to.equal(0);
     });
 
-    it('should return undefined on subsequent reads', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null on subsequent reads', function () {
+      expect(iterator.read()).to.be.null;
     });
   });
 
@@ -1263,8 +1263,8 @@ describe('BufferedIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -1420,8 +1420,8 @@ describe('BufferedIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -1458,8 +1458,8 @@ describe('BufferedIterator', function () {
       expect(iterator.read()).to.equal('a');
     });
 
-    it('should return undefined on subsequent reads', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null on subsequent reads', function () {
+      expect(iterator.read()).to.be.null;
     });
 
     it('should not have emitted the `end` event', function () {
@@ -1570,8 +1570,8 @@ describe('BufferedIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -1669,8 +1669,8 @@ describe('BufferedIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -1704,8 +1704,8 @@ describe('BufferedIterator', function () {
       expect(iterator.read()).to.equal('a');
     });
 
-    it('should return undefined on subsequent reads', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null on subsequent reads', function () {
+      expect(iterator.read()).to.be.null;
     });
 
     it('should not have emitted the `end` event', function () {

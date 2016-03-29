@@ -632,8 +632,8 @@ describe('SimpleTransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -656,8 +656,8 @@ describe('SimpleTransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -680,8 +680,8 @@ describe('SimpleTransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -704,8 +704,8 @@ describe('SimpleTransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -732,8 +732,8 @@ describe('SimpleTransformIterator', function () {
         expect(iterator.read()).to.equal('c');
       });
 
-      it('should return undefined on subsequent reads', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on subsequent reads', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -760,8 +760,8 @@ describe('SimpleTransformIterator', function () {
         expect(iterator.read()).to.equal('d');
       });
 
-      it('should return undefined on subsequent reads', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on subsequent reads', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -788,8 +788,8 @@ describe('SimpleTransformIterator', function () {
         expect(iterator.read()).to.equal('e');
       });
 
-      it('should return undefined on subsequent reads', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on subsequent reads', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -812,8 +812,8 @@ describe('SimpleTransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined on read', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null on read', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });

@@ -139,8 +139,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -169,8 +169,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -205,8 +205,8 @@ describe('TransformIterator', function () {
       iterator.readable.should.be.false;
     });
 
-    it('should return undefined when read is called', function () {
-      expect(iterator.read()).to.be.undefined;
+    it('should return null when read is called', function () {
+      expect(iterator.read()).to.be.null;
     });
   });
 
@@ -234,8 +234,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -258,8 +258,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
 
@@ -282,8 +282,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when read is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when read is called', function () {
+        expect(iterator.read()).to.be.null;
       });
     });
   });
@@ -344,8 +344,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
 
       it('should not leave `readable` listeners on the source', function () {
@@ -451,8 +451,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
 
       it('should not leave `readable` listeners on the source', function () {
@@ -560,8 +560,8 @@ describe('TransformIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should return undefined when `read` is called', function () {
-        expect(iterator.read()).to.be.undefined;
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
       });
 
       it('should not leave `readable` listeners on the source', function () {
