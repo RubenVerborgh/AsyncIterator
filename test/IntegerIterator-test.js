@@ -1,6 +1,6 @@
 var IntegerIterator = require('../asynciterator').IntegerIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator,
+var AsyncIterator = require('../asynciterator'),
     EventEmitter = require('events').EventEmitter;
 
 describe('IntegerIterator', function () {

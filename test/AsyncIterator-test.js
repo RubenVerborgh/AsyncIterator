@@ -1,8 +1,18 @@
-var AsyncIterator = require('../asynciterator').AsyncIterator;
+var AsyncIterator = require('../asynciterator');
 
 var EventEmitter = require('events').EventEmitter;
 
 describe('AsyncIterator', function () {
+  describe('The AsyncIterator module', function () {
+    describe('is a function', function () {
+      AsyncIterator.should.be.a('function');
+    });
+
+    describe('exposes itself as the AsyncIterator property', function () {
+      AsyncIterator.AsyncIterator.should.equal(AsyncIterator);
+    });
+  });
+
   describe('The AsyncIterator function', function () {
     describe('the result when called without `new`', function () {
       var instance;

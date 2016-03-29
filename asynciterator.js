@@ -1447,15 +1447,14 @@ AsyncIteratorPrototype.clone = function () {
 function isFunction(object) { return typeof object === 'function'; }
 
 // Export all submodules
-module.exports = {
-  AsyncIterator: AsyncIterator,
-  EmptyIterator: EmptyIterator,
-  SingletonIterator: SingletonIterator,
-  ArrayIterator: ArrayIterator,
-  IntegerIterator: IntegerIterator,
-  BufferedIterator: BufferedIterator,
-  TransformIterator: TransformIterator,
-  SimpleTransformIterator: SimpleTransformIterator,
-  MultiTransformIterator: MultiTransformIterator,
-  ClonedIterator: ClonedIterator,
-};
+module.exports = AsyncIterator;
+AsyncIterator.AsyncIterator = AsyncIterator;
+AsyncIterator.EmptyIterator = AsyncIterator.empty = EmptyIterator;
+AsyncIterator.SingletonIterator = AsyncIterator.single = SingletonIterator;
+AsyncIterator.ArrayIterator = AsyncIterator.fromArray = ArrayIterator;
+AsyncIterator.IntegerIterator = IntegerIterator;
+AsyncIterator.BufferedIterator = BufferedIterator;
+AsyncIterator.TransformIterator = TransformIterator;
+AsyncIterator.SimpleTransformIterator = SimpleTransformIterator;
+AsyncIterator.MultiTransformIterator = MultiTransformIterator;
+AsyncIterator.ClonedIterator = ClonedIterator;

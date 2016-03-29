@@ -1,9 +1,9 @@
 var TransformIterator = require('../asynciterator').TransformIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator,
-    BufferedIterator = require('../asynciterator').BufferedIterator,
-    EmptyIterator = require('../asynciterator').EmptyIterator,
-    ArrayIterator = require('../asynciterator').ArrayIterator,
+var AsyncIterator = require('../asynciterator'),
+    BufferedIterator = AsyncIterator.BufferedIterator,
+    EmptyIterator = AsyncIterator.EmptyIterator,
+    ArrayIterator = AsyncIterator.ArrayIterator,
     EventEmitter = require('events').EventEmitter;
 
 describe('TransformIterator', function () {

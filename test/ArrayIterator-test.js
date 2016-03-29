@@ -1,6 +1,6 @@
 var ArrayIterator = require('../asynciterator').ArrayIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator,
+var AsyncIterator = require('../asynciterator'),
     EventEmitter = require('events').EventEmitter;
 
 describe('ArrayIterator', function () {
@@ -25,6 +25,23 @@ describe('ArrayIterator', function () {
     describe('the result when called with `new`', function () {
       var instance;
       before(function () { instance = new ArrayIterator(); });
+
+      it('should be an ArrayIterator object', function () {
+        instance.should.be.an.instanceof(ArrayIterator);
+      });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `fromArray`', function () {
+      var instance;
+      before(function () { instance = AsyncIterator.fromArray(); });
 
       it('should be an ArrayIterator object', function () {
         instance.should.be.an.instanceof(ArrayIterator);

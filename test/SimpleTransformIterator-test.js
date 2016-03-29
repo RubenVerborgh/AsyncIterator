@@ -1,11 +1,11 @@
 var SimpleTransformIterator = require('../asynciterator').SimpleTransformIterator;
 
-var TransformIterator = require('../asynciterator').TransformIterator,
-    AsyncIterator = require('../asynciterator').AsyncIterator,
-    BufferedIterator = require('../asynciterator').BufferedIterator,
-    EmptyIterator = require('../asynciterator').EmptyIterator,
-    ArrayIterator = require('../asynciterator').ArrayIterator,
-    IntegerIterator = require('../asynciterator').IntegerIterator,
+var AsyncIterator = require('../asynciterator'),
+    TransformIterator = AsyncIterator.TransformIterator,
+    BufferedIterator = AsyncIterator.BufferedIterator,
+    EmptyIterator = AsyncIterator.EmptyIterator,
+    ArrayIterator = AsyncIterator.ArrayIterator,
+    IntegerIterator = AsyncIterator.IntegerIterator,
     EventEmitter = require('events').EventEmitter;
 
 describe('SimpleTransformIterator', function () {

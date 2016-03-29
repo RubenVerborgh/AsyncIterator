@@ -1,6 +1,6 @@
 var SingletonIterator = require('../asynciterator').SingletonIterator;
 
-var AsyncIterator = require('../asynciterator').AsyncIterator,
+var AsyncIterator = require('../asynciterator'),
     EventEmitter = require('events').EventEmitter;
 
 describe('SingletonIterator', function () {
@@ -25,6 +25,23 @@ describe('SingletonIterator', function () {
     describe('the result when called with `new`', function () {
       var instance;
       before(function () { instance = new SingletonIterator(); });
+
+      it('should be a SingletonIterator object', function () {
+        instance.should.be.an.instanceof(SingletonIterator);
+      });
+
+      it('should be an AsyncIterator object', function () {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', function () {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `single`', function () {
+      var instance;
+      before(function () { instance = AsyncIterator.single(); });
 
       it('should be a SingletonIterator object', function () {
         instance.should.be.an.instanceof(SingletonIterator);
