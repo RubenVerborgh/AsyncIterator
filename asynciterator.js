@@ -80,19 +80,18 @@ function AsyncIterator() {
 }
 
 /**
-  Creates a prototype for the given constructor,
-  such that its instances inherit from the current constructor.
+  Makes the prototype of the current constructor a prototype for the given constructor.
 
-  @private
+  @protected
   @function
-  @name AsyncIterator.createPrototypeFor
-  @param {Function} Constructor The constructor for which to create a prototype
-  @returns {AsyncIterator} The child object's prototype
+  @name AsyncIterator.subclass
+  @param {Function} Constructor The constructor that should inherit from the current constructor
+  @returns {AsyncIterator} The constructor's prototype
 **/
-var AsyncIteratorPrototype = (function createPrototypeFor(Constructor) {
+var AsyncIteratorPrototype = (function subclass(Constructor) {
   var prototype = Constructor.prototype = Object.create(this.prototype,
     { constructor: { value: Constructor, configurable: true, writable: true } });
-  Constructor.createPrototypeFor = createPrototypeFor;
+  Constructor.subclass = subclass;
   return prototype;
 })
 .call(EventEmitter, AsyncIterator);
@@ -426,7 +425,7 @@ function EmptyIterator() {
   AsyncIterator.call(this);
   this._changeState(ENDED, true);
 }
-AsyncIterator.createPrototypeFor(EmptyIterator);
+AsyncIterator.subclass(EmptyIterator);
 
 
 
@@ -448,7 +447,7 @@ function SingletonIterator(item) {
   else
     this._item = item, this.readable = true;
 }
-var SingletonIteratorPrototype = AsyncIterator.createPrototypeFor(SingletonIterator);
+var SingletonIteratorPrototype = AsyncIterator.subclass(SingletonIterator);
 
 /* Reads the item from the iterator. */
 SingletonIteratorPrototype.read = function () {
@@ -484,7 +483,7 @@ function ArrayIterator(items) {
   this._buffer = Array.prototype.slice.call(items);
   this.readable = true;
 }
-var ArrayIteratorPrototype = AsyncIterator.createPrototypeFor(ArrayIterator);
+var ArrayIteratorPrototype = AsyncIterator.subclass(ArrayIterator);
 
 /* Reads an item from the iterator. */
 ArrayIteratorPrototype.read = function () {
@@ -536,7 +535,7 @@ function IntegerIterator(options) {
   else
     this.readable = true;
 }
-var IntegerIteratorPrototype = AsyncIterator.createPrototypeFor(IntegerIterator);
+var IntegerIteratorPrototype = AsyncIterator.subclass(IntegerIterator);
 
 /* Reads an item from the iterator. */
 IntegerIteratorPrototype.read = function () {
@@ -585,7 +584,7 @@ function BufferedIterator(options) {
   this._reading = true;
   setImmediate(init, this, autoStart === undefined || autoStart);
 }
-var BufferedIteratorPrototype = AsyncIterator.createPrototypeFor(BufferedIterator);
+var BufferedIteratorPrototype = AsyncIterator.subclass(BufferedIterator);
 
 /**
   Initializing the iterator by calling {@link BufferedIterator#_begin}
@@ -833,7 +832,7 @@ function TransformIterator(source, options) {
   BufferedIterator.call(this, options);
   if (source) this.source = source;
 }
-var TransformIteratorPrototype = BufferedIterator.createPrototypeFor(TransformIterator);
+var TransformIteratorPrototype = BufferedIterator.subclass(TransformIterator);
 
 /**
   The source this iterator generates items from
@@ -981,7 +980,7 @@ function SimpleTransformIterator(source, options) {
     if (append)  this._appender  = append.on  ? append  : new ArrayIterator(append);
   }
 }
-var SimpleTransformIteratorPrototype = TransformIterator.createPrototypeFor(SimpleTransformIterator);
+var SimpleTransformIteratorPrototype = TransformIterator.subclass(SimpleTransformIterator);
 
 // Default settings
 SimpleTransformIteratorPrototype._offset = 0;
@@ -1193,7 +1192,7 @@ function MultiTransformIterator(source, options) {
   TransformIterator.call(this, source, options);
   this._transformers = [];
 }
-var MultiTransformIteratorPrototype = TransformIterator.createPrototypeFor(MultiTransformIterator);
+var MultiTransformIteratorPrototype = TransformIterator.subclass(MultiTransformIterator);
 
 /* Tries to read and transform an item */
 MultiTransformIteratorPrototype._read = function (count, done) {
@@ -1273,7 +1272,7 @@ function ClonedIterator(source) {
   this._readPosition = 0;
   if (source) this.source = source;
 }
-var ClonedIteratorPrototype = TransformIterator.createPrototypeFor(ClonedIterator);
+var ClonedIteratorPrototype = TransformIterator.subclass(ClonedIterator);
 
 // The source this iterator copies items from
 Object.defineProperty(ClonedIteratorPrototype, 'source', {
