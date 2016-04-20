@@ -365,7 +365,7 @@ describe('TransformIterator', function () {
   describe('A TransformIterator that synchronously transforms a two-item source', function () {
     var iterator, source;
     before(function () {
-      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b']));
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
         this._push(item + '1');
         this._push(item + '2');
@@ -379,7 +379,7 @@ describe('TransformIterator', function () {
 
     describe('before reading an item', function () {
       it('should have called `read` on the source', function () {
-        source.read.should.have.been.calledOnce;
+        source.read.should.have.been.called;
       });
 
       it('should have emitted the `readable` event', function () {
@@ -427,12 +427,12 @@ describe('TransformIterator', function () {
     describe('after reading the remaining items', function () {
       var items = [];
       before(function () {
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < 5; i++)
           items.push(iterator.read());
       });
 
       it('should have read the transformed items', function () {
-        items.should.deep.equal(['a2', 'b1', 'b2']);
+        items.should.deep.equal(['a2', 'b1', 'b2', 'c1', 'c2']);
       });
 
       it('should not have emitted the `readable` event anymore', function () {
@@ -472,7 +472,7 @@ describe('TransformIterator', function () {
   describe('A TransformIterator that asynchronously transforms a two-item source', function () {
     var iterator, source;
     before(function () {
-      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b']));
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
         setImmediate(function () {
           iterator._push(item + '1');
@@ -488,7 +488,7 @@ describe('TransformIterator', function () {
 
     describe('before reading an item', function () {
       it('should have called `read` on the source', function () {
-        source.read.should.have.been.calledOnce;
+        source.read.should.have.been.called;
       });
 
       it('should have emitted the `readable` event', function () {
@@ -536,12 +536,12 @@ describe('TransformIterator', function () {
     describe('after reading the remaining items', function () {
       var items = [];
       before(function () {
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < 5; i++)
           items.push(iterator.read());
       });
 
       it('should have read the transformed items', function () {
-        items.should.deep.equal(['a2', 'b1', 'b2']);
+        items.should.deep.equal(['a2', 'b1', 'b2', 'c1', 'c2']);
       });
 
       it('should not have emitted the `readable` event anymore', function () {
@@ -670,6 +670,97 @@ describe('TransformIterator', function () {
 
       it('should not leave any error handlers attached', function () {
         source.listenerCount('error').should.equal(0);
+      });
+    });
+  });
+
+  describe('A TransformIterator that skips many items', function () {
+    var iterator, source, i = 1;
+    before(function () {
+      source = new AsyncIterator();
+      source.read = sinon.spy(function () { return i++; });
+      iterator = new TransformIterator(source);
+      iterator._transform = function (item, done) {
+        if (item % 10 === 0)
+          this._push(item);
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have called `read` on the source', function () {
+        source.read.should.have.been.called;
+      });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading a first item', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+      });
+
+      it('should read the correct item', function () {
+        item.should.equal(10);
+      });
+
+      it('should have called `read` on the source until it had sufficient items', function () {
+        source.read.should.have.callCount(50);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading a second item', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+      });
+
+      it('should read the correct item', function () {
+        item.should.equal(20);
+      });
+
+      it('should have called `read` on the source until it had sufficient items', function () {
+        source.read.should.have.callCount(60);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
       });
     });
   });

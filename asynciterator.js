@@ -688,8 +688,9 @@ BufferedIteratorPrototype._read = function (count, done) { done(); };
 BufferedIteratorPrototype._push = function (item) {
   if (this.ended)
     throw new Error('Cannot push after the iterator was ended.');
+  this._pushed++;
   this._buffer.push(item);
-  this.readable = this._pushed = true;
+  this.readable = true;
 };
 
 /**
@@ -713,7 +714,7 @@ BufferedIteratorPrototype._fillBuffer = function () {
   // Otherwise, try to fill empty spaces in the buffer by generating new items
   else if ((neededItems = this._bufferSize - this._buffer.length) > 0) {
     this._reading = true;
-    this._pushed = false;
+    this._pushed = 0;
     this._read(neededItems, function () {
       // Verify the callback is only called once
       if (!neededItems)
@@ -889,16 +890,26 @@ TransformIteratorPrototype._validateSource = function (source, allowDestination)
     throw new Error('The source already has a destination');
 };
 
-/* Tries to read and transform an item */
+/* Tries to read a transformed item */
 TransformIteratorPrototype._read = function (count, done) {
-  var source = this._source, item;
+  var self = this;
+  readAndTransform(self, function next() {
+    // Continue transforming until at least `count` items have been pushed
+    if (self._pushed < count)
+      setImmediate(readAndTransform, self, next, done);
+    else
+      done();
+  }, done);
+};
+function readAndTransform(self, next, done) {
   // If the source exists and still can read items,
   // try to read and transform the next item.
+  var source = self._source, item;
   if (source && !source.ended && (item = source.read()) !== null)
-    this._transform(item, done);
+    self._transform(item, next);
   else
     done();
-};
+}
 
 /**
   Generates items based on the item from the source.
