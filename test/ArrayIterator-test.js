@@ -445,7 +445,7 @@ describe('ArrayIterator', function () {
       items = [iterator.read(), iterator.read(), iterator.read(), iterator.read()];
     });
 
-    it('should return the original elements', function () {
+    it('should return the original items', function () {
       items.should.deep.equal([1, 2, 3, null]);
     });
   });

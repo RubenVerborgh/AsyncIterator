@@ -100,7 +100,7 @@ describe('MultiTransformIterator', function () {
         items.should.deep.equal([]);
       });
 
-      it('should have called _createTransformer for each element', function () {
+      it('should have called _createTransformer for each item', function () {
         iterator._createTransformer.should.have.callCount(6);
         iterator._createTransformer.getCall(0).args.should.deep.equal(['a']);
         iterator._createTransformer.getCall(1).args.should.deep.equal(['b']);
@@ -188,7 +188,7 @@ describe('MultiTransformIterator', function () {
         items.should.deep.equal([]);
       });
 
-      it('should have called _createTransformer for each element', function () {
+      it('should have called _createTransformer for each item', function () {
         iterator._createTransformer.should.have.callCount(6);
         iterator._createTransformer.getCall(0).args.should.deep.equal(['a']);
         iterator._createTransformer.getCall(1).args.should.deep.equal(['b']);

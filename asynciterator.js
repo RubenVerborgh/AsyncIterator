@@ -580,7 +580,7 @@ function BufferedIterator(options) {
   this._buffer = [];
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
 
-  // Acquire reading lock to read initialization elements
+  // Acquire reading lock to read initialization items
   this._state = INIT;
   this._reading = true;
   setImmediate(init, this, autoStart !== false || autoStart);
@@ -980,9 +980,9 @@ AsyncIterator.wrap = TransformIterator;
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
-  @param {Function} [options.filter] A function to synchronously filter elements from the source
-  @param {Function} [options.map] A function to synchronously transform elements from the source
-  @param {Function} [options.transform] A function to asynchronously transform elements from the source
+  @param {Function} [options.filter] A function to synchronously filter items from the source
+  @param {Function} [options.map] A function to synchronously transform items from the source
+  @param {Function} [options.transform] A function to asynchronously transform items from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @extends TransformIterator
@@ -1079,8 +1079,8 @@ SimpleTransformIteratorPrototype._insert = function (inserter, done) {
   @param {object|Function} [options] Settings of the iterator, or the transformation function
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
-  @param {Function} [options.map] A function to synchronously transform elements from the source
-  @param {Function} [options.transform] A function to asynchronously transform elements from the source
+  @param {Function} [options.map] A function to synchronously transform items from the source
+  @param {Function} [options.transform] A function to asynchronously transform items from the source
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
@@ -1374,7 +1374,7 @@ ClonedIteratorPrototype.getProperties = function () {
 function HistoryReader(source) {
   var history = [], clones;
 
-  // Tries to read the element at the given history position
+  // Tries to read the item at the given history position
   this.readAt = function (pos) {
     var item;
     // Read a new item from the source when necessary

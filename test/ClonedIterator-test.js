@@ -276,7 +276,7 @@ describe('ClonedIterator', function () {
     });
   });
 
-  describe('Cloning a one-element iterator', function () {
+  describe('Cloning a one-item iterator', function () {
     function createIterator() { return new ArrayIterator(['a']); }
 
     function beforeReading(getClone, getIterator) {
@@ -349,7 +349,7 @@ describe('ClonedIterator', function () {
     });
   });
 
-  describe('Cloning a two-element iterator', function () {
+  describe('Cloning a two-item iterator', function () {
     function createIterator() { return new ArrayIterator(['a', 'b']); }
 
     function beforeReading(getClone, getIterator) {
@@ -409,7 +409,7 @@ describe('ClonedIterator', function () {
         before(function () { item = getClone().read(); });
 
         it('should have read the item', function () {
-          if (!getClone().closedBeforeReadingElement2)
+          if (!getClone().closedBeforeReadingItem2)
             expect(item).to.equal('b');
         });
 
@@ -458,7 +458,7 @@ describe('ClonedIterator', function () {
       describe('after clone 2 is closed', function () {
         before(function () {
           clones['clone 2']().close();
-          clones['clone 2']().closedBeforeReadingElement2 = true;
+          clones['clone 2']().closedBeforeReadingItem2 = true;
         });
         describeClones(clones, afterReadingSecond);
       });

@@ -69,7 +69,7 @@ describe('IntegerIterator', function () {
       });
     });
 
-    describe('when reading elements', function () {
+    describe('when reading items', function () {
       it('should return 0 on read call 1', function () {
         expect(iterator.read()).to.equal(0);
       });
@@ -129,7 +129,7 @@ describe('IntegerIterator', function () {
       });
     });
 
-    describe('when reading elements', function () {
+    describe('when reading items', function () {
       it('should return -5 on read call 1', function () {
         expect(iterator.read()).to.equal(-5);
       });
@@ -159,7 +159,7 @@ describe('IntegerIterator', function () {
       });
     });
 
-    describe('when reading the final element', function () {
+    describe('when reading the final item', function () {
       it('should return 10 on read call 4', function () {
         expect(iterator.read()).to.equal(10);
       });
@@ -249,7 +249,7 @@ describe('IntegerIterator', function () {
       });
     });
 
-    describe('when reading elements', function () {
+    describe('when reading items', function () {
       it('should return 10 on read call 1', function () {
         expect(iterator.read()).to.equal(10);
       });
@@ -279,7 +279,7 @@ describe('IntegerIterator', function () {
       });
     });
 
-    describe('when reading the final element', function () {
+    describe('when reading the final item', function () {
       it('should return -5 on read call 4', function () {
         expect(iterator.read()).to.equal(-5);
       });

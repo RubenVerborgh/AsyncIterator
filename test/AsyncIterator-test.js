@@ -615,7 +615,7 @@ describe('AsyncIterator', function () {
       });
     });
 
-    describe('called on an iterator with two elements', function () {
+    describe('called on an iterator with two items', function () {
       var iterator, callback, result;
       before(function () {
         var i = 0;
@@ -647,7 +647,7 @@ describe('AsyncIterator', function () {
       });
     });
 
-    describe('called on an iterator with two elements and a `this` argument', function () {
+    describe('called on an iterator with two items and a `this` argument', function () {
       var iterator, callback, result, self = {};
       before(function () {
         var i = 0;

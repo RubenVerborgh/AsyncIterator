@@ -1278,7 +1278,7 @@ describe('BufferedIterator', function () {
       sinon.spy(iterator, '_read');
     });
 
-    it('should call _read with the remaining number of elements', function () {
+    it('should call _read with the remaining number of items', function () {
       iterator._read.should.have.been.calledOnce;
       iterator._read.should.have.been.calledWith(1);
     });
