@@ -490,11 +490,10 @@ var ArrayIteratorPrototype = AsyncIterator.subclass(ArrayIterator);
 ArrayIteratorPrototype.read = function () {
   var buffer = this._buffer, item = null;
   if (buffer) {
-    if (buffer.length)
-      item = buffer.shift();
+    item = buffer.shift();
     if (!buffer.length) {
-      this.close();
       delete this._buffer;
+      this.close();
     }
   }
   return item;
