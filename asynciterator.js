@@ -578,6 +578,7 @@ function BufferedIterator(options) {
   // Set up the internal buffer
   var bufferSize = options.bufferSize, autoStart = options.autoStart;
   this._buffer = [];
+  this._pushed = 0;
   this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
 
   // Acquire reading lock to read initialization items
