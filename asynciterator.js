@@ -130,7 +130,7 @@ function emit(self, eventName) { self.emit(eventName); }
   If no items are currently available, this methods returns `null`.
   The {@link AsyncIterator.event:readable} event will then signal when new items might be ready.
 
-  To read all items from the stream,
+  To read all items from the iterator,
   switch to _flow mode_ by subscribing to the {@link AsyncIterator.event:data} event.
   When in flow mode, do not use the `read` method.
 
@@ -821,7 +821,7 @@ BufferedIteratorPrototype._toStringDetails = function () {
 
   @constructor
   @classdesc An iterator that generates items based on a source iterator.
-  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
@@ -939,6 +939,21 @@ TransformIteratorPrototype._end = function () {
   BufferedIteratorPrototype._end.call(this);
 };
 
+/**
+  Creates an iterator that wraps around a given iterator or readable stream.
+
+  Use this to convert an iterator-like object into a full-featured AsyncIterator.
+
+  After this operation, only read the returned iterator instead of the given one.
+
+  @function
+  @name AsyncIterator.wrap
+  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+  @param {object} [options] Settings of the iterator
+  @returns {AsyncIterator} A new iterator with the items from the given iterator
+**/
+AsyncIterator.wrap = TransformIterator;
+
 
 
 
@@ -948,7 +963,7 @@ TransformIteratorPrototype._end = function () {
   @constructor
   @classdesc An iterator that generates items based on a source iterator
              and simple transformation steps passed as arguments.
-  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object|Function} [options] Settings of the iterator, or the transformation function
   @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
@@ -1189,7 +1204,7 @@ AsyncIteratorPrototype.range = function (start, end) {
   @constructor
   @classdesc An iterator that generates items by transforming each item of a source
              with a different iterator.
-  @param {AsyncIterator} [source] The source this iterator generates items from
+  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @extends TransformIterator
 **/
@@ -1265,7 +1280,7 @@ MultiTransformIteratorPrototype._closeWhenDone = function () {
 
   @constructor
   @classdesc An iterator that copies items from another iterator.
-  @param {AsyncIterator} [source] The source this iterator copies items from
+  @param {AsyncIterator|Readable} [source] The source this iterator copies items from
   @extends TransformIterator
 **/
 function ClonedIterator(source) {
