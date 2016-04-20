@@ -1430,12 +1430,14 @@ function HistoryReader(source) {
 
 /* Tries to read an item */
 ClonedIteratorPrototype.read = function () {
-  // Try to read items from history
   var source = this._source, item = null;
   if (!this.ended && source) {
+    // Try to read an item at the current point in history
     var history = source._destination;
     if ((item = history.readAt(this._readPosition)) !== null)
       this._readPosition++;
+    else
+      this.readable = false;
     // Close the iterator if we are at the end of the source
     if (history.endsAt(this._readPosition))
       this.close();

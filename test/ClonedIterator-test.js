@@ -632,6 +632,93 @@ describe('ClonedIterator', function () {
     });
   });
 
+  describe('Cloning an iterator that becomes readable later on', function () {
+    var clones = createClones(function () { return new BufferedIterator(); }), iterator;
+    before(function () {
+      iterator = clones.iterator();
+      iterator._push(1);
+    });
+
+    describe('before the first item is read', function () {
+      describeClones(clones, function (getClone) {
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
+
+        it('should have emitted the `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(1);
+        });
+      });
+    });
+
+    describe('after the first item is read', function () {
+      describeClones(clones, function (getClone) {
+        var item;
+        before(function () { item = getClone().read(); });
+
+        it('should have read the item correctly', function () {
+          item.should.equal(1);
+        });
+
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
+
+        it('should not have emitted another `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(1);
+        });
+      });
+    });
+
+    describe('after trying to read the second item', function () {
+      describeClones(clones, function (getClone) {
+        var item;
+        before(function () { item = getClone().read(); });
+
+        it('should not have read an item', function () {
+          expect(item).to.be.null;
+        });
+
+        it('should not be readable', function () {
+          getClone().readable.should.be.false;
+        });
+
+        it('should not have emitted another `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(1);
+        });
+      });
+    });
+
+    describe('after the second item is pushed', function () {
+      before(function () { iterator._push(2); });
+
+      describeClones(clones, function (getClone) {
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
+
+        it('should have emitted another `readable` event', function () {
+          getClone()._eventCounts.readable.should.equal(2);
+        });
+      });
+    });
+
+    describe('after reading the second item', function () {
+      describeClones(clones, function (getClone) {
+        var item;
+        before(function () { item = getClone().read(); });
+
+        it('should have read the item correctly', function () {
+          item.should.equal(2);
+        });
+
+        it('should be readable', function () {
+          getClone().readable.should.be.true;
+        });
+      });
+    });
+  });
+
   describe('Cloning an iterator that errors', function () {
     var clones = createClones(function () { return new AsyncIterator(); }), iterator;
     before(function () {
