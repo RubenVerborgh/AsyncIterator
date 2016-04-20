@@ -694,7 +694,7 @@ BufferedIteratorPrototype._push = function (item) {
 };
 
 /**
-  Fills the internal buffer until `this.bufferSize` items are present.
+  Fills the internal buffer until `this._bufferSize` items are present.
 
   This method calls {@link BufferedIterator#_read} to fetch items.
 
