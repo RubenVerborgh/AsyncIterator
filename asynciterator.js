@@ -1377,11 +1377,14 @@ function HistoryReader(source) {
 
   // Tries to read the item at the given history position
   this.readAt = function (pos) {
-    var item;
-    // Read a new item from the source when necessary
-    if (pos === history.length && !source.ended && (item = source.read()) !== null)
+    var item = null;
+    // Retrieve an item from history when available
+    if (pos < history.length)
+      item = history[pos];
+    // Read a new item from the source when possible
+    else if (!source.ended && (item = source.read()) !== null)
       history[pos] = item;
-    return pos < history.length ? history[pos] : null;
+    return item;
   };
 
   // Determines whether the given position is the end of the source
