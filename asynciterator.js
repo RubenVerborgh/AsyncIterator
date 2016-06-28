@@ -407,6 +407,24 @@ AsyncIteratorPrototype.setProperties = function (properties) {
     this.setProperty(propertyName, properties[propertyName]);
 };
 
+/**
+  Copies the given properties from the source iterator.
+
+  @function
+  @name AsyncIterator#copyProperties
+  @param {AsyncIterator} source The iterator to copy from
+  @param {Array} propertyNames List of property names to copy
+**/
+AsyncIteratorPrototype.copyProperties = function (source, propertyNames) {
+  for (var i = 0; i < propertyNames.length; i++)
+    copyProperty(source, this, propertyNames[i]);
+};
+function copyProperty(source, destination, propertyName) {
+  source.getProperty(propertyName, function (value) {
+    destination.setProperty(propertyName, value);
+  });
+}
+
 /* Generates a textual representation of the iterator. */
 AsyncIteratorPrototype.toString = function () {
   var details = this._toStringDetails();

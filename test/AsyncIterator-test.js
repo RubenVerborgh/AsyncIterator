@@ -604,6 +604,24 @@ describe('AsyncIterator', function () {
         });
       });
     });
+
+    describe('when copyProperties is called', function () {
+      var source;
+      before(function () {
+        source = new AsyncIterator();
+        source.setProperties({ a: 'A', b: 'B', c: 'C' });
+        iterator.copyProperties(source, ['a', 'c']);
+      });
+
+      it('should copy the given properties', function () {
+        expect(iterator.getProperty('a')).to.equal('A');
+        expect(iterator.getProperty('c')).to.equal('C');
+      });
+
+      it('should not copy other properties', function () {
+        expect(iterator.getProperty('b')).to.be.undefined;
+      });
+    });
   });
 
   describe('The AsyncIterator#each function', function () {
