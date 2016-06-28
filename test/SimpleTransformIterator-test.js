@@ -174,6 +174,97 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
+  describe('A SimpleTransformIterator with a transform function that skips many items', function () {
+    var iterator, source, transform, i = 1;
+    before(function () {
+      source = new AsyncIterator();
+      source.read = sinon.spy(function () { return i++; });
+      transform = function (item, done) {
+        if (item % 10 === 0)
+          this._push(item);
+        done();
+      };
+      iterator = new SimpleTransformIterator(source, transform);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have called `read` on the source', function () {
+        source.read.should.have.been.called;
+      });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading a first item', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+      });
+
+      it('should read the correct item', function () {
+        item.should.equal(10);
+      });
+
+      it('should have called `read` on the source until it had sufficient items', function () {
+        source.read.should.have.callCount(50);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading a second item', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+      });
+
+      it('should read the correct item', function () {
+        item.should.equal(20);
+      });
+
+      it('should have called `read` on the source until it had sufficient items', function () {
+        source.read.should.have.callCount(60);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+  });
+
   describe('A SimpleTransformIterator with a filter function', function () {
     var iterator, source, filter;
     before(function () {

@@ -1023,29 +1023,39 @@ SimpleTransformIteratorPrototype._map = function (item) { return item; };
 
 /* Tries to read and transform an item */
 SimpleTransformIteratorPrototype._read = function (count, done) {
+  var self = this;
+  readAndTransformSimple(self, function next() {
+    // Continue transforming until at least `count` items have been pushed
+    if (self._pushed < count)
+      setImmediate(readAndTransformSimple, self, next, done);
+    else
+      done();
+  }, done);
+};
+function readAndTransformSimple(self, next, done) {
   // Verify we have a readable source
-  var source = this._source, item;
+  var source = self._source, item;
   if (source && !source.ended) {
     // Verify we are below the limit
-    if (this._limit === 0)
-      this.close();
+    if (self._limit === 0)
+      self.close();
     else {
       // Try to read the next item
       while ((item = source.read()) !== null) {
         // Verify the item passes the filter
-        if (this._filter(item)) {
+        if (self._filter(item)) {
           // Verify we are past the offset
-          if (this._offset === 0) {
-            this._limit--;
-            return this._transform(this._map(item), done);
+          if (self._offset === 0) {
+            self._limit--;
+            return self._transform(self._map(item), next);
           }
-          this._offset--;
+          self._offset--;
         }
       }
     }
   }
   done();
-};
+}
 
 // Prepends items to the iterator
 SimpleTransformIteratorPrototype._begin = function (done) {
