@@ -395,6 +395,18 @@ AsyncIteratorPrototype.getProperties = function () {
   return copy;
 };
 
+/**
+  Sets all of the given properties.
+
+  @function
+  @name AsyncIterator#setProperties
+  @param {object} properties Key/value pairs of properties to set
+**/
+AsyncIteratorPrototype.setProperties = function (properties) {
+  for (var propertyName in properties)
+    this.setProperty(propertyName, properties[propertyName]);
+};
+
 /* Generates a textual representation of the iterator. */
 AsyncIteratorPrototype.toString = function () {
   var details = this._toStringDetails();

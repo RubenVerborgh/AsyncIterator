@@ -414,6 +414,19 @@ describe('AsyncIterator', function () {
           });
         });
       });
+
+      describe('after multiple properties are set', function () {
+        before(function () {
+          iterator.setProperties({ test: 'def', test2: 'ghi' });
+        });
+
+        it('should return an object with the new properties', function () {
+          expect(iterator.getProperties()).to.deep.equal({
+            test:  'def',
+            test2: 'ghi',
+          });
+        });
+      });
     });
 
     describe('when getProperty is called without callback', function () {
