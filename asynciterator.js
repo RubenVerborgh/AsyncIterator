@@ -1047,7 +1047,9 @@ function readAndTransformSimple(self, next, done) {
           // Verify we are past the offset
           if (self._offset === 0) {
             self._limit--;
-            return self._transform(self._map(item), next);
+            // Map and transform the item
+            item = self._map(item);
+            return item === null ? next() : self._transform(item, next);
           }
           self._offset--;
         }

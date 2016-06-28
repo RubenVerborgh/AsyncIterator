@@ -111,6 +111,41 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
+  describe('A SimpleTransformIterator with a map function that returns null', function () {
+    var iterator, source, map;
+    before(function () {
+      var i = 0;
+      source = new ArrayIterator(['a', 'b', 'c']);
+      map = sinon.spy(function (item) {
+        if (++i === 2)
+          return null;
+        else
+          return item + i;
+      });
+      iterator = new SimpleTransformIterator(source, { map: map });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should execute the map function on all items in order, skipping null', function () {
+        items.should.deep.equal(['a1', 'c3']);
+      });
+
+      it('should have called the map function once for each item', function () {
+        map.should.have.been.calledThrice;
+      });
+
+      it('should have called the map function with the iterator as `this`', function () {
+        map.alwaysCalledOn(iterator).should.be.true;
+      });
+    });
+  });
+
   describe('A SimpleTransformIterator with a transform function', function () {
     var iterator, source, transform;
     before(function () {
