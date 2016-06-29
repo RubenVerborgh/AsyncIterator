@@ -17,7 +17,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
   An iterator is initializing if it is preparing main item generation.
   It can already produce items.
 
-  @name AsyncIterator.OPEN
+  @name AsyncIterator.INIT
   @type integer
   @private
 */
@@ -594,7 +594,7 @@ IntegerIteratorPrototype._toStringDetails = function () {
   This class serves as a base class for other iterators
   with a typically complex item generation process.
   @param {object} [options] Settings of the iterator
-  @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @extends AsyncIterator
 **/
@@ -606,17 +606,40 @@ function BufferedIterator(options) {
   options = options || {};
 
   // Set up the internal buffer
-  var bufferSize = options.bufferSize, autoStart = options.autoStart;
+  var maxBufferSize = options.maxBufferSize, autoStart = options.autoStart;
+  this._state  = INIT;
   this._buffer = [];
   this._pushed = 0;
-  this._bufferSize = bufferSize = isFinite(bufferSize) ? Math.max(~~bufferSize, 1) : 4;
+  this.maxBufferSize = maxBufferSize;
 
   // Acquire reading lock to read initialization items
-  this._state = INIT;
   this._reading = true;
   setImmediate(init, this, autoStart !== false || autoStart);
 }
 var BufferedIteratorPrototype = AsyncIterator.subclass(BufferedIterator);
+
+/**
+  The maximum number of items to preload in the internal buffer
+
+  @name BufferedIterator#maxBufferSize
+  @type number
+**/
+Object.defineProperty(BufferedIteratorPrototype, 'maxBufferSize', {
+  set: function (maxBufferSize) {
+    // Allow only positive integers and infinity
+    if (maxBufferSize !== Infinity)
+      maxBufferSize = isFinite(maxBufferSize) ? Math.max(~~maxBufferSize, 1) : 4;
+    // Only set the maximum buffer size if it changes
+    if (this._maxBufferSize !== maxBufferSize) {
+      this._maxBufferSize = maxBufferSize;
+      // Ensure sufficient elements are buffered
+      if (this._state === OPEN)
+        this._fillBuffer();
+    }
+  },
+  get: function () { return this._maxBufferSize; },
+  enumerable: true,
+});
 
 /**
   Initializing the iterator by calling {@link BufferedIterator#_begin}
@@ -682,7 +705,7 @@ BufferedIteratorPrototype.read = function () {
   }
 
   // If the buffer is becoming empty, either fill it or end the iterator
-  if (!this._reading && buffer.length < this._bufferSize) {
+  if (!this._reading && buffer.length < this._maxBufferSize) {
     // If the iterator is not closed and thus may still generate new items, fill the buffer
     if (!this.closed)
       fillBufferAsync(this);
@@ -725,7 +748,7 @@ BufferedIteratorPrototype._push = function (item) {
 };
 
 /**
-  Fills the internal buffer until `this._bufferSize` items are present.
+  Fills the internal buffer until `this._maxBufferSize` items are present.
 
   This method calls {@link BufferedIterator#_read} to fetch items.
 
@@ -743,7 +766,7 @@ BufferedIteratorPrototype._fillBuffer = function () {
   else if (this.closed)
     this._completeClose();
   // Otherwise, try to fill empty spaces in the buffer by generating new items
-  else if ((neededItems = this._bufferSize - this._buffer.length) > 0) {
+  else if ((neededItems = this._maxBufferSize - this._buffer.length) > 0) {
     this._reading = true;
     this._pushed = 0;
     this._read(neededItems, function () {
@@ -854,7 +877,7 @@ BufferedIteratorPrototype._toStringDetails = function () {
   @classdesc An iterator that generates items based on a source iterator.
   @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
-  @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @extends BufferedIterator
@@ -1006,7 +1029,7 @@ AsyncIterator.wrap = TransformIterator;
              and simple transformation steps passed as arguments.
   @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object|Function} [options] Settings of the iterator, or the transformation function
-  @param {integer} [options.bufferSize=4] The number of items to keep in the buffer
+  @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @param {integer} [options.offset] The number of items to skip
@@ -1279,8 +1302,8 @@ MultiTransformIteratorPrototype._read = function (count, done) {
     transformer.removeListener('error',    destinationEmitError);
   }
 
-  // Create new transformers if there are less than bufferSize
-  while (source && !source.ended && transformers.length < this._bufferSize) {
+  // Create new transformers if there are less than the maximum buffer size
+  while (source && !source.ended && transformers.length < this._maxBufferSize) {
     // Read an item to create the next transformer
     item = this._source.read();
     if (item === null)

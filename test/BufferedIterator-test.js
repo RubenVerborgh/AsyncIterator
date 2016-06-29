@@ -47,6 +47,10 @@ describe('BufferedIterator', function () {
       captureEvents(iterator, 'readable', 'end');
     });
 
+    it('should have maxBufferSize 4', function () {
+      iterator.maxBufferSize.should.equal(4);
+    });
+
     it('should provide a readable `toString` representation', function () {
       iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
     });
@@ -153,7 +157,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -210,7 +214,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -307,7 +311,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -364,7 +368,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -454,7 +458,7 @@ describe('BufferedIterator', function () {
   describe('A BufferedIterator that is being closed while reading is in progress', function () {
     var iterator, _readDone;
     function createIterator() {
-      iterator = new BufferedIterator({ autoStart: false, bufferSize: 1 });
+      iterator = new BufferedIterator({ autoStart: false, maxBufferSize: 1 });
       iterator._read = function (count, done) { _readDone = done; };
       sinon.spy(iterator, '_read');
       captureEvents(iterator, 'readable', 'end');
@@ -886,7 +890,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.true;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -916,7 +920,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.false;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -977,7 +981,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.true;
         });
 
-        it('should have called `_read` with 4 (the default buffer size)', function () {
+        it('should have called `_read` with 4 (the default maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.should.have.been.calledWith(4);
         });
@@ -1054,7 +1058,7 @@ describe('BufferedIterator', function () {
           iterator.readable.should.be.true;
         });
 
-        it('should have called `_read` with 4 (the buffer size)', function () {
+        it('should have called `_read` with 4 (the maximum buffer size)', function () {
           iterator._read.should.have.been.calledOnce;
           iterator._read.getCall(0).args[0].should.equal(4);
         });
@@ -1269,7 +1273,7 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that pushes less than `bufferSize` items before _read', function () {
+  describe('A BufferedIterator that pushes less than `maxBufferSize` items before _read', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
@@ -1284,7 +1288,7 @@ describe('BufferedIterator', function () {
     });
   });
 
-  describe('A BufferedIterator that pushes `bufferSize` items before _read', function () {
+  describe('A BufferedIterator that pushes `maxBufferSize` items before _read', function () {
     var iterator;
     before(function () {
       iterator = new BufferedIterator();
@@ -1714,6 +1718,78 @@ describe('BufferedIterator', function () {
 
     it('should not have ended', function () {
       iterator.ended.should.be.false;
+    });
+  });
+
+  describe('A BufferedIterator created with a maximum buffer size', function () {
+    it('changes non-numeric maximum buffer sizes into 4', function () {
+      (new BufferedIterator({ maxBufferSize: 'b' })).maxBufferSize.should.equal(4);
+    });
+
+    it('changes negative maximum buffer sizes into 1', function () {
+      (new BufferedIterator({ maxBufferSize: -37 })).maxBufferSize.should.equal(1);
+    });
+
+    it('changes a 0 maximum buffer sizes into 1', function () {
+      (new BufferedIterator({ maxBufferSize: 0 })).maxBufferSize.should.equal(1);
+    });
+
+    it('retains a positive integer maximum buffer size', function () {
+      (new BufferedIterator({ maxBufferSize: 7 })).maxBufferSize.should.equal(7);
+    });
+
+    it('floors a positive non-integer maximum buffer size', function () {
+      (new BufferedIterator({ maxBufferSize: 7.5 })).maxBufferSize.should.equal(7);
+    });
+
+    it('retains an infinite maximum buffer size', function () {
+      (new BufferedIterator({ maxBufferSize: Infinity })).maxBufferSize.should.equal(Infinity);
+    });
+
+    describe('when changing the buffer size', function () {
+      var iterator;
+      before(function () {
+        iterator = new BufferedIterator({ maxBufferSize: 6 });
+        iterator._read = sinon.spy(function (count, done) {
+          for (var i = 0; i < 4; i++)
+            this._push(i);
+          done();
+        });
+      });
+
+      describe('before changing', function () {
+        it('should have called _read', function () {
+          iterator._read.should.have.callCount(1);
+        });
+      });
+
+      describe('to a different value', function () {
+        before(function () {
+          iterator.maxBufferSize = 8.4;
+        });
+
+        it('should change the value', function () {
+          iterator.maxBufferSize.should.equal(8);
+        });
+
+        it('should have called _read again', function () {
+          iterator._read.should.have.callCount(2);
+        });
+      });
+
+      describe('to the same value', function () {
+        before(function () {
+          iterator.maxBufferSize = 8.6;
+        });
+
+        it('should not change the value', function () {
+          iterator.maxBufferSize.should.equal(8);
+        });
+
+        it('should not have called _read again', function () {
+          iterator._read.should.have.callCount(2);
+        });
+      });
     });
   });
 });
