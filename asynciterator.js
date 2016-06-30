@@ -1445,6 +1445,12 @@ ClonedIteratorPrototype.getProperties = function () {
   return base;
 };
 
+/* Generates details for a textual representation of the iterator. */
+ClonedIteratorPrototype._toStringDetails = function () {
+  var source = this._source;
+  return '{source: ' + (source ? source.toString() : 'none') + '}';
+};
+
 // Stores the history of a source, so it can be cloned
 function HistoryReader(source) {
   var history = [], clones;

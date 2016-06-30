@@ -72,6 +72,10 @@ describe('ClonedIterator', function () {
         expect(clone.source).to.be.undefined;
       });
 
+      it('should provide a readable `toString` representation', function () {
+        clone.toString().should.equal('[ClonedIterator {source: none}]');
+      });
+
       it('should not have emitted the `readable` event', function () {
         clone._eventCounts.readable.should.equal(0);
       });
@@ -146,6 +150,10 @@ describe('ClonedIterator', function () {
     describeClones(clones, function (getClone, getIterator) {
       it('should have the original iterator as source', function () {
         getClone().source.should.equal(getIterator());
+      });
+
+      it('should provide a readable `toString` representation', function () {
+        getClone().toString().should.equal('[ClonedIterator {source: [EmptyIterator]}]');
       });
 
       it('should not have emitted the `readable` event', function () {
