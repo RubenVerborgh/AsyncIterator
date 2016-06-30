@@ -1,11 +1,19 @@
 # Asynchronous iterators for JavaScript
-## Data streams that only generate what you need
-JavaScript natively supports scenarios where functions return a single value,
-multiple lazily and synchronously created values (through [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)),
-or a single value created asynchronously (through [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)).
-`AsyncIterator` allows functions to return
-**_multiple_ values that are created _asynchronously_ and _lazily_**:
+**AsyncIterator is a lightweight JavaScript implementation of demand-driven object streams,**
+and an alternative to the two-way flow controlled [Node.js `Stream`](https://nodejs.org/api/stream.html).
+As opposed to `Stream`, you cannot _push_ anything into an `AsyncIterator`;
+instead, an iterator _pulls_ things from another iterator.
+This eliminates the need for expensive, complex flow control.
 
+[Read the full API documentation.](http://rubenverborgh.github.io/AsyncIterator/docs/)
+
+## Data streams that only generate what you need
+`AsyncIterator` allows functions to
+**return multiple _asynchronously_ and _lazily_ created values**.
+This adds a missing piece to JavaScript,
+which natively supports returning a single value synchronously
+and asynchronously (through [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)),
+but multiple values only synchronously (through [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)):
 
 <table>
   <tr>
@@ -25,14 +33,22 @@ or a single value created asynchronously (through [`Promise`](https://developer
   </tr>
 </table>
 
-Just like `Iterable`, **an `AsyncIterator` only generates items when you ask it to**.
-This contrast with other patterns such as [`Observable`](http://reactivex.io/intro.html),
+Like `Iterable`, **an `AsyncIterator` only generates items when you ask it to**.
+This contrast with patterns such as [`Observable`](http://reactivex.io/intro.html),
 which are data-driven and don't wait for consumers to process items.
 
-`AsyncIterator` is essentially a light-weight alternative to the two-way flow controlled [Node.js `Stream`](https://nodejs.org/api/stream.html).
-As opposed to `Stream`, you cannot _push_ anything into an `AsyncIterator`;
-instead, an iterator would _pull_ things from another iterator.
-This eliminates the need for expensive, complex flow control.
+### The asynchronous iterator interface
+An asynchronous iterator is an object that exposes a series of data items by:
+- implementing [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter)
+- returning an item when you call `iterator.read` (yielding `null` when none is available at the moment)
+- informing when new items might be available through `iterator.on('readable', callback)`
+- informing when no more items will become available through `iterator.on('end', callback)`
+- streaming all of its items when you register through `iterator.on('data', callback)`
+
+Any object that conforms to the above conditions can be used with the AsyncIterator library
+(this includes [Node.js Streams](https://nodejs.org/api/stream.html)).
+The `AsyncIterator` interface additionally exposes
+[several other methods and properties](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html).
 
 ## Example: fetching Wikipedia links related to natural numbers
 In the example below, we create an iterator of links found on Wikipedia pages for natural numbers.
@@ -70,13 +86,17 @@ setInterval(function () {
 }, 100);
 ```
 
-Or we can get the first 1000 links and display them:
+Or we can get the first 30 links and display them:
 ```JavaScript
 links.take(30).on('data', console.log);
 ```
 
-In both cases, pages from Wikipedia will only be fetched when needed.
-This is what makes `AsyncIterator` [_lazy_](https://en.wikipedia.org/wiki/Lazy_evaluation).
+In both cases, pages from Wikipedia will only be fetched when needed—the data consumer is in control.
+This is what makes `AsyncIterator` [lazy](https://en.wikipedia.org/wiki/Lazy_evaluation).
+
+If we had implemented this using the `Observable` pattern,
+an entire flow of unnecessary pages would be fetched,
+because it is controlled by the data publisher instead.
 
 ## Usage
 `AsyncIterator` implements the [`EventEmitter`](https://nodejs.org/api/events.html#events_class_eventemitter) interface
@@ -87,13 +107,13 @@ By default, an AsyncIterator is in _on-demand_ mode,
 meaning it only generates items when asked to.
 
 The [`read` method](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#read) returns the next item,
-or `undefined` when no item is available.
+or `null` when no item is available.
 
 ```JavaScript
 var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 2 });
 console.log(numbers.read()); // 1
 console.log(numbers.read()); // 2
-console.log(numbers.read()); // undefined
+console.log(numbers.read()); // null
 ```
 
 If you receive `undefined`,
