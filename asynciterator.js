@@ -621,6 +621,9 @@ var BufferedIteratorPrototype = AsyncIterator.subclass(BufferedIterator);
 /**
   The maximum number of items to preload in the internal buffer
 
+  A `BufferedIterator` tries to fill its buffer as far as possible.
+  Set to `Infinity` to fully drain the source.
+
   @name BufferedIterator#maxBufferSize
   @type number
 **/
@@ -766,23 +769,29 @@ BufferedIteratorPrototype._fillBuffer = function () {
   else if (this.closed)
     this._completeClose();
   // Otherwise, try to fill empty spaces in the buffer by generating new items
-  else if ((neededItems = this._maxBufferSize - this._buffer.length) > 0) {
-    this._reading = true;
+  else if ((neededItems = Math.min(this._maxBufferSize - this._buffer.length, 128)) > 0) {
+    // Acquire reading lock and start reading, counting pushed items
     this._pushed = 0;
+    this._reading = true;
     this._read(neededItems, function () {
       // Verify the callback is only called once
       if (!neededItems)
         throw new Error('done callback called multiple times');
       neededItems = 0;
+      // Release reading lock
       self._reading = false;
       // If the iterator was closed while reading, complete closing
       if (self.closed)
         self._completeClose();
-      // If the iterator pushed at least one item,
-      // it might still be able to generate new items after completing
+      // If the iterator pushed one or more items,
+      // it might currently be able to generate additional items
       // (even though all pushed items might already have been read)
-      else if (self._pushed)
+      else if (self._pushed) {
         self.readable = true;
+        // If the buffer is insufficiently full, continue filling
+        if (self._buffer.length < self._maxBufferSize / 2)
+          fillBufferAsync(self);
+      }
     });
   }
 };

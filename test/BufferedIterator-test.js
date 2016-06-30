@@ -1792,4 +1792,55 @@ describe('BufferedIterator', function () {
       });
     });
   });
+
+  describe('A BufferedIterator created with an infinite maximum buffer size', function () {
+    var iterator, i = 0;
+    before(function (done) {
+      iterator = new BufferedIterator({ maxBufferSize: Infinity });
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        if (i === 10)
+          this.close(), done();
+        next();
+      });
+    });
+
+    it('reads the source until the end', function () {
+      iterator._read.should.have.callCount(10);
+    });
+
+    it('calls `_read` on the source with a count of 128', function () {
+      iterator._read.getCall(0).args[0].should.equal(128);
+    });
+  });
+
+  describe('A BufferedIterator create with a finite maximum buffer size', function () {
+    var iterator, i = 0, beforeDone;
+    before(function () {
+      iterator = new BufferedIterator({ maxBufferSize: 4 });
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        if (i === 10)
+          this.close(), beforeDone();
+        next();
+      });
+    });
+
+    describe('before the maximum buffer size is increased to infinity', function () {
+      it('reads the source twice', function () {
+        iterator._read.should.have.callCount(2);
+      });
+    });
+
+    describe('after the maximum buffer size is increased to infinity', function () {
+      before(function (done) {
+        iterator.maxBufferSize = Infinity;
+        beforeDone = done;
+      });
+
+      it('reads the source until the end', function () {
+        iterator._read.should.have.callCount(10);
+      });
+    });
+  });
 });
