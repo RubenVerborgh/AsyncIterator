@@ -555,6 +555,20 @@ IntegerIterator.prototype._toStringDetails = function () {
   return '(' + this._next + '...' + this._last + ')';
 };
 
+/**
+  Creates an iterator of natural numbers within the given range.
+
+  The current iterator may not be read anymore until the returned iterator ends.
+
+  @param {integer} [start=0] The first number to emit
+  @param {integer} [end=Infinity] The last number to emit
+  @param {integer} [step=1] The increment between two numbers
+  @returns {IntegerIterator} An iterator of natural numbers within the given range
+**/
+AsyncIterator.range = function (start, end, step) {
+  return new IntegerIterator({ start: start, end: end, step: step });
+};
+
 
 
 /**

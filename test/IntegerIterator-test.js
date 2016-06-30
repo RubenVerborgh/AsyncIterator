@@ -189,7 +189,7 @@ describe('IntegerIterator', function () {
   describe('An IntegerIterator from 10 to -5 in steps of 5', function () {
     var iterator;
     before(function () {
-      iterator = new IntegerIterator({ start: 10, end: -5, step: 5 });
+      iterator = AsyncIterator.range(10, -5, 5);
       captureEvents(iterator, 'readable', 'end');
     });
 
