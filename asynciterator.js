@@ -958,7 +958,7 @@ TransformIteratorPrototype._read = function (count, done) {
   var self = this;
   readAndTransform(self, function next() {
     // Continue transforming until at least `count` items have been pushed
-    if (self._pushed < count)
+    if (self._pushed < count && !self.closed)
       setImmediate(readAndTransform, self, next, done);
     else
       done();
@@ -1088,7 +1088,7 @@ SimpleTransformIteratorPrototype._read = function (count, done) {
   var self = this;
   readAndTransformSimple(self, function next() {
     // Continue transforming until at least `count` items have been pushed
-    if (self._pushed < count)
+    if (self._pushed < count && !self.closed)
       setImmediate(readAndTransformSimple, self, next, done);
     else
       done();

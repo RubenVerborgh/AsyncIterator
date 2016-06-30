@@ -764,4 +764,68 @@ describe('TransformIterator', function () {
       });
     });
   });
+
+  describe('A TransformIterator that closes during the tranformation', function () {
+    var iterator, source;
+    before(function () {
+      source = new AsyncIterator();
+      source.read = sinon.spy(function () { return 1; });
+      iterator = new TransformIterator(source);
+      iterator._transform = function (item, done) {
+        this._push(item);
+        this.close();
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before reading an item', function () {
+      it('should have called `read` on the source', function () {
+        source.read.should.have.been.called;
+      });
+
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading a first item', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+      });
+
+      it('should read the correct item', function () {
+        item.should.equal(1);
+      });
+
+      it('should have called `read` on the source only once', function () {
+        source.read.should.have.been.calledOnce;
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+    });
+  });
 });
