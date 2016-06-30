@@ -125,9 +125,9 @@ describe('AsyncIterator', function () {
       });
 
       it('should not have any listeners for data, readable, or end', function () {
-        iterator._events.should.not.contain.key('data');
-        iterator._events.should.not.contain.key('readable');
-        iterator._events.should.not.contain.key('end');
+        expect(iterator._events).to.not.contain.key('data');
+        expect(iterator._events).to.not.contain.key('readable');
+        expect(iterator._events).to.not.contain.key('end');
       });
     });
 
@@ -155,9 +155,9 @@ describe('AsyncIterator', function () {
       });
 
       it('should not have any listeners for data, readable, or end', function () {
-        iterator._events.should.not.contain.key('data');
-        iterator._events.should.not.contain.key('readable');
-        iterator._events.should.not.contain.key('end');
+        expect(iterator._events).to.not.contain.key('data');
+        expect(iterator._events).to.not.contain.key('readable');
+        expect(iterator._events).to.not.contain.key('end');
       });
     });
   });

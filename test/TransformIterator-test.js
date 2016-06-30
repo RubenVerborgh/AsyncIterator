@@ -180,9 +180,9 @@ describe('TransformIterator', function () {
     before(function () {
       iterator = new TransformIterator(source = new EmptyIterator());
       captureEvents(iterator, 'readable', 'end');
-      source._events.should.not.contain.key('data');
-      source._events.should.not.contain.key('readable');
-      source._events.should.not.contain.key('end');
+      expect(source._events).to.not.contain.key('data');
+      expect(source._events).to.not.contain.key('readable');
+      expect(source._events).to.not.contain.key('end');
     });
 
     it('should expose the source in the `source` property', function () {
