@@ -116,7 +116,7 @@ console.log(numbers.read()); // 2
 console.log(numbers.read()); // null
 ```
 
-If you receive `undefined`,
+If you receive `null`,
 you should wait until the next [`readable` event](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:readable) before reading again.
 This event is not a guarantee that an item _will_ be available.
 
