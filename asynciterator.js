@@ -969,6 +969,7 @@ TransformIterator.prototype._closeWhenDone = function () {
 TransformIterator.prototype._end = function () {
   var source = this._source;
   if (source) {
+    source.removeListener('end',      destinationCloseWhenDone);
     source.removeListener('error',    destinationEmitError);
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;

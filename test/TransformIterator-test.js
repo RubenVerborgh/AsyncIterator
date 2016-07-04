@@ -826,6 +826,18 @@ describe('TransformIterator', function () {
       it('should have ended', function () {
         iterator.ended.should.be.true;
       });
+
+      it('should not leave `readable` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'readable').should.equal(0);
+      });
+
+      it('should not leave `end` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'end').should.equal(0);
+      });
+
+      it('should not leave `error` listeners on the source', function () {
+        EventEmitter.listenerCount(source, 'error').should.equal(0);
+      });
     });
   });
 });
