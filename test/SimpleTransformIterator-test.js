@@ -6,7 +6,8 @@ var AsyncIterator = require('../asynciterator'),
     EmptyIterator = AsyncIterator.EmptyIterator,
     ArrayIterator = AsyncIterator.ArrayIterator,
     IntegerIterator = AsyncIterator.IntegerIterator,
-    EventEmitter = require('events').EventEmitter;
+    EventEmitter = require('events').EventEmitter,
+    immediate = require('immediate');
 
 describe('SimpleTransformIterator', function () {
   describe('The SimpleTransformIterator function', function () {
@@ -183,7 +184,7 @@ describe('SimpleTransformIterator', function () {
       source = new ArrayIterator(['a', 'b', 'c']);
       transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        setImmediate(done);
+        immediate(done);
       });
       iterator = new SimpleTransformIterator(source, transform);
     });
@@ -572,18 +573,23 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with an offset of +Infinity', function () {
-    var iterator, source;
+    var iterator, source, getIterator;
     before(function () {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: Infinity });
+      // accessor function needed with empty iterators,
+      // because the iterator ends (with `immediate`)
+      // before the tests are called (with `setImmediate`)
+      getIterator = function () {
+        return iterator = iterator || new SimpleTransformIterator(source, { offset: Infinity });
+      };
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
+        getIterator().on('data', function (item) { items.push(item); });
+        getIterator().on('end', done);
       });
 
       it('should not call `read` on the source', function () {
@@ -647,18 +653,20 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a limit of 0', function () {
-    var iterator, source;
+    var iterator, source, getIterator;
     before(function () {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: 0 });
+      getIterator = function () {
+        return iterator = iterator || new SimpleTransformIterator(source, { limit: 0 });
+      };
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
+        getIterator().on('data', function (item) { items.push(item); });
+        getIterator().on('end', done);
       });
 
       it('should not call `read` on the source', function () {
@@ -722,18 +730,20 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a negative limit', function () {
-    var iterator, source;
+    var iterator, source, getIterator;
     before(function () {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -1 });
+      getIterator = function () {
+        return iterator = iterator || new SimpleTransformIterator(source, { limit: -1 });
+      };
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
+        getIterator().on('data', function (item) { items.push(item); });
+        getIterator().on('end', done);
       });
 
       it('should not call `read` on the source', function () {
@@ -747,18 +757,20 @@ describe('SimpleTransformIterator', function () {
   });
 
   describe('A SimpleTransformIterator with a limit of -Infinity', function () {
-    var iterator, source;
+    var iterator, source, getIterator;
     before(function () {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -Infinity });
+      getIterator = function () {
+        return iterator = iterator || new SimpleTransformIterator(source, { limit: -Infinity });
+      };
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
+        getIterator().on('data', function (item) { items.push(item); });
+        getIterator().on('end', done);
       });
 
       it('should not call `read` on the source', function () {
@@ -1381,18 +1393,20 @@ describe('SimpleTransformIterator', function () {
     });
 
     describe('when called on an iterator with an inverse range', function () {
-      var iterator, result;
+      var iterator, result, getResult;
       before(function () {
         iterator = new IntegerIterator();
         sinon.spy(iterator, 'read');
-        result = iterator.range(30, 20);
+        getResult = function () {
+          return result = result || iterator.range(30, 20);
+        };
       });
 
       describe('the return value', function () {
         var items = [];
         before(function (done) {
-          result.on('data', function (item) { items.push(item); });
-          result.on('end', done);
+          getResult().on('data', function (item) { items.push(item); });
+          getResult().on('end', done);
         });
 
         it('should be a SimpleTransformIterator', function () {

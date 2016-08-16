@@ -19,5 +19,8 @@
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0"
+  },
+  "dependencies": {
+    "immediate": "^3.2.3"
   }
 }

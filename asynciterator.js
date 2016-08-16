@@ -1,4 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
+var immediate = require('immediate');
 
 /**
   Names of possible iterator states.
@@ -111,7 +112,7 @@ AsyncIterator.prototype._changeState = function (newState, eventAsync) {
     this._state = newState;
     // Emit the `end` event when changing to ENDED
     if (newState === ENDED)
-      eventAsync ? setImmediate(emit, this, 'end') : this.emit('end');
+      eventAsync ? immediate(emit, this, 'end') : this.emit('end');
   }
   return valid;
 };
@@ -209,7 +210,7 @@ AsyncIterator.prototype._end = function () {
   }
 };
 function end(self) { self._end(); }
-function endAsync(self) { setImmediate(end, self); }
+function endAsync(self) { immediate(end, self); }
 
 /**
   Emitted after the last item of the iterator has been read.
@@ -233,7 +234,7 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
       this._readable = readable;
       // If the iterator became readable, emit the `readable` event
       if (readable)
-        setImmediate(emit, this, 'readable');
+        immediate(emit, this, 'readable');
     }
   },
   enumerable: true,
@@ -284,7 +285,7 @@ function waitForDataListener(eventName) {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
     if (this.readable)
-      setImmediate(call, emitData, this);
+      immediate(call, emitData, this);
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
@@ -322,7 +323,7 @@ AsyncIterator.prototype.getProperty = function (propertyName, callback) {
     return properties && properties[propertyName];
   // If the value has been set, send it through the callback
   if (properties && (propertyName in properties))
-    setImmediate(callback, properties[propertyName]);
+    immediate(callback, properties[propertyName]);
   // If the value was not set, store the callback for when the value will be set
   else {
     if (!(propertyCallbacks = this._propertyCallbacks))
@@ -348,9 +349,9 @@ AsyncIterator.prototype.setProperty = function (propertyName, value) {
   if (callbacks = propertyCallbacks && propertyCallbacks[propertyName]) {
     delete propertyCallbacks[propertyName];
     if (callbacks.length === 1)
-      setImmediate(callbacks[0], value);
+      immediate(callbacks[0], value);
     else {
-      setImmediate(function () {
+      immediate(function () {
         for (var i = 0; i < callbacks.length; i++)
           callbacks[i](value);
       });
@@ -600,7 +601,7 @@ function BufferedIterator(options) {
 
   // Acquire reading lock to read initialization items
   this._reading = true;
-  setImmediate(init, this, autoStart !== false || autoStart);
+  immediate(init, this, autoStart !== false || autoStart);
 }
 AsyncIterator.subclass(BufferedIterator);
 
@@ -775,7 +776,7 @@ function fillBufferAsync(self) {
   // Acquire reading lock to avoid recursive reads
   if (!self._reading) {
     self._reading = true;
-    setImmediate(fillBufferAsyncCallback, self);
+    immediate(fillBufferAsyncCallback, self);
   }
 }
 function fillBufferAsyncCallback(self) {
@@ -927,7 +928,7 @@ TransformIterator.prototype._read = function (count, done) {
   readAndTransform(self, function next() {
     // Continue transforming until at least `count` items have been pushed
     if (self._pushed < count && !self.closed)
-      setImmediate(readAndTransform, self, next, done);
+      immediate(readAndTransform, self, next, done);
     else
       done();
   }, done);
@@ -1052,7 +1053,7 @@ SimpleTransformIterator.prototype._read = function (count, done) {
   readAndTransformSimple(self, function next() {
     // Continue transforming until at least `count` items have been pushed
     if (self._pushed < count && !self.closed)
-      setImmediate(readAndTransformSimple, self, next, done);
+      immediate(readAndTransformSimple, self, next, done);
     else
       done();
   }, done);

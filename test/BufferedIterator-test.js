@@ -1,7 +1,8 @@
 var BufferedIterator = require('../asynciterator').BufferedIterator;
 
 var AsyncIterator = require('../asynciterator'),
-    EventEmitter = require('events').EventEmitter;
+    EventEmitter = require('events').EventEmitter,
+    immediate = require('immediate');
 
 describe('BufferedIterator', function () {
   describe('The BufferedIterator function', function () {
@@ -255,7 +256,7 @@ describe('BufferedIterator', function () {
     function createIterator(options) {
       var iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
-        setImmediate(function (self) { self.close(); done(); }, this);
+        immediate(function (self) { self.close(); done(); }, this);
       };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
@@ -531,8 +532,8 @@ describe('BufferedIterator', function () {
       describe('after `read` is called and the iterator has been closed', function () {
         before(function () {
           iterator.read();
-          setImmediate(function () { _readDone(); });
-          setImmediate(function () { iterator.close(); });
+          immediate(function () { _readDone(); });
+          immediate(function () { iterator.close(); });
         });
 
         it('should have emitted the `end` event', function () {
@@ -1023,7 +1024,7 @@ describe('BufferedIterator', function () {
       var iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
         this._push('a');
-        setImmediate(function (self) {
+        immediate(function (self) {
           self._push('b');
           self._push('c');
           done();
@@ -1131,9 +1132,9 @@ describe('BufferedIterator', function () {
     before(function (done) {
       iterator = new BufferedIterator({ autoStart: false });
       iterator._read = function (count, done) { readDone = done; };
-      // `setImmediate` because reading directly after construction does not call `_read`;
+      // `immediate` because reading directly after construction does not call `_read`;
       // this is necessary to enable attaching a `_begin` hook after construction
-      setImmediate(function () { iterator.read(); done(); });
+      immediate(function () { iterator.read(); done(); });
     });
 
     it('should cause an exception', function () {
@@ -1336,7 +1337,7 @@ describe('BufferedIterator', function () {
     before(function () {
       iterator = new BufferedIterator();
       iterator._begin = function (done) {
-        setImmediate(function () {
+        immediate(function () {
           iterator._push('x');
           iterator._push('y');
           done();
@@ -1590,7 +1591,7 @@ describe('BufferedIterator', function () {
         done();
       };
       iterator._flush = function (done) {
-        setImmediate(function () {
+        immediate(function () {
           iterator._push('x');
           iterator._push('y');
           done();
