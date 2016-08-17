@@ -176,7 +176,7 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
   var listeners = this._events && this._events[eventName];
   if (!listeners || (isFunction(listeners) ? listeners !== listener
                                            : listeners.indexOf(listener) < 0))
-    this.addListener(eventName, listener);
+    this.on(eventName, listener);
 };
 
 /**
@@ -895,7 +895,7 @@ Object.defineProperty(TransformIterator.prototype, 'source', {
       this.close();
     // Otherwise, react to source events
     else {
-      source.once('end',    destinationCloseWhenDone);
+      source.on('end',      destinationCloseWhenDone);
       source.on('readable', destinationFillBuffer);
       source.on('error',    destinationEmitError);
     }
@@ -1132,10 +1132,16 @@ SimpleTransformIterator.prototype._insert = function (inserter, done) {
   var self = this;
   if (!inserter || inserter.ended)
     done();
-  else
-    inserter.on('data', push), inserter.once('end', end);
+  else {
+    inserter.on('data', push);
+    inserter.on('end',  end);
+  }
   function push(item) { self._push(item); }
-  function end() { inserter.removeListener('data', push); done(); }
+  function end() {
+    inserter.removeListener('data', push);
+    inserter.removeListener('end',  end);
+    done();
+  }
 };
 
 /**
@@ -1288,6 +1294,7 @@ MultiTransformIterator.prototype._read = function (count, done) {
       this._push(head.item), count--;
     // Remove listeners from the transformer
     head = transformerQueue.shift(), transformer = head.transformer;
+    transformer.removeListener('end',      destinationFillBuffer);
     transformer.removeListener('readable', destinationFillBuffer);
     transformer.removeListener('error',    destinationEmitError);
   }
@@ -1301,7 +1308,7 @@ MultiTransformIterator.prototype._read = function (count, done) {
     // Create the transformer and listen to its events
     transformer = this._createTransformer(item) || new EmptyIterator();
     transformer._destination = this;
-    transformer.once('end',    destinationFillBuffer);
+    transformer.on('end',      destinationFillBuffer);
     transformer.on('readable', destinationFillBuffer);
     transformer.on('error',    destinationEmitError);
     transformerQueue.push({ transformer: transformer, item: item });
@@ -1474,14 +1481,15 @@ function HistoryReader(source) {
         clones[i].readable = true;
     }
     // When the source ends, close all clones that are fully read
-    source.once('end', clonesEnd);
+    source.on('end', clonesEnd);
     function clonesEnd() {
       for (var i = 0; i < clones.length; i++) {
         if (clones[i]._readPosition === history.length)
           clones[i].close();
       }
       clones = null;
-      source.removeListener('error', clonesEmitError);
+      source.removeListener('end',      clonesEnd);
+      source.removeListener('error',    clonesEmitError);
       source.removeListener('readable', clonesMakeReadable);
     }
     // When the source errors, re-emit the error
