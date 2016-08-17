@@ -596,7 +596,7 @@ function BufferedIterator(options) {
   var maxBufferSize = options.maxBufferSize, autoStart = options.autoStart;
   this._state  = INIT;
   this._buffer = [];
-  this._pushed = 0;
+  this._pushedCount = 0;
   this.maxBufferSize = maxBufferSize;
 
   // Acquire reading lock to read initialization items
@@ -724,7 +724,7 @@ BufferedIterator.prototype._read = function (count, done) { done(); };
 BufferedIterator.prototype._push = function (item) {
   if (this.ended)
     throw new Error('Cannot push after the iterator was ended.');
-  this._pushed++;
+  this._pushedCount++;
   this._buffer.push(item);
   this.readable = true;
 };
@@ -748,7 +748,7 @@ BufferedIterator.prototype._fillBuffer = function () {
   // Otherwise, try to fill empty spaces in the buffer by generating new items
   else if ((neededItems = Math.min(this._maxBufferSize - this._buffer.length, 128)) > 0) {
     // Acquire reading lock and start reading, counting pushed items
-    this._pushed = 0;
+    this._pushedCount = 0;
     this._reading = true;
     this._read(neededItems, function () {
       // Verify the callback is only called once
@@ -763,7 +763,7 @@ BufferedIterator.prototype._fillBuffer = function () {
       // If the iterator pushed one or more items,
       // it might currently be able to generate additional items
       // (even though all pushed items might already have been read)
-      else if (self._pushed) {
+      else if (self._pushedCount) {
         self.readable = true;
         // If the buffer is insufficiently full, continue filling
         if (self._buffer.length < self._maxBufferSize / 2)
@@ -859,6 +859,7 @@ BufferedIterator.prototype._toStringDetails = function () {
   @param {object} [options] Settings of the iterator
   @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @extends BufferedIterator
 **/
@@ -872,6 +873,7 @@ function TransformIterator(source, options) {
   }
   BufferedIterator.call(this, options);
   if (source) this.source = source;
+  this._optional = !!(options && options.optional);
 }
 BufferedIterator.subclass(TransformIterator);
 
@@ -927,7 +929,7 @@ TransformIterator.prototype._read = function (count, done) {
   var self = this;
   readAndTransform(self, function next() {
     // Continue transforming until at least `count` items have been pushed
-    if (self._pushed < count && !self.closed)
+    if (self._pushedCount < count && !self.closed)
       immediate(readAndTransform, self, next, done);
     else
       done();
@@ -937,10 +939,24 @@ function readAndTransform(self, next, done) {
   // If the source exists and still can read items,
   // try to read and transform the next item.
   var source = self._source, item;
-  if (source && !source.ended && (item = source.read()) !== null)
-    self._transform(item, next);
+  if (source && !source.ended && (item = source.read()) !== null) {
+    if (!self._optional)
+      self._transform(item, next);
+    else
+      optionalTransform(self, item, next);
+  }
   else
     done();
+}
+// Tries to transform the item;
+// if the transformation yields no items, pushes the original item
+function optionalTransform(self, item, done) {
+  var pushedCount = self._pushedCount;
+  self._transform(item, function () {
+    if (pushedCount === self._pushedCount)
+      self._push(item);
+    done();
+  });
 }
 
 /**
@@ -1010,6 +1026,7 @@ AsyncIterator.wrap = TransformIterator;
   @param {Function} [options.filter] A function to synchronously filter items from the source
   @param {Function} [options.map] A function to synchronously transform items from the source
   @param {Function} [options.transform] A function to asynchronously transform items from the source
+  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @extends TransformIterator
@@ -1052,12 +1069,13 @@ SimpleTransformIterator.prototype._read = function (count, done) {
   var self = this;
   readAndTransformSimple(self, function next() {
     // Continue transforming until at least `count` items have been pushed
-    if (self._pushed < count && !self.closed)
+    if (self._pushedCount < count && !self.closed)
       immediate(readAndTransformSimple, self, next, done);
     else
       done();
   }, done);
 };
+// Reads an item and performs each of the simple transformations on it
 function readAndTransformSimple(self, next, done) {
   // Verify we have a readable source
   var source = self._source, item;
@@ -1074,8 +1092,20 @@ function readAndTransformSimple(self, next, done) {
           if (self._offset === 0) {
             self._limit--;
             // Map and transform the item
-            item = self._map(item);
-            return item === null ? next() : self._transform(item, next);
+            var mappedItem = self._map(item);
+            if (mappedItem !== null) {
+              if (!self._optional)
+                self._transform(mappedItem, next);
+              else
+                optionalTransform(self, mappedItem, next);
+            }
+            // Don't transform a `null` item
+            else {
+              if (self._optional)
+                self._push(item);
+              next();
+            }
+            return;
           }
           self._offset--;
         }
@@ -1243,42 +1273,50 @@ function MultiTransformIterator(source, options) {
   if (!(this instanceof MultiTransformIterator))
     return new MultiTransformIterator(source, options);
   TransformIterator.call(this, source, options);
-  this._transformers = [];
+  this._transformerQueue = [];
 }
 TransformIterator.subclass(MultiTransformIterator);
 
 /* Tries to read and transform an item */
 MultiTransformIterator.prototype._read = function (count, done) {
   // Remove transformers that have ended
-  var item, transformer, transformers = this._transformers, source = this._source;
-  while ((transformer = transformers[0]) && transformer.ended) {
-    transformer = transformers.shift();
+  var item, head, transformer, transformerQueue = this._transformerQueue,
+      source = this._source, optional = this._optional;
+  while ((head = transformerQueue[0]) && head.transformer.ended) {
+    // If transforming is optional, push the original item if none was pushed
+    if (optional && head.item !== null)
+      this._push(head.item), count--;
+    // Remove listeners from the transformer
+    head = transformerQueue.shift(), transformer = head.transformer;
     transformer.removeListener('readable', destinationFillBuffer);
     transformer.removeListener('error',    destinationEmitError);
   }
 
   // Create new transformers if there are less than the maximum buffer size
-  while (source && !source.ended && transformers.length < this._maxBufferSize) {
+  while (source && !source.ended && transformerQueue.length < this._maxBufferSize) {
     // Read an item to create the next transformer
     item = this._source.read();
     if (item === null)
       break;
     // Create the transformer and listen to its events
-    transformer = this._createTransformer(item);
-    if (transformer && !transformer.ended) {
-      transformer._destination = this;
-      transformer.once('end',    destinationFillBuffer);
-      transformer.on('readable', destinationFillBuffer);
-      transformer.on('error',    destinationEmitError);
-      transformers.push(transformer);
-    }
+    transformer = this._createTransformer(item) || new EmptyIterator();
+    transformer._destination = this;
+    transformer.once('end',    destinationFillBuffer);
+    transformer.on('readable', destinationFillBuffer);
+    transformer.on('error',    destinationEmitError);
+    transformerQueue.push({ transformer: transformer, item: item });
   }
 
   // Try to read `count` items from the transformer
-  transformer = transformers[0];
-  if (transformer) {
-    while (count-- > 0 && (item = transformer.read()) !== null)
+  head = transformerQueue[0];
+  if (head) {
+    transformer = head.transformer;
+    while (count-- > 0 && (item = transformer.read()) !== null) {
       this._push(item);
+      // If a transformed item was pushed, no need to push the original anymore
+      if (optional)
+        head.item = null;
+    }
   }
   // End the iterator if the source has ended
   else if (source && source.ended)
@@ -1297,7 +1335,7 @@ MultiTransformIterator.prototype._createTransformer = SingletonIterator;
 /* Closes the iterator when pending items are transformed. */
 MultiTransformIterator.prototype._closeWhenDone = function () {
   // Only close if all transformers are read
-  if (!this._transformers.length)
+  if (!this._transformerQueue.length)
     this.close();
 };
 

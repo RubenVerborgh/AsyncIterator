@@ -1065,6 +1065,62 @@ describe('SimpleTransformIterator', function () {
     });
   });
 
+  describe('A SimpleTransformIterator with optional set to false', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new SimpleTransformIterator(source, {
+        optional: false,
+        map: function (item) { return item % 2 === 0 ? null : item; },
+        transform: function (item, done) {
+          if (item % 3 !== 0)
+            this._push('t' + item);
+          done();
+        },
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return items not transformed/mapped into null', function () {
+        items.should.deep.equal(['t1', 't5']);
+      });
+    });
+  });
+
+  describe('A SimpleTransformIterator with optional set to true', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new SimpleTransformIterator(source, {
+        optional: true,
+        map: function (item) { return item % 2 === 0 ? null : item; },
+        transform: function (item, done) {
+          if (item % 3 !== 0)
+            this._push('t' + item);
+          done();
+        },
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items, or if none, the item itself', function () {
+        items.should.deep.equal(['t1', 2, 3, 4, 't5', 6]);
+      });
+    });
+  });
+
   describe('The AsyncIterator#map function', function () {
     it('should be a function', function () {
       expect(AsyncIterator.prototype.map).to.be.a('function');

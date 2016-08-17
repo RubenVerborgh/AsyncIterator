@@ -272,6 +272,60 @@ describe('MultiTransformIterator', function () {
     });
   });
 
+  describe('A MultiTransformIterator with optional set to false', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new MultiTransformIterator(source, { optional: false });
+      iterator._createTransformer = sinon.spy(function (item) {
+        switch (item) {
+        case 3: return new EmptyIterator();
+        case 6: return null;
+        default: return new SingletonIterator('t' + item);
+        }
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items only', function () {
+        items.should.deep.equal(['t1', 't2', 't4', 't5']);
+      });
+    });
+  });
+
+  describe('A MultiTransformIterator with optional set to true', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new MultiTransformIterator(source, { optional: true });
+      iterator._createTransformer = sinon.spy(function (item) {
+        switch (item) {
+        case 3: return new EmptyIterator();
+        case 6: return null;
+        default: return new SingletonIterator('t' + item);
+        }
+      });
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items, and originals when the transformer is empty', function () {
+        items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
+      });
+    });
+  });
+
   describe('A MultiTransformIterator with transformers that error', function () {
     var iterator, source;
     before(function () {

@@ -841,4 +841,54 @@ describe('TransformIterator', function () {
       });
     });
   });
+
+  describe('A TransformIterator with optional set to false', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new TransformIterator(source, { optional: false });
+      iterator._transform = function (item, done) {
+        if (item % 3 !== 0)
+          this._push('t' + item);
+        done();
+      };
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return items not transformed into null', function () {
+        items.should.deep.equal(['t1', 't2', 't4', 't5']);
+      });
+    });
+  });
+
+  describe('A TransformIterator with optional set to true', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new TransformIterator(source, { optional: true });
+      iterator._transform = function (item, done) {
+        if (item % 3 !== 0)
+          this._push('t' + item);
+        done();
+      };
+    });
+
+    describe('when reading items', function () {
+      var items = [];
+      before(function (done) {
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items, or if none, the item itself', function () {
+        items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
+      });
+    });
+  });
 });
