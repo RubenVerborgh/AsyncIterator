@@ -11,6 +11,7 @@
     "docs": "jsdoc -c jsdoc.json README.md *.js"
   },
   "license": "MIT",
+  "repository": "RubenVerborgh/AsyncIterator",
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.0.1",
