@@ -6,8 +6,7 @@ var AsyncIterator = require('../asynciterator'),
     EmptyIterator = AsyncIterator.EmptyIterator,
     SingletonIterator = AsyncIterator.SingletonIterator,
     ArrayIterator = AsyncIterator.ArrayIterator,
-    EventEmitter = require('events').EventEmitter,
-    immediate = require('immediate');
+    EventEmitter = require('events').EventEmitter;
 
 describe('MultiTransformIterator', function () {
   describe('The MultiTransformIterator function', function () {
@@ -86,7 +85,7 @@ describe('MultiTransformIterator', function () {
     var iterator, source;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source, { autoStart: false });
+      iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(EmptyIterator);
     });
 
@@ -165,32 +164,24 @@ describe('MultiTransformIterator', function () {
   });
 
   describe('A MultiTransformIterator with transformers that asynchronously close', function () {
-    var iterator, source, getIterator;
+    var iterator, source;
     before(function () {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      // accessor function needed with empty iterators,
-      // because the iterator ends (with `immediate`)
-      // before the tests are called (with `setImmediate`)
-      getIterator = function () {
-        if (!iterator) {
-          iterator = new MultiTransformIterator(source);
-          iterator._createTransformer = sinon.spy(function () {
-            var transformer = new BufferedIterator();
-            immediate(function () {
-              transformer.close();
-            });
-            return transformer;
-          });
-        }
-        return iterator;
-      };
+      iterator = new MultiTransformIterator(source);
+      iterator._createTransformer = sinon.spy(function () {
+        var transformer = new BufferedIterator();
+        setImmediate(function () {
+          transformer.close();
+        });
+        return transformer;
+      });
     });
 
     describe('when reading items', function () {
       var items = [];
       before(function (done) {
-        getIterator().on('data', function (item) { items.push(item); });
-        getIterator().on('end', done);
+        iterator.on('data', function (item) { items.push(item); });
+        iterator.on('end', done);
       });
 
       it('should not return any items', function () {
@@ -216,7 +207,7 @@ describe('MultiTransformIterator', function () {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(function (item) {
         var transformer = new BufferedIterator();
-        immediate(function () {
+        setImmediate(function () {
           transformer._push(item + '1');
           transformer.close();
         });
@@ -244,7 +235,7 @@ describe('MultiTransformIterator', function () {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(function (item) {
         var transformer = new BufferedIterator();
-        immediate(function () {
+        setImmediate(function () {
           transformer._push(item + '1');
           transformer._push(item + '2');
           transformer._push(item + '3');
@@ -272,60 +263,6 @@ describe('MultiTransformIterator', function () {
     });
   });
 
-  describe('A MultiTransformIterator with optional set to false', function () {
-    var iterator, source;
-    before(function () {
-      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
-      iterator = new MultiTransformIterator(source, { optional: false });
-      iterator._createTransformer = sinon.spy(function (item) {
-        switch (item) {
-        case 3: return new EmptyIterator();
-        case 6: return null;
-        default: return new SingletonIterator('t' + item);
-        }
-      });
-    });
-
-    describe('when reading items', function () {
-      var items = [];
-      before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
-      });
-
-      it('should return the transformed items only', function () {
-        items.should.deep.equal(['t1', 't2', 't4', 't5']);
-      });
-    });
-  });
-
-  describe('A MultiTransformIterator with optional set to true', function () {
-    var iterator, source;
-    before(function () {
-      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
-      iterator = new MultiTransformIterator(source, { optional: true });
-      iterator._createTransformer = sinon.spy(function (item) {
-        switch (item) {
-        case 3: return new EmptyIterator();
-        case 6: return null;
-        default: return new SingletonIterator('t' + item);
-        }
-      });
-    });
-
-    describe('when reading items', function () {
-      var items = [];
-      before(function (done) {
-        iterator.on('data', function (item) { items.push(item); });
-        iterator.on('end', done);
-      });
-
-      it('should return the transformed items, and originals when the transformer is empty', function () {
-        items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
-      });
-    });
-  });
-
   describe('A MultiTransformIterator with transformers that error', function () {
     var iterator, source;
     before(function () {
@@ -333,7 +270,7 @@ describe('MultiTransformIterator', function () {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(function (item) {
         var transformer = new BufferedIterator();
-        immediate(function () {
+        setImmediate(function () {
           transformer.emit('error', new Error('Error ' + item));
         });
         return transformer;

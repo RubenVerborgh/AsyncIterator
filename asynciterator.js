@@ -1,5 +1,20 @@
 var EventEmitter = require('events').EventEmitter;
-var immediate = require('immediate');
+
+// Executes the given function with arguments as soon as possible
+var immediate = (function () {
+  // Using native `setImmediate` is fastest in Node.js
+  /* istanbul ignore else */
+  if (typeof process !== 'undefined' && !process.browser)
+    return setImmediate;
+  // In all other cases, rely on the `immediate` shim
+  else {
+    var immediate = require('immediate'), calls = 0;
+    return function (f, x, y, z) {
+      // Every once in a while, allow some time for events, painting, etc.
+      calls++ === 1e4 ? setTimeout(f, calls = 0, x, y, z) : immediate(f, x, y, z);
+    };
+  }
+}());
 
 /**
   Names of possible iterator states.

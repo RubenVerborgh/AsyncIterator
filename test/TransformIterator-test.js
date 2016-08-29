@@ -4,8 +4,7 @@ var AsyncIterator = require('../asynciterator'),
     BufferedIterator = AsyncIterator.BufferedIterator,
     EmptyIterator = AsyncIterator.EmptyIterator,
     ArrayIterator = AsyncIterator.ArrayIterator,
-    EventEmitter = require('events').EventEmitter,
-    immediate = require('immediate');
+    EventEmitter = require('events').EventEmitter;
 
 describe('TransformIterator', function () {
   describe('The TransformIterator function', function () {
@@ -475,7 +474,7 @@ describe('TransformIterator', function () {
     before(function () {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
-        immediate(function () {
+        setImmediate(function () {
           iterator._push(item + '1');
           iterator._push(item + '2');
           done();
@@ -587,7 +586,7 @@ describe('TransformIterator', function () {
       iterator = new TransformIterator(source);
       iterator._transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        immediate(done);
+        setImmediate(done);
       });
     });
 
