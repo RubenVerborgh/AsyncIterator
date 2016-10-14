@@ -99,7 +99,7 @@ function AsyncIterator() {
   Makes the prototype of the current constructor a prototype for the given constructor.
 
   @protected
-  @name AsyncIterator.subclass
+  @function AsyncIterator.subclass
   @param {Function} Constructor The constructor that should inherit from the current constructor
   @returns {AsyncIterator} The constructor's prototype
 **/
@@ -1016,6 +1016,7 @@ TransformIterator.prototype._end = function () {
 
   After this operation, only read the returned iterator instead of the given one.
 
+  @function
   @param {AsyncIterator|Readable} [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @returns {AsyncIterator} A new iterator with the items from the given iterator
