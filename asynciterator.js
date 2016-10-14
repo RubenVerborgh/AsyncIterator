@@ -151,8 +151,11 @@ function emit(self, eventName) { self.emit(eventName); }
 AsyncIterator.prototype.read = function () { return null; };
 
 /**
-  Emitted when the iterator possibly has new items available,
-  which can be retrieved by calling {@link AsyncIterator#read}.
+  Emitted when the iterator might have new items available
+  after having had no items available right before this event.
+
+  If the iterator is not in flow mode,
+  items can be retrieved by calling {@link AsyncIterator#read}.
 
   @event AsyncIterator.readable
 **/
@@ -234,7 +237,10 @@ function endAsync(self) { immediate(end, self); }
 **/
 
 /**
-  Whether items can potentially be read from the iterator.
+  Gets or sets whether this iterator might have items available for read.
+
+  A value of `false` means there are _definitely_ no items available;
+  a value of `true` means items _might_ be available.
 
   @name AsyncIterator#readable
   @type boolean
@@ -256,10 +262,11 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
 });
 
 /**
-  Whether the iterator has stopped generating new items
+  Gets whether the iterator has stopped generating new items.
 
   @name AsyncIterator#closed
   @type boolean
+  @readonly
 **/
 Object.defineProperty(AsyncIterator.prototype, 'closed', {
   get: function () { return this._state >= CLOSING; },
@@ -267,10 +274,11 @@ Object.defineProperty(AsyncIterator.prototype, 'closed', {
 });
 
 /**
-  Whether the iterator has stopped emitting items
+  Gets whether the iterator has stopped emitting items.
 
   @name AsyncIterator#ended
   @type boolean
+  @readonly
 **/
 Object.defineProperty(AsyncIterator.prototype, 'ended', {
   get: function () { return this._state === ENDED; },
@@ -621,7 +629,7 @@ function BufferedIterator(options) {
 AsyncIterator.subclass(BufferedIterator);
 
 /**
-  The maximum number of items to preload in the internal buffer
+  Gets or sets the maximum number of items to preload in the internal buffer.
 
   A `BufferedIterator` tries to fill its buffer as far as possible.
   Set to `Infinity` to fully drain the source.
@@ -893,7 +901,7 @@ function TransformIterator(source, options) {
 BufferedIterator.subclass(TransformIterator);
 
 /**
-  The source this iterator generates items from
+  Gets or sets the source this iterator generates items from.
 
   @name TransformIterator#source
   @type AsyncIterator
