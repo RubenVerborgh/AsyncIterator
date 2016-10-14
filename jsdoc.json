@@ -1,7 +1,8 @@
 {
   "opts": {
     "recurse": true,
-    "destination": "./docs/"
+    "destination": "./docs/",
+    "template": "node_modules/jaguarjs-jsdoc"
   },
   "plugins": [ "plugins/markdown" ],
   "templates": {

@@ -12,16 +12,17 @@
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
+  "dependencies": {
+    "immediate": "^3.2.3"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "eslint": "^3.0.1",
     "istanbul": "^0.4.4",
+    "jaguarjs-jsdoc": "^1.0.1",
     "jsdoc": "^3.4.0",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0"
-  },
-  "dependencies": {
-    "immediate": "^3.2.3"
   }
 }
