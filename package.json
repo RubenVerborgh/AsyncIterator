@@ -6,7 +6,8 @@
   "main": "asynciterator.js",
   "scripts": {
     "test": "mocha",
-    "coverage": "istanbul cover node_modules/.bin/_mocha -- -R progress --timeout 100",
+    "cover": "nyc -- mocha -R dot",
+    "coveralls": "nyc --reporter=text-lcov -- mocha -R dot | coveralls",
     "lint": "eslint *.js test",
     "docs": "jsdoc -c jsdoc.json README.md *.js"
   },
@@ -17,11 +18,12 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "coveralls": "^2.11.14",
     "eslint": "^3.0.1",
-    "istanbul": "^0.4.4",
     "jaguarjs-jsdoc": "^1.0.1",
     "jsdoc": "^3.4.0",
     "mocha": "^2.5.3",
+    "nyc": "^8.3.1",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0"
   }
