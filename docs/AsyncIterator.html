@@ -114,10 +114,6 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="AsyncIterator.subclass"><a href="AsyncIterator.html#.subclass">subclass</a></li>
-            
-                <li data-name="AsyncIterator.wrap"><a href="AsyncIterator.html#.wrap">wrap</a></li>
-            
                 <li data-name="AsyncIterator#closed"><a href="AsyncIterator.html#closed">closed</a></li>
             
                 <li data-name="AsyncIterator#ended"><a href="AsyncIterator.html#ended">ended</a></li>
@@ -133,6 +129,10 @@
             <span class="subtitle">Methods</span>
             
                 <li data-name="AsyncIterator.range"><a href="AsyncIterator.html#.range">range</a></li>
+            
+                <li data-name="AsyncIterator.subclass"><a href="AsyncIterator.html#.subclass">subclass</a></li>
+            
+                <li data-name="AsyncIterator.wrap"><a href="AsyncIterator.html#.wrap">wrap</a></li>
             
                 <li data-name="AsyncIterator#_changeState"><a href="AsyncIterator.html#_changeState">_changeState</a></li>
             
@@ -906,7 +906,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 89
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 89
         </div>
         
     </div>
@@ -992,7 +992,7 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".subclass"><span class="type-signature ">protected,static</span>AsyncIterator.subclass</h4>
+        <h4 class="name" id="closed"><span class="type-signature ">readonly</span>closed<span class="type-signature type boolean">boolean</span> </h4>
     </div>
     
     
@@ -1000,7 +1000,7 @@
 <dd>
     
     <div class="description">
-        <p>Makes the prototype of the current constructor a prototype for the given constructor.</p>
+        <p>Gets whether the iterator has stopped generating new items.</p>
     </div>
     
     
@@ -1037,7 +1037,7 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".wrap"><span class="type-signature static">static</span>AsyncIterator.wrap</h4>
+        <h4 class="name" id="ended"><span class="type-signature ">readonly</span>ended<span class="type-signature type boolean">boolean</span> </h4>
     </div>
     
     
@@ -1045,99 +1045,7 @@
 <dd>
     
     <div class="description">
-        <p>Creates an iterator that wraps around a given iterator or readable stream.</p>
-<p>  Use this to convert an iterator-like object into a full-featured AsyncIterator.</p>
-<p>  After this operation, only read the returned iterator instead of the given one.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="closed">closed<span class="type-signature type boolean">boolean</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Whether the iterator has stopped generating new items</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="ended">ended<span class="type-signature type boolean">boolean</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Whether the iterator has stopped emitting items</p>
+        <p>Gets whether the iterator has stopped emitting items.</p>
     </div>
     
     
@@ -1182,7 +1090,9 @@
 <dd>
     
     <div class="description">
-        <p>Whether items can potentially be read from the iterator.</p>
+        <p>Gets or sets whether this iterator might have items available for read.</p>
+<p>  A value of <code>false</code> means there are <em>definitely</em> no items available;
+  a value of <code>true</code> means items <em>might</em> be available.</p>
     </div>
     
     
@@ -1232,7 +1142,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 584
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 592
         </div>
         
     </div>
@@ -1458,6 +1368,338 @@
             
 <dt>
     <div class="nameContainer">
+        <h4 class="name" id=".subclass">
+            
+            <span class="type-signature ">protected,static</span>AsyncIterator.subclass<span class="signature">(Constructor)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="AsyncIterator.html">AsyncIterator</a>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 98
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Makes the prototype of the current constructor a prototype for the given constructor.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>Constructor</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>The constructor that should inherit from the current constructor</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        <a href="AsyncIterator.html">AsyncIterator</a>
+                        
+                    
+            </td>
+            <td class="description last">The constructor's prototype</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".wrap">
+            
+            <span class="type-signature static">static</span>AsyncIterator.wrap<span class="signature">(<span class="optional">source</span>, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="AsyncIterator.html">AsyncIterator</a>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1032
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator that wraps around a given iterator or readable stream.</p>
+<p>  Use this to convert an iterator-like object into a full-featured AsyncIterator.</p>
+<p>  After this operation, only read the returned iterator instead of the given one.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="AsyncIterator.html">AsyncIterator</a></span>
+|
+
+<span class="param-type">Readable</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The source this iterator generates items from</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Settings of the iterator</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        <a href="AsyncIterator.html">AsyncIterator</a>
+                        
+                    
+            </td>
+            <td class="description last">A new iterator with the items from the given iterator</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
         <h4 class="name" id="_changeState">
             
             <span class="type-signature ">protected</span>_changeState<span class="signature">(newState, <span class="optional">eventAsync</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{boolean}</span>
@@ -1465,7 +1707,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 123
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 123
         </div>
         
     </div>
@@ -1663,7 +1905,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 219
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 222
         </div>
         
     </div>
@@ -1741,7 +1983,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 429
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 437
         </div>
         
     </div>
@@ -1812,7 +2054,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1226
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1235
         </div>
         
     </div>
@@ -1961,7 +2203,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1559
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1568
         </div>
         
     </div>
@@ -2064,7 +2306,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 205
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 208
         </div>
         
     </div>
@@ -2142,7 +2384,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 408
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 416
         </div>
         
     </div>
@@ -2281,7 +2523,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 168
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 171
         </div>
         
     </div>
@@ -2433,7 +2675,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1202
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1211
         </div>
         
     </div>
@@ -2614,7 +2856,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 385
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 393
         </div>
         
     </div>
@@ -2714,7 +2956,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 334
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 342
         </div>
         
     </div>
@@ -2898,7 +3140,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1189
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1198
         </div>
         
     </div>
@@ -3079,7 +3321,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1214
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1223
         </div>
         
     </div>
@@ -3228,7 +3470,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1276
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1285
         </div>
         
     </div>
@@ -3397,7 +3639,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 151
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 151
         </div>
         
     </div>
@@ -3504,7 +3746,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 397
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 405
         </div>
         
     </div>
@@ -3620,7 +3862,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 359
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 367
         </div>
         
     </div>
@@ -3771,7 +4013,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1251
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1260
         </div>
         
     </div>
@@ -3917,7 +4159,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1239
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1248
         </div>
         
     </div>
@@ -4092,7 +4334,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1263
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1272
         </div>
         
     </div>
@@ -4238,7 +4480,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 1176
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1185
         </div>
         
     </div>
@@ -4610,7 +4852,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 280
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 288
         </div>
         
     </div>
@@ -4734,7 +4976,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 230
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 233
         </div>
         
     </div>
@@ -4805,7 +5047,7 @@
     
         
         <div class="tag-source">
-            asynciterator.js, line 153
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 153
         </div>
         
     </div>
@@ -4816,8 +5058,10 @@
     
     
     <div class="description">
-        <p>Emitted when the iterator possibly has new items available,
-  which can be retrieved by calling <a href="AsyncIterator.html#read">AsyncIterator#read</a>.</p>
+        <p>Emitted when the iterator might have new items available
+  after having had no items available right before this event.</p>
+<p>  If the iterator is not in flow mode,
+  items can be retrieved by calling <a href="AsyncIterator.html#read">AsyncIterator#read</a>.</p>
     </div>
     
 
@@ -4879,7 +5123,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Oct 14 2016 13:08:27 GMT+0200 (CEST)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 14 2016 12:03:46 GMT+0000 (UTC)
         </footer>
     </div>
 </div>
