@@ -6,8 +6,10 @@ node_js:
 script:
   - npm run lint
   - npm test
+  - npm run docs
 after_success:
   - npm run coveralls
+  - ./.travis_publish_docs
 cache:
   directories:
     - node_modules
