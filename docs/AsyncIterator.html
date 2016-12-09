@@ -114,6 +114,18 @@
             
             <span class="subtitle">Members</span>
             
+                <li data-name="AsyncIterator.CLOSED"><a href="AsyncIterator.html#.CLOSED">CLOSED</a></li>
+            
+                <li data-name="AsyncIterator.CLOSING"><a href="AsyncIterator.html#.CLOSING">CLOSING</a></li>
+            
+                <li data-name="AsyncIterator.ENDED"><a href="AsyncIterator.html#.ENDED">ENDED</a></li>
+            
+                <li data-name="AsyncIterator.INIT"><a href="AsyncIterator.html#.INIT">INIT</a></li>
+            
+                <li data-name="AsyncIterator.OPEN"><a href="AsyncIterator.html#.OPEN">OPEN</a></li>
+            
+                <li data-name="AsyncIterator.STATES"><a href="AsyncIterator.html#.STATES">STATES</a></li>
+            
                 <li data-name="AsyncIterator#closed"><a href="AsyncIterator.html#closed">closed</a></li>
             
                 <li data-name="AsyncIterator#ended"><a href="AsyncIterator.html#ended">ended</a></li>
@@ -989,6 +1001,284 @@
         <h3 class="subsection-title">Members</h3>
         
         <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".CLOSED"><span class="type-signature ">protected,static</span>AsyncIterator.CLOSED<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the CLOSED state.
+  An iterator is closed if it no longer actively generates new items.
+  Items might still be available.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".CLOSING"><span class="type-signature ">protected,static</span>AsyncIterator.CLOSING<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the CLOSING state.
+  An iterator is closing if item generation is pending but will not be scheduled again.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".ENDED"><span class="type-signature ">protected,static</span>AsyncIterator.ENDED<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the ENDED state.
+  An iterator has ended if no further items will become available.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".INIT"><span class="type-signature ">protected,static</span>AsyncIterator.INIT<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the INIT state.
+  An iterator is initializing if it is preparing main item generation.
+  It can already produce items.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".OPEN"><span class="type-signature ">protected,static</span>AsyncIterator.OPEN<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the OPEN state.
+  An iterator is open if it can generate new items.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".STATES"><span class="type-signature ">protected,static</span>AsyncIterator.STATES<span class="type-signature type array.<string>">Array.&lt;String></span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Names of possible iterator states.
+  The state's position in the array corresponds to its ID.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
             
 <dt>
     <div class="nameContainer">
@@ -5123,7 +5413,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 14 2016 12:03:46 GMT+0000 (UTC)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Dec 09 2016 22:04:49 GMT+0000 (UTC)
         </footer>
     </div>
 </div>
