@@ -22,7 +22,7 @@ var immediate = (function () {
 
   @name AsyncIterator.STATES
   @type String[]
-  @private
+  @protected
 */
 var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
 var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4;
@@ -35,7 +35,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.INIT
   @type integer
-  @private
+  @protected
 */
 
 /**
@@ -44,7 +44,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.OPEN
   @type integer
-  @private
+  @protected
 */
 
 /**
@@ -53,7 +53,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.CLOSING
   @type integer
-  @private
+  @protected
 */
 
 /**
@@ -63,7 +63,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.CLOSED
   @type integer
-  @private
+  @protected
 */
 
 /**
@@ -72,7 +72,7 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
   @name AsyncIterator.ENDED
   @type integer
-  @private
+  @protected
 */
 
 
