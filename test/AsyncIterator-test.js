@@ -642,7 +642,7 @@ describe('AsyncIterator', function () {
       });
 
       it('should not invoke the callback', function () {
-        callback.should.not.have.beenCalled;
+        callback.should.not.have.been.called;
       });
     });
 
