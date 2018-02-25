@@ -1103,38 +1103,35 @@ SimpleTransformIterator.prototype._read = function (count, done) {
 function readAndTransformSimple(self, next, done) {
   // Verify we have a readable source
   var source = self._source, item;
-  if (source && !source.ended) {
-    // Verify we are below the limit
-    if (self._limit === 0)
-      self.close();
-    else {
-      // Try to read the next item
-      while ((item = source.read()) !== null) {
-        // Verify the item passes the filter
-        if (self._filter(item)) {
-          // Verify we are past the offset
-          if (self._offset === 0) {
-            self._limit--;
-            // Map and transform the item
-            var mappedItem = self._map(item);
-            if (mappedItem !== null) {
-              if (!self._optional)
-                self._transform(mappedItem, next);
-              else
-                optionalTransform(self, mappedItem, next);
-            }
-            // Don't transform a `null` item
-            else {
-              if (self._optional)
-                self._push(item);
-              next();
-            }
-            return;
-          }
-          self._offset--;
-        }
-      }
+  if (!source || source.ended)
+    return done();
+
+  // Verify we are below the limit
+  if (self._limit === 0)
+    return self.close(), done();
+
+  // Try to read the next item
+  while ((item = source.read()) !== null) {
+    // Verify the item passes the filter and we've reached the offset
+    if (!self._filter(item) || self._offset !== 0 && self._offset--)
+      continue;
+    // One more valid item is read, deduct it from the limit
+    self._limit--;
+    // Map and transform the item
+    var mappedItem = self._map(item);
+    if (mappedItem !== null) {
+      if (!self._optional)
+        self._transform(mappedItem, next);
+      else
+        optionalTransform(self, mappedItem, next);
     }
+    // Don't transform a `null` item
+    else {
+      if (self._optional)
+        self._push(item);
+      next();
+    }
+    return;
   }
   done();
 }
