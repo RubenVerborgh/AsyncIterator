@@ -1086,7 +1086,7 @@ TransformIterator.subclass(SimpleTransformIterator);
 SimpleTransformIterator.prototype._offset = 0;
 SimpleTransformIterator.prototype._limit = Infinity;
 SimpleTransformIterator.prototype._filter = function ()  { return true; };
-SimpleTransformIterator.prototype._map = function (item) { return item; };
+SimpleTransformIterator.prototype._map = null;
 
 /* Tries to read and transform an item */
 SimpleTransformIterator.prototype._read = function (count, done) {
@@ -1118,7 +1118,7 @@ function readAndTransformSimple(self, next, done) {
     // One more valid item is read, deduct it from the limit
     self._limit--;
     // Map and transform the item
-    var mappedItem = self._map(item);
+    var mappedItem = self._map === null ? item : self._map(item);
     if (mappedItem !== null) {
       if (!self._optional)
         self._transform(mappedItem, next);
