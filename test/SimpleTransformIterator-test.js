@@ -536,8 +536,8 @@ describe('SimpleTransformIterator', function () {
         iterator.on('end', done);
       });
 
-      it('should call `read` on the source 10 times', function () {
-        source.read.should.have.callCount(10);
+      it('should call `read` on the source 11 times', function () {
+        source.read.should.have.callCount(11);
       });
 
       it('should result in all items', function () {
@@ -561,8 +561,8 @@ describe('SimpleTransformIterator', function () {
         iterator.on('end', done);
       });
 
-      it('should call `read` on the source 10 times', function () {
-        source.read.should.have.callCount(10);
+      it('should call `read` on the source 11 times', function () {
+        source.read.should.have.callCount(11);
       });
 
       it('should result in skipping the first 5 items', function () {
@@ -611,8 +611,8 @@ describe('SimpleTransformIterator', function () {
         iterator.on('end', done);
       });
 
-      it('should call `read` on the source 10 times', function () {
-        source.read.should.have.callCount(10);
+      it('should call `read` on the source 11 times', function () {
+        source.read.should.have.callCount(11);
       });
 
       it('should result in all items', function () {
@@ -636,8 +636,8 @@ describe('SimpleTransformIterator', function () {
         iterator.on('end', done);
       });
 
-      it('should call `read` on the source 10 times', function () {
-        source.read.should.have.callCount(10);
+      it('should call `read` on the source 11 times', function () {
+        source.read.should.have.callCount(11);
       });
 
       it('should result in all items', function () {
@@ -711,8 +711,8 @@ describe('SimpleTransformIterator', function () {
         iterator.on('end', done);
       });
 
-      it('should call `read` on the source 10 times', function () {
-        source.read.should.have.callCount(10);
+      it('should call `read` on the source 11 times', function () {
+        source.read.should.have.callCount(11);
       });
 
       it('should result in all items', function () {

@@ -9,9 +9,9 @@ var immediate = (function () {
   // In all other cases, rely on the `immediate` shim
   else {
     var immediate = require('immediate'), calls = 0;
-    return function (f, x, y, z) {
+    return function (f, a, b, c, d) {
       // Every once in a while, allow some time for events, painting, etc.
-      calls++ === 1e4 ? setTimeout(f, calls = 0, x, y, z) : immediate(f, x, y, z);
+      calls++ === 1e4 ? setTimeout(f, calls = 0, a, b, c, d) : immediate(f, a, b, c, d);
     };
   }
 }());
@@ -1089,57 +1089,52 @@ SimpleTransformIterator.prototype._filter = function ()  { return true; };
 SimpleTransformIterator.prototype._map = null;
 SimpleTransformIterator.prototype._transform = null;
 
-/* Tries to read and transform an item */
+/* Tries to read and transform items */
 SimpleTransformIterator.prototype._read = function (count, done) {
   var self = this;
-  readAndTransformSimple(self, function next() {
-    // Continue transforming until at least `count` items have been pushed
-    if (self._pushedCount < count && !self.closed)
-      immediate(readAndTransformSimple, self, next, done);
-    else
-      done();
+  readAndTransformSimple(self, count, function next() {
+    immediate(readAndTransformSimple, self, count, next, done);
   }, done);
 };
-// Reads an item and performs each of the simple transformations on it
-function readAndTransformSimple(self, next, done) {
+function readAndTransformSimple(self, count, next, done) {
   // Verify we have a readable source
   var source = self._source, item;
-  if (!source || source.ended)
-    return done();
-
-  // Verify we are below the limit
+  if (!source || source.ended) {
+    done();
+    return;
+  }
+  // Verify we are still below the limit
   if (self._limit === 0)
-    return self.close(), done();
+    self.close();
 
-  // Try to read the next item
-  while ((item = source.read()) !== null) {
+  // Try to read the next item until at least `count` items have been pushed
+  while (!self.closed && self._pushedCount < count && (item = source.read()) !== null) {
     // Verify the item passes the filter and we've reached the offset
     if (!self._filter(item) || self._offset !== 0 && self._offset--)
       continue;
-    // One more valid item is read, deduct it from the limit
-    self._limit--;
-    // Map the item
+
+    // Synchronously map the item
     var mappedItem = self._map === null ? item : self._map(item);
-    // Skip transformation if none specified
-    if (self._transform === null) {
-      if (mappedItem !== null)
-        self._push(mappedItem);
-      next();
+    // Skip `null` items, pushing the original item if the mapping was optional
+    if (mappedItem === null) {
+      if (self._optional)
+        self._push(item);
     }
-    // Transform a non-null item
-    else if (mappedItem !== null) {
+    // Skip the asynchronous phase if no transformation was specified
+    else if (self._transform === null)
+      self._push(mappedItem);
+    // Asynchronously transform the item, and wait for `next` to call back
+    else {
       if (!self._optional)
         self._transform(mappedItem, next);
       else
         optionalTransform(self, mappedItem, next);
+      return;
     }
-    // Skip null items; push the original item if the mapping was optional
-    else {
-      if (self._optional)
-        self._push(item);
-      next();
-    }
-    return;
+
+    // Stop when we've reached the limit
+    if (--self._limit === 0)
+      self.close();
   }
   done();
 }
@@ -1312,7 +1307,7 @@ function MultiTransformIterator(source, options) {
 }
 TransformIterator.subclass(MultiTransformIterator);
 
-/* Tries to read and transform an item */
+/* Tries to read and transform items */
 MultiTransformIterator.prototype._read = function (count, done) {
   // Remove transformers that have ended
   var item, head, transformer, transformerQueue = this._transformerQueue,
