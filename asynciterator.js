@@ -107,8 +107,7 @@ function AsyncIterator() {
   Constructor.prototype = Object.create(this.prototype,
     { constructor: { value: Constructor, configurable: true, writable: true } });
   Constructor.subclass = subclass;
-})
-.call(EventEmitter, AsyncIterator);
+}).call(EventEmitter, AsyncIterator);
 
 /**
   Changes the iterator to the given state if possible and necessary,
@@ -192,8 +191,8 @@ AsyncIterator.prototype._hasListeners = function (eventName) {
 **/
 AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
   var listeners = this._events && this._events[eventName];
-  if (!listeners || (isFunction(listeners) ? listeners !== listener
-                                           : listeners.indexOf(listener) < 0))
+  if (!listeners ||
+      (isFunction(listeners) ? listeners !== listener : listeners.indexOf(listener) < 0))
     this.on(eventName, listener);
 };
 

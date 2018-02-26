@@ -55,26 +55,26 @@ describe('TransformIterator', function () {
     it('disallows setting a falsy object as source', function () {
       var iterator = new TransformIterator();
       (function () { iterator.source = null; })
-      .should.throw('Invalid source: null');
+        .should.throw('Invalid source: null');
     });
 
     it('disallows setting an object without `read` function as source', function () {
       var iterator = new TransformIterator();
       (function () { iterator.source = { read: 1, on: function () {} }; })
-      .should.throw('Invalid source: [object Object]');
+        .should.throw('Invalid source: [object Object]');
     });
 
     it('disallows setting an object without `on` function as source', function () {
       var iterator = new TransformIterator();
       (function () { iterator.source = { on: 1, read: function () {} }; })
-      .should.throw('Invalid source: [object Object]');
+        .should.throw('Invalid source: [object Object]');
     });
 
     it('disallows setting another source after one has been set', function () {
       var iterator = new TransformIterator();
       iterator.source = new EmptyIterator();
       (function () { iterator.source = new EmptyIterator(); })
-      .should.throw('The source cannot be changed after it has been set');
+        .should.throw('The source cannot be changed after it has been set');
     });
 
     it('allows setting the source through the first argument', function () {

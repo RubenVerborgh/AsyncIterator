@@ -932,7 +932,7 @@ function createClones(createIterator) {
 function describeClones(clones, describeClone) {
   forEachClone(clones, function (getClone, id, index) {
     describe(id, function () {
-     // Pre-load the clone so events can fire
+      // Pre-load the clone so events can fire
       before(function () { getClone(); });
       describeClone(getClone, clones.iterator, index);
     });

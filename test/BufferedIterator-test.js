@@ -94,7 +94,7 @@ describe('BufferedIterator', function () {
 
       it('should not allow pushing', function () {
         (function () { iterator._push(1); })
-        .should.throw('Cannot push after the iterator was ended.');
+          .should.throw('Cannot push after the iterator was ended.');
       });
     });
   });
