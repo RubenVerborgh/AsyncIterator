@@ -1173,10 +1173,14 @@ SimpleTransformIterator.prototype._insert = function (inserter, done) {
   After this operation, only read the returned iterator instead of the current one.
 
   @param {object|Function} [options] Settings of the iterator, or the transformation function
+  @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
+  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {integer} [options.offset] The number of items to skip
   @param {integer} [options.limit] The maximum number of items
+  @param {Function} [options.filter] A function to synchronously filter items from the source
   @param {Function} [options.map] A function to synchronously transform items from the source
   @param {Function} [options.transform] A function to asynchronously transform items from the source
+  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
   @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @returns {AsyncIterator} A new iterator that maps the items from this iterator
