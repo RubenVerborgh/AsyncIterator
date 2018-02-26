@@ -1723,7 +1723,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1234
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1238
         </div>
         
     </div>
@@ -1874,7 +1874,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1567
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1571
         </div>
         
     </div>
@@ -2354,7 +2354,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1210
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1214
         </div>
         
     </div>
@@ -2825,7 +2825,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1197
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1201
         </div>
         
     </div>
@@ -3008,7 +3008,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1222
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1226
         </div>
         
     </div>
@@ -3159,7 +3159,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1284
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1288
         </div>
         
     </div>
@@ -3710,7 +3710,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1259
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1263
         </div>
         
     </div>
@@ -3858,7 +3858,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1247
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1251
         </div>
         
     </div>
@@ -4035,7 +4035,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1271
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1275
         </div>
         
     </div>
@@ -4183,7 +4183,7 @@
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1184
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1188
         </div>
         
     </div>
@@ -4265,12 +4265,86 @@
 		<th>Type</th>
 		
 		
+		<th>Default</th>
+		
 		
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 	
 	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>maxbufferSize</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    4
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The maximum number of items to keep in the buffer</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>autoStart</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Whether buffering starts directly after construction</p></td>
+        </tr>
+	
 	
 	
         <tr>
@@ -4287,6 +4361,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -4318,6 +4396,10 @@
             </td>
             
             
+                <td class="default">
+                
+                </td>
+            
             
             <td class="description last">
                 
@@ -4329,6 +4411,40 @@
                     
                 
                 <p>The maximum number of items</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>A function to synchronously filter items from the source</p></td>
         </tr>
 	
 	
@@ -4347,6 +4463,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -4378,6 +4498,10 @@
             </td>
             
             
+                <td class="default">
+                
+                </td>
+            
             
             <td class="description last">
                 
@@ -4389,6 +4513,42 @@
                     
                 
                 <p>A function to asynchronously transform items from the source</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>optional</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If transforming is optional, the original item is pushed when its mapping yields <code>null</code> or its transformation yields no items</p></td>
         </tr>
 	
 	
@@ -4410,6 +4570,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -4443,6 +4607,10 @@
             
             </td>
             
+            
+                <td class="default">
+                
+                </td>
             
             
             <td class="description last">
@@ -4555,7 +4723,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Feb 26 2018 09:23:06 GMT+0000 (UTC)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Feb 26 2018 10:04:03 GMT+0000 (UTC)
         </footer>
     </div>
 </div>
