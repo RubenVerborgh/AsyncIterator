@@ -826,11 +826,11 @@ BufferedIterator.prototype._read = function (count, done) { done(); };
   @emits AsyncIterator.readable
 **/
 BufferedIterator.prototype._push = function (item) {
-  if (this.done)
-    throw new Error('Cannot push after the iterator was ended.');
-  this._pushedCount++;
-  this._buffer.push(item);
-  this.readable = true;
+  if (!this.done) {
+    this._pushedCount++;
+    this._buffer.push(item);
+    this.readable = true;
+  }
 };
 
 /**

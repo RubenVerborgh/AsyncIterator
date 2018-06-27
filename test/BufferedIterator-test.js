@@ -108,9 +108,9 @@ describe('BufferedIterator', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should not allow pushing', function () {
-        (function () { iterator._push(1); })
-          .should.throw('Cannot push after the iterator was ended.');
+      it('should allow pushing but have no effect', function () {
+        iterator._push(1);
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
       });
     });
   });
@@ -2428,8 +2428,9 @@ describe('BufferedIterator', function () {
       iterator._read.should.have.callCount(0);
     });
 
-    it('should emit an error when calling _push', function () {
-      (function () { iterator._push(10); }).should.throw('Cannot push after the iterator was ended.');
+    it('should allow pushing but have no effect', function () {
+      iterator._push(10);
+      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
     });
 
     it('should have an empty buffer', function () {
