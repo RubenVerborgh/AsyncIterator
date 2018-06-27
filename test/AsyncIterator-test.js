@@ -68,6 +68,14 @@ describe('AsyncIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not have been destroyed', function () {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should not be done', function () {
+      iterator.done.should.be.false;
+    });
+
     it('should not be readable', function () {
       iterator.readable.should.be.false;
     });
@@ -111,6 +119,57 @@ describe('AsyncIterator', function () {
         iterator.ended.should.be.true;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('cannot be made readable again', function () {
+        iterator.readable = true;
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when trying to read', function () {
+        expect(iterator.read()).to.be.null;
+      });
+
+      it('should not have any listeners for data, readable, or end', function () {
+        expect(iterator._events).to.not.contain.key('data');
+        expect(iterator._events).to.not.contain.key('readable');
+        expect(iterator._events).to.not.contain.key('end');
+      });
+    });
+
+    describe('after destroy has been called', function () {
+      before(function () { iterator.destroy(); });
+
+      it('should not have emitted another `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', function () {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
       it('should not be readable', function () {
         iterator.readable.should.be.false;
       });
@@ -146,6 +205,14 @@ describe('AsyncIterator', function () {
         iterator.ended.should.be.true;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
       it('should not be readable', function () {
         iterator.readable.should.be.false;
       });
@@ -159,6 +226,196 @@ describe('AsyncIterator', function () {
         expect(iterator._events).to.not.contain.key('readable');
         expect(iterator._events).to.not.contain.key('end');
       });
+    });
+  });
+
+  describe('A default AsyncIterator instance that is destroyed', function () {
+    var iterator;
+    before(function () {
+      iterator = new AsyncIterator();
+      captureEvents(iterator, 'data', 'readable', 'end');
+      iterator.destroy();
+    });
+
+    it('should not have emitted a `readable` event', function () {
+      iterator._eventCounts.readable.should.equal(0);
+    });
+
+    it('should not have emitted the `end` event', function () {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
+    });
+
+    describe('after destroy has been called a second time', function () {
+      before(function () { iterator.destroy(); });
+
+      it('should not have emitted a `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should still not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should have been destroyed', function () {
+        iterator.destroyed.should.be.true;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when trying to read', function () {
+        expect(iterator.read()).to.be.null;
+      });
+
+      it('should not have any listeners for data, readable, or end', function () {
+        expect(iterator._events).to.not.contain.key('data');
+        expect(iterator._events).to.not.contain.key('readable');
+        expect(iterator._events).to.not.contain.key('end');
+      });
+    });
+  });
+
+  describe('A default AsyncIterator instance that is destroyed with a given error', function () {
+    var iterator, err;
+    before(function () {
+      iterator = new AsyncIterator();
+      err = new Error('Some error');
+      captureEvents(iterator, 'data', 'readable', 'end', 'error');
+      iterator.destroy(err);
+    });
+
+    it('should not have emitted a `readable` event', function () {
+      iterator._eventCounts.readable.should.equal(0);
+    });
+
+    it('should not have emitted the `end` event', function () {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should have emitted the `error` event', function () {
+      iterator._eventCounts.error.should.equal(1);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
+    });
+  });
+
+  describe('A default AsyncIterator instance that is destroyed asynchronously', function () {
+    var iterator;
+    before(function () {
+      iterator = new AsyncIterator();
+      captureEvents(iterator, 'data', 'readable', 'end');
+      iterator._destroy = function (error, callback) {
+        setImmediate(callback);
+      };
+      iterator.destroy();
+    });
+
+    it('should not have emitted a `readable` event', function () {
+      iterator._eventCounts.readable.should.equal(0);
+    });
+
+    it('should not have emitted the `end` event', function () {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
     });
   });
 
@@ -351,6 +608,82 @@ describe('AsyncIterator', function () {
     describe('after the iterator is closed', function () {
       before(function () {
         iterator.close();
+      });
+
+      it('should not have listeners for the `data` event', function () {
+        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+      });
+
+      it('should not be listening for the `readable` event', function () {
+        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+      });
+
+      it('should not be listening for the `newListener` event', function () {
+        EventEmitter.listenerCount(iterator, 'newListener').should.equal(0);
+      });
+    });
+  });
+
+  describe('An AsyncIterator instance to which 2 items are added an will be destroyed', function () {
+    var iterator, items = [], dataListener1;
+    before(function () {
+      iterator = new AsyncIterator();
+      iterator.readable = true;
+      iterator.read = sinon.spy(function () { return items.shift() || null; });
+
+      items.push(1, 2);
+      iterator.emit('readable');
+    });
+
+    describe('after the iterator is destroyed', function () {
+      before(function () {
+        iterator.on('data', dataListener1 = sinon.spy());
+        iterator.destroy();
+      });
+
+      it('should not have emitted the `data` event for both items', function () {
+        dataListener1.should.have.callCount(0);
+      });
+
+      it('should not have listeners for the `data` event', function () {
+        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+      });
+
+      it('should not be listening for the `readable` event', function () {
+        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+      });
+
+      it('should not be listening for the `newListener` event', function () {
+        EventEmitter.listenerCount(iterator, 'newListener').should.equal(0);
+      });
+    });
+  });
+
+  describe('An AsyncIterator instance to which 2 items are added an will be destroyed with an error', function () {
+    var iterator, items = [], err, dataListener1, errorListener1;
+    before(function () {
+      iterator = new AsyncIterator();
+      iterator.readable = true;
+      iterator.read = sinon.spy(function () { return items.shift() || null; });
+
+      items.push(1, 2);
+      iterator.emit('readable');
+    });
+
+    describe('after the iterator is destroyed with an error', function () {
+      before(function () {
+        err = new Error('My error');
+        iterator.on('data', dataListener1 = sinon.spy());
+        iterator.on('error', errorListener1 = sinon.spy());
+        iterator.destroy(err);
+      });
+
+      it('should not have emitted the `data` event for both items', function () {
+        dataListener1.should.have.callCount(0);
+      });
+
+      it('should have emitted the `error` event', function () {
+        errorListener1.should.have.callCount(1);
       });
 
       it('should not have listeners for the `data` event', function () {
