@@ -625,7 +625,7 @@ describe('AsyncIterator', function () {
   });
 
   describe('An AsyncIterator instance to which 2 items are added an will be destroyed', function () {
-    var iterator, items = [], dataListener1;
+    var iterator, items = [], dataListener;
     before(function () {
       iterator = new AsyncIterator();
       iterator.readable = true;
@@ -637,12 +637,12 @@ describe('AsyncIterator', function () {
 
     describe('after the iterator is destroyed', function () {
       before(function () {
-        iterator.on('data', dataListener1 = sinon.spy());
+        iterator.on('data', dataListener = sinon.spy());
         iterator.destroy();
       });
 
       it('should not have emitted the `data` event for both items', function () {
-        dataListener1.should.have.callCount(0);
+        dataListener.should.have.callCount(0);
       });
 
       it('should not have listeners for the `data` event', function () {
@@ -660,7 +660,7 @@ describe('AsyncIterator', function () {
   });
 
   describe('An AsyncIterator instance to which 2 items are added an will be destroyed with an error', function () {
-    var iterator, items = [], err, dataListener1, errorListener1;
+    var iterator, items = [], err, dataListener, errorListener;
     before(function () {
       iterator = new AsyncIterator();
       iterator.readable = true;
@@ -673,17 +673,17 @@ describe('AsyncIterator', function () {
     describe('after the iterator is destroyed with an error', function () {
       before(function () {
         err = new Error('My error');
-        iterator.on('data', dataListener1 = sinon.spy());
-        iterator.on('error', errorListener1 = sinon.spy());
+        iterator.on('data', dataListener = sinon.spy());
+        iterator.on('error', errorListener = sinon.spy());
         iterator.destroy(err);
       });
 
       it('should not have emitted the `data` event for both items', function () {
-        dataListener1.should.have.callCount(0);
+        dataListener.should.have.callCount(0);
       });
 
       it('should have emitted the `error` event', function () {
-        errorListener1.should.have.callCount(1);
+        errorListener.should.have.callCount(1);
       });
 
       it('should not have listeners for the `data` event', function () {
