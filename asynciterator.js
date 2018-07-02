@@ -231,17 +231,17 @@ AsyncIterator.prototype.close = function () {
  Implementors should not override this method,
  but instead implement {@link AsyncIterator#_destroy}.
 
- @param {Error} [error] An optional error to emit.
+ @param {Error} [cause] An optional error to emit.
  @emits AsyncIterator.end
  @emits AsyncIterator.error Only emitted if an error is passed.
  **/
-AsyncIterator.prototype.destroy = function (error) {
+AsyncIterator.prototype.destroy = function (cause) {
   if (!this.done) {
     var self = this;
-    this._destroy(error, function (errorInner) {
-      error = error || errorInner;
-      if (error)
-        self.emit('error', error);
+    this._destroy(cause, function (error) {
+      cause = cause || error;
+      if (cause)
+        self.emit('error', cause);
       end(self, true);
     });
   }
@@ -249,12 +249,12 @@ AsyncIterator.prototype.destroy = function (error) {
 
 /**
  Called by {@link AsyncIterator#destroy}.
- Implementors can override this, but this should not be called directly.
+ Implementers can override this, but this should not be called directly.
 
- @param {Error} error A possible error.
+ @param {?Error} cause The reason why the iterator is destroyed.
  @param {Function} callback A callback function with an optional error argument.
  */
-AsyncIterator.prototype._destroy = function (error, callback) {
+AsyncIterator.prototype._destroy = function (cause, callback) {
   callback();
 };
 
