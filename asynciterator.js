@@ -606,7 +606,6 @@ ArrayIterator.prototype._toStringDetails = function () {
 
 /* Called by {@link AsyncIterator#destroy} */
 ArrayIterator.prototype._destroy = function (error, callback) {
-  // Release our complete buffer.
   this._buffer = null;
   callback();
 };
@@ -934,7 +933,6 @@ BufferedIterator.prototype._completeClose = function () {
 
 /* Called by {@link AsyncIterator#destroy} */
 BufferedIterator.prototype._destroy = function (error, callback) {
-  // Release our complete buffer.
   this._buffer = [];
   callback();
 };
