@@ -602,7 +602,7 @@ describe('ArrayIterator', function () {
     });
 
     it('should have an empty buffer', function () {
-      expect(iterator._buffer).to.be.null;
+      expect(iterator._buffer).to.be.an('undefined');
     });
 
     describe('after destroy has been called a second time', function () {
@@ -643,7 +643,7 @@ describe('ArrayIterator', function () {
       });
 
       it('should have an empty buffer', function () {
-        expect(iterator._buffer).to.be.null;
+        expect(iterator._buffer).to.be.an('undefined');
       });
     });
   });

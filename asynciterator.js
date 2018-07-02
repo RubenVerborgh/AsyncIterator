@@ -606,7 +606,7 @@ ArrayIterator.prototype._toStringDetails = function () {
 
 /* Called by {@link AsyncIterator#destroy} */
 ArrayIterator.prototype._destroy = function (error, callback) {
-  this._buffer = null;
+  delete this._buffer;
   callback();
 };
 
