@@ -2521,4 +2521,57 @@ describe('BufferedIterator', function () {
       expect(iterator._events).to.not.contain.key('end');
     });
   });
+
+  describe('A BufferedIterator that is destroyed after the first item but before the next call', function () {
+    var iterator, i = 0;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        if (i === 1)
+          iterator.destroy();
+        next();
+      });
+      captureEvents(iterator, 'data', 'end', 'readable');
+    });
+
+    it('should have called _read() once', function () {
+      iterator._read.should.have.callCount(1);
+    });
+
+    it('should have an empty buffer', function () {
+      iterator._buffer.length.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
+    });
+  });
 });
