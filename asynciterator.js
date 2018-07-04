@@ -1092,7 +1092,7 @@ TransformIterator.prototype._closeWhenDone = function () {
 };
 
 /* Cleans up the source iterator and ends. */
-TransformIterator.prototype._end = function () {
+TransformIterator.prototype._end = function (destroy) {
   var source = this._source;
   if (source) {
     source.removeListener('end',      destinationCloseWhenDone);
@@ -1100,7 +1100,7 @@ TransformIterator.prototype._end = function () {
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
   }
-  BufferedIterator.prototype._end.call(this);
+  BufferedIterator.prototype._end.call(this, destroy);
 };
 
 /**
@@ -1633,14 +1633,14 @@ ClonedIterator.prototype.read = function () {
 };
 
 /* End the iterator and cleans up. */
-ClonedIterator.prototype._end = function () {
+ClonedIterator.prototype._end = function (destroy) {
   // Unregister from a possible history reader
   var history = this._source && this._source._destination;
   if (history) history.unregister(this);
 
   // Don't call TransformIterator#_end,
   // as it would make the source inaccessible for other clones
-  BufferedIterator.prototype._end.call(this);
+  BufferedIterator.prototype._end.call(this, destroy);
 };
 
 // Disable buffer cleanup
