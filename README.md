@@ -146,6 +146,33 @@ numbers.on('end',  function () { console.log('all done!'); });
 
 To switch back to on-demand mode, simply remove all `data` listeners.
 
+### Setting and reading properties
+An AsyncIterator can have custom properties assigned to it,
+which are preserved when the iterator is cloned.
+This is useful to pass around metadata about the iterator.
+
+```JavaScript
+var numbers = new AsyncIterator.IntegerIterator();
+numbers.setProperty('rate', 1234);
+console.log(numbers.getProperty('rate')); // 1234
+
+var clone = numbers.clone();
+console.log(clone.getProperty('rate'));   // 1234
+
+numbers.setProperty('rate', 4567);
+console.log(clone.getProperty('rate'));   // 4567
+```
+
+You can also attach a callback
+that will be called as soon as the property is set:
+
+```JavaScript
+var numbers = new AsyncIterator.IntegerIterator();
+numbers.getProperty('later', console.log);
+numbers.setProperty('later', 'value');
+// 'value'
+```
+
 ## License
 The asynciterator library is copyrighted by [Ruben Verborgh](http://ruben.verborgh.org/)
 and released under the [MIT License](http://opensource.org/licenses/MIT).
