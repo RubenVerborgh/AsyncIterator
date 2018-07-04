@@ -229,6 +229,51 @@ describe('AsyncIterator', function () {
     });
   });
 
+  describe('A default AsyncIterator instance', function () {
+    var iterator;
+    before(function () {
+      iterator = new AsyncIterator();
+    });
+
+    describe('when in OPEN state', function () {
+      it('cannot transition to OPEN state', function () {
+        expect(iterator._changeState(AsyncIterator.OPEN)).to.be.false;
+      });
+
+      it('can transition to CLOSED state', function () {
+        expect(iterator._changeState(AsyncIterator.CLOSED)).to.be.true;
+      });
+    });
+
+    describe('when in CLOSED state', function () {
+      before(function () {
+        iterator._changeState(AsyncIterator.CLOSED);
+      });
+
+      it('cannot transition to CLOSED state', function () {
+        expect(iterator._changeState(AsyncIterator.CLOSED)).to.be.false;
+      });
+
+      it('can transition to ENDED state', function () {
+        expect(iterator._changeState(AsyncIterator.ENDED)).to.be.true;
+      });
+    });
+
+    describe('when in ENDED state', function () {
+      before(function () {
+        iterator._changeState(AsyncIterator.ENDED);
+      });
+
+      it('cannot transition to ENDED state', function () {
+        expect(iterator._changeState(AsyncIterator.ENDED)).to.be.false;
+      });
+
+      it('cannot transition to DESTROYED state', function () {
+        expect(iterator._changeState(AsyncIterator.DESTROYED)).to.be.false;
+      });
+    });
+  });
+
   describe('A default AsyncIterator instance that is destroyed', function () {
     var iterator;
     before(function () {

@@ -132,7 +132,7 @@ function AsyncIterator() {
 **/
 AsyncIterator.prototype._changeState = function (newState, eventAsync) {
   // Validate the state change
-  var valid = newState > this._state;
+  var valid = newState > this._state && this._state < ENDED;
   if (valid) {
     this._state = newState;
     // Emit the `end` event when changing to ENDED
