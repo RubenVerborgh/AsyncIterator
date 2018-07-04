@@ -67,6 +67,14 @@ describe('BufferedIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not have been destroyed', function () {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should not be done', function () {
+      iterator.done.should.be.false;
+    });
+
     it('should not be readable', function () {
       iterator.readable.should.be.false;
     });
@@ -84,17 +92,25 @@ describe('BufferedIterator', function () {
         iterator._eventCounts.end.should.equal(1);
       });
 
-      it('should nhave ended', function () {
+      it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should not be readable', function () {
         iterator.readable.should.be.false;
       });
 
-      it('should not allow pushing', function () {
-        (function () { iterator._push(1); })
-          .should.throw('Cannot push after the iterator was ended.');
+      it('should allow pushing but have no effect', function () {
+        iterator._push(1);
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
       });
     });
   });
@@ -124,6 +140,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -151,6 +175,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -183,6 +215,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.true;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
+        });
+
         it('should not be readable', function () {
           iterator.readable.should.be.false;
         });
@@ -208,6 +248,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -238,6 +286,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -278,6 +334,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -305,6 +369,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -337,6 +409,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.true;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
+        });
+
         it('should not be readable', function () {
           iterator.readable.should.be.false;
         });
@@ -362,6 +442,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -392,6 +480,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -429,6 +525,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should return null on read', function () {
         expect(iterator.read()).to.be.null;
       });
@@ -447,6 +551,14 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should return null on read', function () {
@@ -480,6 +592,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should not have called `_read`', function () {
           iterator._read.should.have.callCount(0);
         });
@@ -499,6 +619,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not have called `_read`', function () {
@@ -523,6 +651,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should not have called `_read`', function () {
           iterator._read.should.have.callCount(0);
         });
@@ -541,6 +677,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should have called `_read` once', function () {
@@ -567,6 +711,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -601,6 +753,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -624,6 +784,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -654,6 +822,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -676,6 +852,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -708,6 +892,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -736,6 +928,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -758,6 +958,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -783,6 +991,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -811,6 +1027,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -857,6 +1081,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -884,6 +1116,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -916,6 +1156,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.true;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
+        });
+
         it('should not be readable', function () {
           iterator.readable.should.be.false;
         });
@@ -944,6 +1192,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -977,6 +1233,14 @@ describe('BufferedIterator', function () {
           iterator.ended.should.be.false;
         });
 
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
+        });
+
         it('should be readable', function () {
           iterator.readable.should.be.true;
         });
@@ -1005,6 +1269,14 @@ describe('BufferedIterator', function () {
 
         it('should have ended', function () {
           iterator.ended.should.be.true;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should be done', function () {
+          iterator.done.should.be.true;
         });
 
         it('should not be readable', function () {
@@ -1052,6 +1324,14 @@ describe('BufferedIterator', function () {
 
         it('should not have ended', function () {
           iterator.ended.should.be.false;
+        });
+
+        it('should not have been destroyed', function () {
+          iterator.destroyed.should.be.false;
+        });
+
+        it('should not be done', function () {
+          iterator.done.should.be.false;
         });
 
         it('should be readable', function () {
@@ -1210,6 +1490,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1238,6 +1526,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1261,6 +1557,14 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should not be readable', function () {
@@ -1367,6 +1671,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1395,6 +1707,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1418,6 +1738,14 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should not be readable', function () {
@@ -1474,6 +1802,14 @@ describe('BufferedIterator', function () {
       iterator.ended.should.be.false;
     });
 
+    it('should not have been destroyed', function () {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should not be done', function () {
+      iterator.done.should.be.false;
+    });
+
     it('should be readable after reading', function () {
       iterator.readable.should.be.false;
     });
@@ -1517,6 +1853,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1540,6 +1884,14 @@ describe('BufferedIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
       });
 
       it('should be readable', function () {
@@ -1568,6 +1920,14 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should not be readable', function () {
@@ -1616,6 +1976,14 @@ describe('BufferedIterator', function () {
         iterator.ended.should.be.false;
       });
 
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
       it('should be readable', function () {
         iterator.readable.should.be.true;
       });
@@ -1639,6 +2007,14 @@ describe('BufferedIterator', function () {
 
       it('should not have ended', function () {
         iterator.ended.should.be.false;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
       });
 
       it('should be readable', function () {
@@ -1667,6 +2043,14 @@ describe('BufferedIterator', function () {
 
       it('should have ended', function () {
         iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
       });
 
       it('should not be readable', function () {
@@ -1718,6 +2102,190 @@ describe('BufferedIterator', function () {
 
     it('should not have ended', function () {
       iterator.ended.should.be.false;
+    });
+
+    it('should not have been destroyed', function () {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should not be done', function () {
+      iterator.done.should.be.false;
+    });
+  });
+
+  describe('A BufferedIterator with a synchronous flush that is destroyed', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator({ maxBufferSize: 1 });
+      iterator._read = function (item, done) {
+        this._push('a');
+        done();
+      };
+      iterator._flush = function (done) {
+        this._push('x');
+        this._push('y');
+        done();
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 1}]');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after reading the item and destroying', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+        iterator.destroy();
+      });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should have been destroyed', function () {
+        iterator.destroyed.should.be.true;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+  });
+
+  describe('A BufferedIterator with an asynchronous flush that is destroyed', function () {
+    var iterator;
+    before(function () {
+      iterator = new BufferedIterator({ maxBufferSize: 1 });
+      iterator._read = function (item, done) {
+        this._push('a');
+        done();
+      };
+      iterator._flush = function (done) {
+        setImmediate(function () {
+          iterator._push('x');
+          iterator._push('y');
+          done();
+        });
+      };
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', function () {
+      iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 1}]');
+    });
+
+    describe('before reading an item', function () {
+      it('should have emitted the `readable` event', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not have been destroyed', function () {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', function () {
+        iterator.done.should.be.false;
+      });
+
+      it('should be readable', function () {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after reading the item and destroying', function () {
+      var item;
+      before(function () {
+        item = iterator.read();
+        iterator.destroy();
+      });
+
+      it('should have read the item', function () {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', function () {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', function () {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', function () {
+        iterator.ended.should.be.false;
+      });
+
+      it('should have been destroyed', function () {
+        iterator.destroyed.should.be.true;
+      });
+
+      it('should be done', function () {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', function () {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when `read` is called', function () {
+        expect(iterator.read()).to.be.null;
+      });
     });
   });
 
@@ -1841,6 +2409,169 @@ describe('BufferedIterator', function () {
       it('reads the source until the end', function () {
         iterator._read.should.have.callCount(10);
       });
+    });
+  });
+
+  describe('A BufferedIterator that is destroyed', function () {
+    var iterator, i = 0;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        next();
+      });
+      captureEvents(iterator, 'data', 'end', 'readable');
+      iterator.destroy();
+    });
+
+    it('should not call _read()', function () {
+      iterator._read.should.have.callCount(0);
+    });
+
+    it('should allow pushing but have no effect', function () {
+      iterator._push(10);
+      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+    });
+
+    it('should have an empty buffer', function () {
+      iterator._buffer.length.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
+    });
+  });
+
+  describe('A BufferedIterator that is destroyed after the first item', function () {
+    var iterator, i = 0;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        next();
+        if (i === 1)
+          iterator.destroy();
+      });
+      captureEvents(iterator, 'data', 'end', 'readable');
+    });
+
+    it('should have called _read() once', function () {
+      iterator._read.should.have.callCount(1);
+    });
+
+    it('should have an empty buffer', function () {
+      iterator._buffer.length.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
+    });
+  });
+
+  describe('A BufferedIterator that is destroyed after the first item but before the next call', function () {
+    var iterator, i = 0;
+    before(function () {
+      iterator = new BufferedIterator();
+      iterator._read = sinon.spy(function (count, next) {
+        this._push(++i);
+        if (i === 1)
+          iterator.destroy();
+        next();
+      });
+      captureEvents(iterator, 'data', 'end', 'readable');
+    });
+
+    it('should have called _read() once', function () {
+      iterator._read.should.have.callCount(1);
+    });
+
+    it('should have an empty buffer', function () {
+      iterator._buffer.length.should.equal(0);
+    });
+
+    it('should not have ended', function () {
+      iterator.ended.should.be.false;
+    });
+
+    it('should have been destroyed', function () {
+      iterator.destroyed.should.be.true;
+    });
+
+    it('should be done', function () {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', function () {
+      iterator.readable.should.be.false;
+    });
+
+    it('cannot be made readable again', function () {
+      iterator.readable = true;
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when trying to read', function () {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should not have any listeners for data, readable, or end', function () {
+      expect(iterator._events).to.not.contain.key('data');
+      expect(iterator._events).to.not.contain.key('readable');
+      expect(iterator._events).to.not.contain.key('end');
     });
   });
 });
