@@ -24,8 +24,8 @@ var immediate = (function () {
   @type String[]
   @protected
 */
-var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED'];
-var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4;
+var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
+var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
 STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
@@ -69,11 +69,22 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 /**
   ID of the ENDED state.
   An iterator has ended if no further items will become available.
+  The 'end' event is guaranteed to have been called when in this state.
 
   @name AsyncIterator.ENDED
   @type integer
   @protected
 */
+
+/**
+ ID of the DESTROYED state.
+ An iterator has been destroyed after calling {@link AsyncIterator#destroy}.
+ The 'end' event has not been called, as pending elements were voided.
+
+ @name AsyncIterator.DESTROYED
+ @type integer
+ @protected
+ */
 
 
 
@@ -121,7 +132,7 @@ function AsyncIterator() {
 **/
 AsyncIterator.prototype._changeState = function (newState, eventAsync) {
   // Validate the state change
-  var valid = newState > this._state;
+  var valid = newState > this._state && this._state < ENDED;
   if (valid) {
     this._state = newState;
     // Emit the `end` event when changing to ENDED
@@ -210,23 +221,62 @@ AsyncIterator.prototype.close = function () {
 };
 
 /**
+ Destroy the iterator and stop it from generating new items.
+
+ This will not do anything if the iterator was already ended or destroyed.
+
+ All internal resources will be released an no new items will be emitted,
+ even not already generated items.
+
+ Implementors should not override this method,
+ but instead implement {@link AsyncIterator#_destroy}.
+
+ @param {Error} [cause] An optional error to emit.
+ @emits AsyncIterator.end
+ @emits AsyncIterator.error Only emitted if an error is passed.
+ **/
+AsyncIterator.prototype.destroy = function (cause) {
+  if (!this.done) {
+    var self = this;
+    this._destroy(cause, function (error) {
+      cause = cause || error;
+      if (cause)
+        self.emit('error', cause);
+      end(self, true);
+    });
+  }
+};
+
+/**
+ Called by {@link AsyncIterator#destroy}.
+ Implementers can override this, but this should not be called directly.
+
+ @param {?Error} cause The reason why the iterator is destroyed.
+ @param {Function} callback A callback function with an optional error argument.
+ */
+AsyncIterator.prototype._destroy = function (cause, callback) {
+  callback();
+};
+
+/**
   Asynchronously ends the iterator and cleans up.
 
   Should never be called before {@link AsyncIterator#close};
   typically, `close` is responsible for calling `_end`.
 
+  @param {boolean} [destroy] If the iterator should be forcefully destroyed.
   @protected
   @emits AsyncIterator.end
 **/
-AsyncIterator.prototype._end = function () {
-  if (this._changeState(ENDED)) {
+AsyncIterator.prototype._end = function (destroy) {
+  if (this._changeState(destroy ? DESTROYED : ENDED)) {
     this._readable = false;
     this.removeAllListeners('readable');
     this.removeAllListeners('data');
     this.removeAllListeners('end');
   }
 };
-function end(self) { self._end(); }
+function end(self, destroy) { self._end(destroy); }
 function endAsync(self) { immediate(end, self); }
 
 /**
@@ -248,7 +298,7 @@ function endAsync(self) { immediate(end, self); }
 Object.defineProperty(AsyncIterator.prototype, 'readable', {
   get: function () { return this._readable; },
   set: function (readable) {
-    readable = !!readable && !this.ended;
+    readable = !!readable && !this.done;
     // Set the readable value only if it has changed
     if (this._readable !== readable) {
       this._readable = readable;
@@ -273,7 +323,7 @@ Object.defineProperty(AsyncIterator.prototype, 'closed', {
 });
 
 /**
-  Gets whether the iterator has stopped emitting items.
+  Gets whether the iterator has finished emitting items.
 
   @name AsyncIterator#ended
   @type boolean
@@ -281,6 +331,31 @@ Object.defineProperty(AsyncIterator.prototype, 'closed', {
 **/
 Object.defineProperty(AsyncIterator.prototype, 'ended', {
   get: function () { return this._state === ENDED; },
+  enumerable: true,
+});
+
+/**
+ Gets whether the iterator has been destroyed.
+
+ @name AsyncIterator#destroyed
+ @type boolean
+ @readonly
+ **/
+Object.defineProperty(AsyncIterator.prototype, 'destroyed', {
+  get: function () { return this._state === DESTROYED; },
+  enumerable: true,
+});
+
+/**
+ Gets whether the iterator will not emit anymore items,
+ either due to being closed or due to being destroyed.
+
+ @name AsyncIterator#done
+ @type boolean
+ @readonly
+ **/
+Object.defineProperty(AsyncIterator.prototype, 'done', {
+  get: function () { return this._state >= ENDED; },
   enumerable: true,
 });
 
@@ -317,7 +392,7 @@ function emitData() {
   while (this._hasListeners('data') && (item = this.read()) !== null)
     this.emit('data', item);
   // Stop draining the source if there are no more `data` listeners
-  if (!this._hasListeners('data')) {
+  if (!this._hasListeners('data') && !this.done) {
     this.removeListener('readable', emitData);
     this._addSingleListener('newListener', waitForDataListener);
   }
@@ -529,6 +604,12 @@ ArrayIterator.prototype._toStringDetails = function () {
   return '(' + (this._buffer && this._buffer.length || 0) + ')';
 };
 
+/* Called by {@link AsyncIterator#destroy} */
+ArrayIterator.prototype._destroy = function (error, callback) {
+  delete this._buffer;
+  callback();
+};
+
 
 
 /**
@@ -700,7 +781,7 @@ BufferedIterator.prototype._begin = function (done) { done(); };
   @returns {object?} The next item, or `null` if none is available
 **/
 BufferedIterator.prototype.read = function () {
-  if (this.ended)
+  if (this.done)
     return null;
 
   // Try to retrieve an item from the buffer
@@ -744,11 +825,11 @@ BufferedIterator.prototype._read = function (count, done) { done(); };
   @emits AsyncIterator.readable
 **/
 BufferedIterator.prototype._push = function (item) {
-  if (this.ended)
-    throw new Error('Cannot push after the iterator was ended.');
-  this._pushedCount++;
-  this._buffer.push(item);
-  this.readable = true;
+  if (!this.done) {
+    this._pushedCount++;
+    this._buffer.push(item);
+    this.readable = true;
+  }
 };
 
 /**
@@ -848,6 +929,12 @@ BufferedIterator.prototype._completeClose = function () {
         endAsync(self);
     });
   }
+};
+
+/* Called by {@link AsyncIterator#destroy} */
+BufferedIterator.prototype._destroy = function (error, callback) {
+  this._buffer = [];
+  callback();
 };
 
 /**
@@ -1005,7 +1092,7 @@ TransformIterator.prototype._closeWhenDone = function () {
 };
 
 /* Cleans up the source iterator and ends. */
-TransformIterator.prototype._end = function () {
+TransformIterator.prototype._end = function (destroy) {
   var source = this._source;
   if (source) {
     source.removeListener('end',      destinationCloseWhenDone);
@@ -1013,7 +1100,7 @@ TransformIterator.prototype._end = function () {
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
   }
-  BufferedIterator.prototype._end.call(this);
+  BufferedIterator.prototype._end.call(this, destroy);
 };
 
 /**
@@ -1531,7 +1618,7 @@ function HistoryReader(source) {
 /* Tries to read an item */
 ClonedIterator.prototype.read = function () {
   var source = this._source, item = null;
-  if (!this.ended && source) {
+  if (!this.done && source) {
     // Try to read an item at the current point in history
     var history = source._destination;
     if ((item = history.readAt(this._readPosition)) !== null)
@@ -1546,14 +1633,14 @@ ClonedIterator.prototype.read = function () {
 };
 
 /* End the iterator and cleans up. */
-ClonedIterator.prototype._end = function () {
+ClonedIterator.prototype._end = function (destroy) {
   // Unregister from a possible history reader
   var history = this._source && this._source._destination;
   if (history) history.unregister(this);
 
   // Don't call TransformIterator#_end,
   // as it would make the source inaccessible for other clones
-  BufferedIterator.prototype._end.call(this);
+  BufferedIterator.prototype._end.call(this, destroy);
 };
 
 // Disable buffer cleanup
