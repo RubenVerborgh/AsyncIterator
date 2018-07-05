@@ -969,6 +969,7 @@ BufferedIterator.prototype._toStringDetails = function () {
   @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
+  @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @extends BufferedIterator
 **/
@@ -983,6 +984,7 @@ function TransformIterator(source, options) {
   BufferedIterator.call(this, options);
   if (source) this.source = source;
   this._optional = !!(options && options.optional);
+  this._destroySource = !options || options.destroySource !== false;
 }
 BufferedIterator.subclass(TransformIterator);
 
@@ -1099,6 +1101,8 @@ TransformIterator.prototype._end = function (destroy) {
     source.removeListener('error',    destinationEmitError);
     source.removeListener('readable', destinationFillBuffer);
     delete source._destination;
+    if (this._destroySource)
+      source.destroy();
   }
   BufferedIterator.prototype._end.call(this, destroy);
 };
