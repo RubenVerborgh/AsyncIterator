@@ -611,6 +611,46 @@ describe('TransformIterator', function () {
     });
   });
 
+  describe('A TransformIterator with destroySource set to its default', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3]);
+      iterator = new TransformIterator(source);
+    });
+
+    describe('after being closed', function () {
+      before(function (done) {
+        iterator.read();
+        iterator.close();
+        iterator.on('end', done);
+      });
+
+      it('should have destroyed the source', function () {
+        expect(source).to.have.property('destroyed', true);
+      });
+    });
+  });
+
+  describe('A TransformIterator with destroySource set to false', function () {
+    var iterator, source;
+    before(function () {
+      source = new ArrayIterator([1, 2, 3]);
+      iterator = new TransformIterator(source, { destroySource: false });
+    });
+
+    describe('after being closed', function () {
+      before(function (done) {
+        iterator.read();
+        iterator.close();
+        iterator.on('end', done);
+      });
+
+      it('should not have destroyed the source', function () {
+        expect(source).to.have.property('destroyed', false);
+      });
+    });
+  });
+
   describe('A TransformIterator with a source that errors', function () {
     var iterator, source, errorHandler;
     before(function () {
