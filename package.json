@@ -1,6 +1,6 @@
 {
   "name": "asynciterator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An asynchronous iterator library for advanced object pipelines.",
   "author": "Ruben Verborgh <ruben@verborgh.org>",
   "main": "asynciterator.js",
