@@ -4,6 +4,9 @@
   "description": "An asynchronous iterator library for advanced object pipelines.",
   "author": "Ruben Verborgh <ruben@verborgh.org>",
   "main": "asynciterator.js",
+  "files": [
+    "asynciterator.js"
+  ],
   "scripts": {
     "test": "mocha",
     "cover": "nyc -- mocha -R dot",
