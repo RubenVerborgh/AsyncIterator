@@ -11,7 +11,13 @@
     "test": "mocha",
     "cover": "nyc -- mocha -R dot",
     "lint": "eslint *.js test",
-    "docs": "jsdoc -c jsdoc.json README.md *.js"
+    "docs": "jsdoc -c jsdoc.json README.md *.js",
+    "perf": "npm run perf:transform && npm run perf:buffered",
+    "perf:buffered": "node perf/BufferedIterator-perf.js",
+    "perf:transform": "node perf/TransformIterator-perf.js",
+    "perf:browser": "npm run perf:browser:transform && npm run perf:browser:buffered",
+    "perf:browser:buffered": "webpack perf/BufferedIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js",
+    "perf:browser:transform": "webpack perf/TransformIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js"
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
@@ -23,8 +29,11 @@
     "mocha": "^6.0.2",
     "nyc": "^13.3.0",
     "pre-commit": "^1.2.2",
+    "puppeteer": "^2.1.0",
     "sinon": "^7.2.7",
-    "sinon-chai": "^3.3.0"
+    "sinon-chai": "^3.3.0",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   },
   "pre-commit": [
     "lint",
