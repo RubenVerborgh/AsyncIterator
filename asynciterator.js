@@ -28,8 +28,8 @@ function immediately(reason, fn, a, b, c, d) {
   @type String[]
   @protected
 */
-var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
-var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
+var STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDING', 'ENDED', 'DESTROYED'];
+var INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDING = 4, ENDED = 5, DESTROYED = 6;
 STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
 
 /**
@@ -69,6 +69,15 @@ STATES.forEach(function (state, id) { AsyncIterator[state] = id; });
   @type integer
   @protected
 */
+
+/**
+ ID of the ENDING state.
+ An iterator is ending if the ENDED state is pending.
+
+ @name AsyncIterator.ENDING
+ @type integer
+ @protected
+ */
 
 /**
   ID of the ENDED state.
@@ -281,7 +290,12 @@ AsyncIterator.prototype._end = function (destroy) {
   }
 };
 function end(self, destroy) { self._end(destroy); }
-function endAsync(self) { immediately('end async', end, self); }
+function endAsync(self) {
+  if (self._changeState(ENDING)) {
+    this._readable = false;
+    immediately('end async', end, self);
+  }
+}
 
 /**
   Emitted after the last item of the iterator has been read.
@@ -352,14 +366,14 @@ Object.defineProperty(AsyncIterator.prototype, 'destroyed', {
 
 /**
  Gets whether the iterator will not emit anymore items,
- either due to being closed or due to being destroyed.
+ because it is (being) closed or destroyed.
 
  @name AsyncIterator#done
  @type boolean
  @readonly
  **/
 Object.defineProperty(AsyncIterator.prototype, 'done', {
-  get: function () { return this._state >= ENDED; },
+  get: function () { return this._state >= ENDING; },
   enumerable: true,
 });
 
