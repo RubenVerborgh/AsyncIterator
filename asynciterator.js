@@ -814,7 +814,7 @@ BufferedIterator.prototype.read = function () {
   }
 
   // If the buffer is becoming empty, either fill it or end the iterator
-  if (!this._reading && buffer.length <= this._maxBufferSize >> 2) {
+  if (!this._reading && buffer.length === 0) {
     // If the iterator is not closed and thus may still generate new items, fill the buffer
     if (!this.closed)
       this._fillBuffer();
