@@ -1,5 +1,25 @@
 var EventEmitter = require('events').EventEmitter;
 
+var trackedEvents = {};
+
+function trackEvent(name) {
+  trackedEvents[name] = (trackedEvents[name] || 0) + 1;
+}
+
+global.logTrackedEvents = function (console) {
+  var names = Object.keys(trackedEvents);
+  names.sort();
+  console.log('\ntracked events');
+  names.forEach(function (name) {
+    console.log(' - %s\t%s', name, trackedEvents[name]);
+  });
+};
+
+function immediately(reason, fn, a, b, c, d) {
+  trackEvent('setImmediate: ' + reason);
+  setImmediate(fn, a, b, c, d);
+}
+
 /**
   Names of possible iterator states.
   The state's position in the array corresponds to its ID.
@@ -121,7 +141,7 @@ AsyncIterator.prototype._changeState = function (newState, eventAsync) {
     this._state = newState;
     // Emit the `end` event when changing to ENDED
     if (newState === ENDED)
-      eventAsync ? setImmediate(emit, this, 'end') : this.emit('end');
+      eventAsync ? immediately('emit end', emit, this, 'end') : this.emit('end');
   }
   return valid;
 };
@@ -261,7 +281,7 @@ AsyncIterator.prototype._end = function (destroy) {
   }
 };
 function end(self, destroy) { self._end(destroy); }
-function endAsync(self) { setImmediate(end, self); }
+function endAsync(self) { immediately('end async', end, self); }
 
 /**
   Emitted after the last item of the iterator has been read.
@@ -288,7 +308,7 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
       this._readable = readable;
       // If the iterator became readable, emit the `readable` event
       if (readable)
-        setImmediate(emit, this, 'readable');
+        immediately('emit readable', emit, this, 'readable');
     }
   },
   enumerable: true,
@@ -366,7 +386,7 @@ function waitForDataListener(eventName) {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
     if (this.readable)
-      setImmediate(call, emitData, this);
+      immediately('emit data', call, emitData, this);
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
@@ -404,7 +424,7 @@ AsyncIterator.prototype.getProperty = function (propertyName, callback) {
     return properties && properties[propertyName];
   // If the value has been set, send it through the callback
   if (properties && (propertyName in properties))
-    setImmediate(callback, properties[propertyName]);
+    immediately('emit property', callback, properties[propertyName]);
   // If the value was not set, store the callback for when the value will be set
   else {
     if (!(propertyCallbacks = this._propertyCallbacks))
@@ -430,9 +450,9 @@ AsyncIterator.prototype.setProperty = function (propertyName, value) {
   if (callbacks = propertyCallbacks && propertyCallbacks[propertyName]) {
     delete propertyCallbacks[propertyName];
     if (callbacks.length === 1)
-      setImmediate(callbacks[0], value);
+      immediately('property callback', callbacks[0], value);
     else {
-      setImmediate(function () {
+      immediately('property callbacks', function () {
         for (var i = 0; i < callbacks.length; i++)
           callbacks[i](value);
       });
@@ -688,7 +708,7 @@ function BufferedIterator(options) {
 
   // Acquire reading lock to read initialization items
   this._reading = true;
-  setImmediate(init, this, autoStart !== false || autoStart);
+  immediately('BufferedIterator init', init, this, autoStart !== false || autoStart);
 }
 AsyncIterator.subclass(BufferedIterator);
 
@@ -863,7 +883,7 @@ function fillBufferAsync(self) {
   // Acquire reading lock to avoid recursive reads
   if (!self._reading) {
     self._reading = true;
-    setImmediate(fillBufferAsyncCallback, self);
+    immediately('fillBufferAsync', fillBufferAsyncCallback, self);
   }
 }
 function fillBufferAsyncCallback(self) {
@@ -1025,7 +1045,7 @@ TransformIterator.prototype._read = function (count, done) {
   readAndTransform(self, function next() {
     // Continue transforming until at least `count` items have been pushed
     if (self._pushedCount < count && !self.closed)
-      setImmediate(readAndTransform, self, next, done);
+      immediately('readAndTransform', readAndTransform, self, next, done);
     else
       done();
   }, done);
@@ -1167,7 +1187,7 @@ SimpleTransformIterator.prototype._transform = null;
 SimpleTransformIterator.prototype._read = function (count, done) {
   var self = this;
   readAndTransformSimple(self, count, function next() {
-    setImmediate(readAndTransformSimple, self, count, next, done);
+    immediately('readAndTransformSimple', readAndTransformSimple, self, count, next, done);
   }, done);
 };
 function readAndTransformSimple(self, count, next, done) {

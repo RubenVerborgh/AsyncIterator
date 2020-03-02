@@ -59,6 +59,7 @@ var STREAM_TRANSFORMERS = [1, 10, 100];
       console.log(streamElements + ':' + streamTransformers + ':' + (timeEnd - timeStart) + ':' + getSetImmediateCounter());
     }
   }
+  logTrackedEvents(console);
 
   // Trigger end when running in Web browser
   if (typeof window !== 'undefined' && window.onEnd) {
