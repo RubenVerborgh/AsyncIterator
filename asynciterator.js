@@ -769,8 +769,10 @@ BufferedIterator.prototype._init = function (autoStart) {
     // Open the iterator and start buffering
     self._reading = false;
     self._changeState(OPEN);
-    if (autoStart)
+    if (autoStart) {
+      trackEvent('fillBufferAsync: autoStart');
       fillBufferAsync(self);
+    }
     // If reading should not start automatically, the iterator doesn't become readable.
     // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
     else
@@ -814,8 +816,10 @@ BufferedIterator.prototype.read = function () {
   // If the buffer is becoming empty, either fill it or end the iterator
   if (!this._reading && buffer.length < this._maxBufferSize) {
     // If the iterator is not closed and thus may still generate new items, fill the buffer
-    if (!this.closed)
+    if (!this.closed) {
+      trackEvent('fillBufferAsync: BufferedIterator.read');
       fillBufferAsync(this);
+    }
     // No new items will be generated, so if none are buffered, the iterator ends here
     else if (!buffer.length)
       endAsync(this);
@@ -887,8 +891,10 @@ BufferedIterator.prototype._fillBuffer = function () {
       else if (self._pushedCount) {
         self.readable = true;
         // If the buffer is insufficiently full, continue filling
-        if (self._buffer.length < self._maxBufferSize / 2)
+        if (self._buffer.length < self._maxBufferSize / 2) {
+          trackEvent('fillBufferAsync: _fillBuffer');
           fillBufferAsync(self);
+        }
       }
     });
   }
