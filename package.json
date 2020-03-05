@@ -15,9 +15,11 @@
     "perf": "npm run perf:transform && npm run perf:buffered",
     "perf:buffered": "node perf/BufferedIterator-perf.js",
     "perf:transform": "node perf/TransformIterator-perf.js",
+    "perf:multitransform": "node perf/MultiTransformIterator-perf.js",
     "perf:browser": "npm run perf:browser:transform && npm run perf:browser:buffered",
     "perf:browser:buffered": "webpack perf/BufferedIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js",
-    "perf:browser:transform": "webpack perf/TransformIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js"
+    "perf:browser:transform": "webpack perf/TransformIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js",
+    "perf:browser:multitransform": "webpack perf/MultiTransformIterator-perf.js -o perf/browser-source.js --mode development --display errors-only && node perf/browser-runner.js \"./browser-source.js\" && rm perf/browser-source.js"
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
