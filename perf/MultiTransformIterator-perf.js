@@ -24,7 +24,7 @@ The first dimension is the number of elements that are pushed through the stream
 The second dimension is the number of transformations that are applied over the stream.
  */
 
-var STREAM_ELEMENTS = [1000, 10000, 100000];
+var STREAM_ELEMENTS = [1000, 10000];
 var STREAM_TRANSFORMERS = [1, 10, 100];
 
 (async function() {
