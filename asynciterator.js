@@ -658,7 +658,7 @@ function IntegerIterator(options) {
   if (!isFinite(next) || (step >= 0 ? next > last : next < last))
     this.close();
   else
-    this.readable = true;
+    this._readable = true;
 }
 AsyncIterator.subclass(IntegerIterator);
 
