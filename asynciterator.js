@@ -668,7 +668,7 @@ IntegerIterator.prototype.read = function () {
     return null;
   var current = this._next, step = this._step, last = this._last, next = this._next += step;
   if (step >= 0 ? next > last : next < last)
-    this.close();
+    this._end();
   return current;
 };
 
