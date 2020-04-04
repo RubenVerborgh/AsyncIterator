@@ -883,17 +883,9 @@ BufferedIterator.prototype._fillBuffer = function () {
       // If the iterator was closed while reading, complete closing
       if (self.closed)
         self._completeClose();
-      // If the iterator pushed one or more items,
-      // it might currently be able to generate additional items
-      // (even though all pushed items might already have been read)
-      else if (self._pushedCount) {
+      // Mark as readable if items were pushed
+      else if (self._pushedCount !== 0)
         self.readable = true;
-        // If the buffer is insufficiently full, continue filling
-        if (self._buffer.length < self._maxBufferSize / 2) {
-          trackEvent('fillBufferAsync: _fillBuffer');
-          fillBufferAsync(self);
-        }
-      }
     });
   }
 };
