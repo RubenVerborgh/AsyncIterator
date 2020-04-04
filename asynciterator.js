@@ -805,22 +805,22 @@ BufferedIterator.prototype.read = function () {
     return null;
 
   // Try to retrieve an item from the buffer
-  var buffer = this._buffer, item;
-  if (buffer.length)
-    item = buffer.shift();
-  else {
-    item = null;
-    this.readable = false;
-  }
+  var buffer = this._buffer;
+  var item = buffer.length === 0 ? null : item = buffer.shift();
 
   // If the buffer is becoming empty, either fill it or end the iterator
-  if (!this._reading && buffer.length === 0) {
-    // If the iterator is not closed and thus may still generate new items, fill the buffer
-    if (!this.closed)
-      this._fillBuffer();
-    // No new items will be generated, so if none are buffered, the iterator ends here
-    else if (!buffer.length)
-      endAsync(this);
+  if (buffer.length === 0) {
+    if (!this._reading) {
+      // If the iterator is not closed and thus may still generate new items, fill the buffer
+      if (!this.closed)
+        this._fillBuffer();
+      // No new items will be generated, so if none are buffered, the iterator ends here
+      else if (!buffer.length)
+        endAsync(this);
+    }
+    // If still empty, indicate there is nothing left to read
+    if (buffer.length === 0)
+      this.readable = false;
   }
 
   return item;
