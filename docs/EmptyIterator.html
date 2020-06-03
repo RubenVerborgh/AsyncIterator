@@ -1215,7 +1215,7 @@
     
     <div class="description">
         <p>Gets whether the iterator will not emit anymore items,
- either due to being closed or due to being destroyed.</p>
+either due to being closed or due to being destroyed.</p>
     </div>
     
     
@@ -1306,8 +1306,8 @@
     
     <div class="description">
         <p>Gets or sets whether this iterator might have items available for read.</p>
-<p>  A value of <code>false</code> means there are <em>definitely</em> no items available;
-  a value of <code>true</code> means items <em>might</em> be available.</p>
+<p>A value of <code>false</code> means there are <em>definitely</em> no items available;
+a value of <code>true</code> means items <em>might</em> be available.</p>
     </div>
     
     
@@ -1371,7 +1371,7 @@
     
     <div class="description">
         <p>Changes the iterator to the given state if possible and necessary,
-  possibly emitting events to signal that change.</p>
+possibly emitting events to signal that change.</p>
     </div>
     
 
@@ -1571,7 +1571,7 @@
     
     <div class="description">
         <p>Called by <a href="AsyncIterator.html#destroy">AsyncIterator#destroy</a>.
- Implementers can override this, but this should not be called directly.</p>
+Implementers can override this, but this should not be called directly.</p>
     </div>
     
 
@@ -1725,8 +1725,8 @@
     
     <div class="description">
         <p>Asynchronously ends the iterator and cleans up.</p>
-<p>  Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
-  typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
+<p>Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
+typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     </div>
     
 
@@ -1930,7 +1930,7 @@
     
     <div class="description">
         <p>Appends the items after those of the current iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -2081,9 +2081,9 @@
     
     <div class="description">
         <p>Creates a copy of the current iterator,
-  containing all items emitted from this point onward.</p>
-<p>  Further copies can be created; they will all start from this same point.
-  After this operation, only read the returned copies instead of the original iterator.</p>
+containing all items emitted from this point onward.</p>
+<p>Further copies can be created; they will all start from this same point.
+After this operation, only read the returned copies instead of the original iterator.</p>
     </div>
     
 
@@ -2186,8 +2186,8 @@
     
     <div class="description">
         <p>Stops the iterator from generating new items.</p>
-<p>  Already generated items or terminating items can still be emitted.
-  After this, the iterator will end asynchronously.</p>
+<p>Already generated items or terminating items can still be emitted.
+After this, the iterator will end asynchronously.</p>
     </div>
     
 
@@ -2407,11 +2407,11 @@
     
     <div class="description">
         <p>Destroy the iterator and stop it from generating new items.</p>
-<p> This will not do anything if the iterator was already ended or destroyed.</p>
-<p> All internal resources will be released an no new items will be emitted,
- even not already generated items.</p>
-<p> Implementors should not override this method,
- but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destroy</a>.</p>
+<p>This will not do anything if the iterator was already ended or destroyed.</p>
+<p>All internal resources will be released an no new items will be emitted,
+even not already generated items.</p>
+<p>Implementors should not override this method,
+but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destroy</a>.</p>
     </div>
     
 
@@ -2544,7 +2544,7 @@
     
     <div class="description">
         <p>Invokes the callback for each remaining item in the iterator.</p>
-<p>  Switches the iterator to flow mode.</p>
+<p>Switches the iterator to flow mode.</p>
     </div>
     
 
@@ -2698,7 +2698,7 @@
     
     <div class="description">
         <p>Return items from this iterator that match the filter.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -2983,10 +2983,10 @@
     
     <div class="description">
         <p>Retrieves the property with the given name from the iterator.</p>
-<p>  If no callback is passed, it returns the value of the property
-  or <code>undefined</code> if the property is not set.</p>
-<p>  If a callback is passed, it returns <code>undefined</code>
-  and calls the callback with the property the moment it is set.</p>
+<p>If no callback is passed, it returns the value of the property
+or <code>undefined</code> if the property is not set.</p>
+<p>If a callback is passed, it returns <code>undefined</code>
+and calls the callback with the property the moment it is set.</p>
     </div>
     
 
@@ -3169,7 +3169,7 @@
     
     <div class="description">
         <p>Maps items from this iterator using the given function.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -3352,7 +3352,7 @@
     
     <div class="description">
         <p>Prepends the items after those of the current iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -3503,7 +3503,7 @@
     
     <div class="description">
         <p>Limits the current iterator to the given range.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -3674,13 +3674,13 @@
     
     <div class="description">
         <p>Tries to read the next item from the iterator.</p>
-<p>  This is the main method for reading the iterator in <em>on-demand mode</em>,
-  where new items are only created when needed by consumers.
-  If no items are currently available, this methods returns <code>null</code>.
-  The <a href="AsyncIterator.html#.event:readable">AsyncIterator.event:readable</a> event will then signal when new items might be ready.</p>
-<p>  To read all items from the iterator,
-  switch to <em>flow mode</em> by subscribing to the <a href="AsyncIterator.html#.event:data">AsyncIterator.event:data</a> event.
-  When in flow mode, do not use the <code>read</code> method.</p>
+<p>This is the main method for reading the iterator in <em>on-demand mode</em>,
+where new items are only created when needed by consumers.
+If no items are currently available, this methods returns <code>null</code>.
+The <a href="AsyncIterator.html#.event:readable">AsyncIterator.event:readable</a> event will then signal when new items might be ready.</p>
+<p>To read all items from the iterator,
+switch to <em>flow mode</em> by subscribing to the <a href="AsyncIterator.html#.event:data">AsyncIterator.event:data</a> event.
+When in flow mode, do not use the <code>read</code> method.</p>
     </div>
     
 
@@ -4054,7 +4054,7 @@
     
     <div class="description">
         <p>Skips the given number of items from the current iterator.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -4202,7 +4202,7 @@
     
     <div class="description">
         <p>Surrounds items of the current iterator with the given items.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -4379,7 +4379,7 @@
     
     <div class="description">
         <p>Limits the current iterator to the given number of items.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -4527,7 +4527,7 @@
     
     <div class="description">
         <p>Transforms items from this iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -5055,7 +5055,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 09 2019 22:28:12 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 03 2020 19:06:06 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>

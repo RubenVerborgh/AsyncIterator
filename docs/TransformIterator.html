@@ -1042,7 +1042,7 @@
     
     <div class="description">
         <p>Creates a new <code>TransformIterator</code>.</p>
-<p>  This class serves as a base class for other iterators.</p>
+<p>This class serves as a base class for other iterators.</p>
     </div>
     
 
@@ -1503,7 +1503,7 @@
     
     <div class="description">
         <p>Gets whether the iterator will not emit anymore items,
- either due to being closed or due to being destroyed.</p>
+either due to being closed or due to being destroyed.</p>
     </div>
     
     
@@ -1594,8 +1594,8 @@
     
     <div class="description">
         <p>Gets or sets the maximum number of items to preload in the internal buffer.</p>
-<p>  A <code>BufferedIterator</code> tries to fill its buffer as far as possible.
-  Set to <code>Infinity</code> to fully drain the source.</p>
+<p>A <code>BufferedIterator</code> tries to fill its buffer as far as possible.
+Set to <code>Infinity</code> to fully drain the source.</p>
     </div>
     
     
@@ -1641,8 +1641,8 @@
     
     <div class="description">
         <p>Gets or sets whether this iterator might have items available for read.</p>
-<p>  A value of <code>false</code> means there are <em>definitely</em> no items available;
-  a value of <code>true</code> means items <em>might</em> be available.</p>
+<p>A value of <code>false</code> means there are <em>definitely</em> no items available;
+a value of <code>true</code> means items <em>might</em> be available.</p>
     </div>
     
     
@@ -1751,8 +1751,8 @@
     
     <div class="description">
         <p>Writes beginning items and opens iterator resources.</p>
-<p>  Should never be called before <a href="BufferedIterator.html#_init">BufferedIterator#_init</a>;
-  typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p>
+<p>Should never be called before <a href="BufferedIterator.html#_init">BufferedIterator#_init</a>;
+typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p>
     </div>
     
 
@@ -1871,7 +1871,7 @@
     
     <div class="description">
         <p>Changes the iterator to the given state if possible and necessary,
-  possibly emitting events to signal that change.</p>
+possibly emitting events to signal that change.</p>
     </div>
     
 
@@ -2142,7 +2142,7 @@
     
     <div class="description">
         <p>Stops the iterator from generating new items,
-  switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
+switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     </div>
     
 
@@ -2221,7 +2221,7 @@
     
     <div class="description">
         <p>Called by <a href="AsyncIterator.html#destroy">AsyncIterator#destroy</a>.
- Implementers can override this, but this should not be called directly.</p>
+Implementers can override this, but this should not be called directly.</p>
     </div>
     
 
@@ -2375,8 +2375,8 @@
     
     <div class="description">
         <p>Asynchronously ends the iterator and cleans up.</p>
-<p>  Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
-  typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
+<p>Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
+typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     </div>
     
 
@@ -2507,7 +2507,7 @@
     
     <div class="description">
         <p>Fills the internal buffer until <code>this._maxBufferSize</code> items are present.</p>
-<p>  This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
+<p>This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
     </div>
     
 
@@ -2586,8 +2586,8 @@
     
     <div class="description">
         <p>Writes terminating items and closes iterator resources.</p>
-<p>  Should never be called before <a href="BufferedIterator.html#close">BufferedIterator#close</a>;
-  typically, <code>close</code> is responsible for calling <code>_flush</code>.</p>
+<p>Should never be called before <a href="BufferedIterator.html#close">BufferedIterator#close</a>;
+typically, <code>close</code> is responsible for calling <code>_flush</code>.</p>
     </div>
     
 
@@ -2706,7 +2706,7 @@
     
     <div class="description">
         <p>Initializing the iterator by calling <a href="BufferedIterator.html#_begin">BufferedIterator#_begin</a>
-  and changing state from INIT to OPEN.</p>
+and changing state from INIT to OPEN.</p>
     </div>
     
 
@@ -2948,7 +2948,7 @@
     
     <div class="description">
         <p>Tries to generate the given number of items.</p>
-<p>  Implementers should add <code>count</code> items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.</p>
+<p>Implementers should add <code>count</code> items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.</p>
     </div>
     
 
@@ -3161,8 +3161,8 @@
     
     <div class="description">
         <p>Generates items based on the item from the source.</p>
-<p>  Implementers should add items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.
-  The default implementation pushes the source item as-is.</p>
+<p>Implementers should add items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.
+The default implementation pushes the source item as-is.</p>
     </div>
     
 
@@ -3443,7 +3443,7 @@
     
     <div class="description">
         <p>Appends the items after those of the current iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -3594,9 +3594,9 @@
     
     <div class="description">
         <p>Creates a copy of the current iterator,
-  containing all items emitted from this point onward.</p>
-<p>  Further copies can be created; they will all start from this same point.
-  After this operation, only read the returned copies instead of the original iterator.</p>
+containing all items emitted from this point onward.</p>
+<p>Further copies can be created; they will all start from this same point.
+After this operation, only read the returned copies instead of the original iterator.</p>
     </div>
     
 
@@ -3699,9 +3699,9 @@
     
     <div class="description">
         <p>Stops the iterator from generating new items
-  after a possible pending read operation has finished.</p>
-<p>  Already generated, pending, or terminating items can still be emitted.
-  After this, the iterator will end asynchronously.</p>
+after a possible pending read operation has finished.</p>
+<p>Already generated, pending, or terminating items can still be emitted.
+After this, the iterator will end asynchronously.</p>
     </div>
     
 
@@ -3921,11 +3921,11 @@
     
     <div class="description">
         <p>Destroy the iterator and stop it from generating new items.</p>
-<p> This will not do anything if the iterator was already ended or destroyed.</p>
-<p> All internal resources will be released an no new items will be emitted,
- even not already generated items.</p>
-<p> Implementors should not override this method,
- but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destroy</a>.</p>
+<p>This will not do anything if the iterator was already ended or destroyed.</p>
+<p>All internal resources will be released an no new items will be emitted,
+even not already generated items.</p>
+<p>Implementors should not override this method,
+but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destroy</a>.</p>
     </div>
     
 
@@ -4058,7 +4058,7 @@
     
     <div class="description">
         <p>Invokes the callback for each remaining item in the iterator.</p>
-<p>  Switches the iterator to flow mode.</p>
+<p>Switches the iterator to flow mode.</p>
     </div>
     
 
@@ -4212,7 +4212,7 @@
     
     <div class="description">
         <p>Return items from this iterator that match the filter.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -4497,10 +4497,10 @@
     
     <div class="description">
         <p>Retrieves the property with the given name from the iterator.</p>
-<p>  If no callback is passed, it returns the value of the property
-  or <code>undefined</code> if the property is not set.</p>
-<p>  If a callback is passed, it returns <code>undefined</code>
-  and calls the callback with the property the moment it is set.</p>
+<p>If no callback is passed, it returns the value of the property
+or <code>undefined</code> if the property is not set.</p>
+<p>If a callback is passed, it returns <code>undefined</code>
+and calls the callback with the property the moment it is set.</p>
     </div>
     
 
@@ -4683,7 +4683,7 @@
     
     <div class="description">
         <p>Maps items from this iterator using the given function.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -4866,7 +4866,7 @@
     
     <div class="description">
         <p>Prepends the items after those of the current iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -5017,7 +5017,7 @@
     
     <div class="description">
         <p>Limits the current iterator to the given range.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -5188,8 +5188,8 @@
     
     <div class="description">
         <p>Tries to read the next item from the iterator.</p>
-<p>  If the buffer is empty,
-  this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
+<p>If the buffer is empty,
+this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
     </div>
     
 
@@ -5563,7 +5563,7 @@
     
     <div class="description">
         <p>Skips the given number of items from the current iterator.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -5711,7 +5711,7 @@
     
     <div class="description">
         <p>Surrounds items of the current iterator with the given items.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -5888,7 +5888,7 @@
     
     <div class="description">
         <p>Limits the current iterator to the given number of items.</p>
-<p>  The current iterator may not be read anymore until the returned iterator ends.</p>
+<p>The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -6036,7 +6036,7 @@
     
     <div class="description">
         <p>Transforms items from this iterator.</p>
-<p>  After this operation, only read the returned iterator instead of the current one.</p>
+<p>After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -6564,7 +6564,7 @@
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 09 2019 22:28:12 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 03 2020 19:06:06 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
