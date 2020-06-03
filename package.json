@@ -21,7 +21,7 @@
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
     "mocha": "^6.0.2",
-    "nyc": "^13.3.0",
+    "nyc": "^15.1.0",
     "pre-commit": "^1.2.2",
     "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0"
