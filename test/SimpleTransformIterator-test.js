@@ -1,5 +1,6 @@
 const AsyncIterator = require('../asynciterator');
 const { EventEmitter } = require('events');
+const queueMicrotask = require('queue-microtask');
 
 const {
   SimpleTransformIterator,
@@ -184,7 +185,7 @@ describe('SimpleTransformIterator', () => {
       source = new ArrayIterator(['a', 'b', 'c']);
       transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        setImmediate(done);
+        queueMicrotask(done);
       });
       iterator = new SimpleTransformIterator(source, transform);
     });
@@ -577,7 +578,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: Infinity });
+      iterator = new SimpleTransformIterator(source, { offset: Infinity, autoStart: false });
     });
 
     describe('when reading items', () => {
@@ -652,7 +653,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: 0 });
+      iterator = new SimpleTransformIterator(source, { limit: 0, autoStart: false });
     });
 
     describe('when reading items', () => {
@@ -727,7 +728,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -1 });
+      iterator = new SimpleTransformIterator(source, { limit: -1, autoStart: false });
     });
 
     describe('when reading items', () => {
@@ -752,7 +753,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -Infinity });
+      iterator = new SimpleTransformIterator(source, { limit: -Infinity, autoStart: false });
     });
 
     describe('when reading items', () => {
@@ -1444,12 +1445,12 @@ describe('SimpleTransformIterator', () => {
       before(() => {
         iterator = new IntegerIterator();
         sinon.spy(iterator, 'read');
-        result = iterator.range(30, 20);
       });
 
       describe('the return value', () => {
         const items = [];
         before(done => {
+          result = iterator.range(30, 20);
           result.on('data', item => { items.push(item); });
           result.on('end', done);
         });

@@ -29,5 +29,8 @@
   "pre-commit": [
     "lint",
     "cover"
-  ]
+  ],
+  "dependencies": {
+    "queue-microtask": "^1.1.2"
+  }
 }

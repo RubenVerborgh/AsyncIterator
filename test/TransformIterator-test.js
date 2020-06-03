@@ -1,5 +1,6 @@
 const AsyncIterator = require('../asynciterator');
 const { EventEmitter } = require('events');
+const queueMicrotask = require('queue-microtask');
 
 const {
   BufferedIterator,
@@ -476,7 +477,7 @@ describe('TransformIterator', () => {
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
-        setImmediate(() => {
+        queueMicrotask(() => {
           iterator._push(`${item }1`);
           iterator._push(`${item }2`);
           done();
@@ -588,7 +589,7 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source);
       iterator._transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        setImmediate(done);
+        queueMicrotask(done);
       });
     });
 
@@ -617,7 +618,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source);
+      iterator = new TransformIterator(source, { autoStart: false });
     });
 
     describe('after being closed', () => {
@@ -637,7 +638,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source, { destroySource: false });
+      iterator = new TransformIterator(source, { autoStart: false, destroySource: false });
     });
 
     describe('after being closed', () => {

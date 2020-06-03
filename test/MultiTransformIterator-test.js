@@ -1,5 +1,6 @@
 const AsyncIterator = require('../asynciterator');
 const { EventEmitter } = require('events');
+const queueMicrotask = require('queue-microtask');
 
 const {
   MultiTransformIterator,
@@ -87,7 +88,7 @@ describe('MultiTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source);
+      iterator = new MultiTransformIterator(source, { autoStart: false });
       iterator._createTransformer = sinon.spy(EmptyIterator);
     });
 
@@ -170,9 +171,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(() => {
         const transformer = new BufferedIterator();
-        setImmediate(() => {
-          transformer.close();
-        });
+        setImmediate(() => transformer.close());
         return transformer;
       });
     });
@@ -207,7 +206,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        setImmediate(() => {
+        queueMicrotask(() => {
           transformer._push(`${item }1`);
           transformer.close();
         });
@@ -235,7 +234,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        setImmediate(() => {
+        queueMicrotask(() => {
           transformer._push(`${item }1`);
           transformer._push(`${item }2`);
           transformer._push(`${item }3`);
@@ -326,7 +325,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        setImmediate(() => {
+        queueMicrotask(() => {
           transformer.emit('error', new Error(`Error ${ item}`));
         });
         return transformer;

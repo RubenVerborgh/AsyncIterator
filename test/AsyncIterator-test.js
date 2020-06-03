@@ -1,4 +1,5 @@
 const AsyncIterator = require('../asynciterator');
+const queueMicrotask = require('queue-microtask');
 
 const { EventEmitter } = require('events');
 
@@ -418,9 +419,7 @@ describe('AsyncIterator', () => {
     before(() => {
       iterator = new AsyncIterator();
       captureEvents(iterator, 'data', 'readable', 'end');
-      iterator._destroy = function (error, callback) {
-        setImmediate(callback);
-      };
+      iterator._destroy = (error, callback) => queueMicrotask(callback);
       iterator.destroy();
     });
 

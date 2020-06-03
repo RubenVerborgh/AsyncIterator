@@ -1,5 +1,6 @@
 const AsyncIterator = require('../asynciterator');
 const { EventEmitter } = require('events');
+const queueMicrotask = require('queue-microtask');
 
 const { BufferedIterator } = AsyncIterator;
 
@@ -311,7 +312,10 @@ describe('BufferedIterator', () => {
     function createIterator(options) {
       const iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
-        setImmediate(self => { self.close(); done(); }, this);
+        queueMicrotask(() => {
+          this.close();
+          done();
+        });
       };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
@@ -667,8 +671,8 @@ describe('BufferedIterator', () => {
       describe('after `read` is called and the iterator has been closed', () => {
         before(() => {
           iterator.read();
-          setImmediate(() => { _readDone(); });
-          setImmediate(() => { iterator.close(); });
+          queueMicrotask(() => { _readDone(); });
+          queueMicrotask(() => { iterator.close(); });
         });
 
         it('should have emitted the `end` event', () => {
@@ -1295,11 +1299,11 @@ describe('BufferedIterator', () => {
       const iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
         this._push('a');
-        setImmediate(self => {
-          self._push('b');
-          self._push('c');
+        queueMicrotask(() => {
+          this._push('b');
+          this._push('c');
           done();
-        }, this);
+        });
       };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
@@ -1411,9 +1415,9 @@ describe('BufferedIterator', () => {
     before(done => {
       iterator = new BufferedIterator({ autoStart: false });
       iterator._read = function (count, callback) { readDone = callback; };
-      // `setImmediate` because reading directly after construction does not call `_read`;
+      // `queueMicrotask` because reading directly after construction does not call `_read`;
       // this is necessary to enable attaching a `_begin` hook after construction
-      setImmediate(() => { iterator.read(); done(); });
+      queueMicrotask(() => { iterator.read(); done(); });
     });
 
     it('should cause an exception', () => {
@@ -1640,7 +1644,7 @@ describe('BufferedIterator', () => {
     before(() => {
       iterator = new BufferedIterator();
       iterator._begin = function (done) {
-        setImmediate(() => {
+        queueMicrotask(() => {
           iterator._push('x');
           iterator._push('y');
           done();
@@ -1950,7 +1954,7 @@ describe('BufferedIterator', () => {
         done();
       };
       iterator._flush = function (done) {
-        setImmediate(() => {
+        queueMicrotask(() => {
           iterator._push('x');
           iterator._push('y');
           done();
@@ -2209,7 +2213,7 @@ describe('BufferedIterator', () => {
         done();
       };
       iterator._flush = function (done) {
-        setImmediate(() => {
+        queueMicrotask(() => {
           iterator._push('x');
           iterator._push('y');
           done();
