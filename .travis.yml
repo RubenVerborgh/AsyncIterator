@@ -1,11 +1,12 @@
 language: node_js
 node_js:
-  - "6"
   - "8"
   - "10"
+  - "12"
+  - "14"
   - "node"
 env:
-  - DEFAULT_NODE_VERSION=10
+  - DEFAULT_NODE_VERSION=12
 
 script:
   - npm run lint
