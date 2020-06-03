@@ -1011,8 +1011,8 @@
     BufferedIterator
     </h2>
     
-        <div class="class-description"><p>A iterator that maintains an internal buffer of items.</p>
-<p>This class serves as a base class for other iterators
+        <div class="class-description"><p>A iterator that maintains an internal buffer of items.
+This class serves as a base class for other iterators
 with a typically complex item generation process.</p></div>
     
 </header>  
@@ -1032,7 +1032,7 @@ with a typically complex item generation process.</p></div>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 675
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 654
         </div>
         
     </div>
@@ -1455,8 +1455,8 @@ either due to being closed or due to being destroyed.</p>
 <dd>
     
     <div class="description">
-        <p>Gets or sets the maximum number of items to preload in the internal buffer.</p>
-<p>A <code>BufferedIterator</code> tries to fill its buffer as far as possible.
+        <p>Gets or sets the maximum number of items to preload in the internal buffer.
+A <code>BufferedIterator</code> tries to fill its buffer as far as possible.
 Set to <code>Infinity</code> to fully drain the source.</p>
     </div>
     
@@ -1502,8 +1502,8 @@ Set to <code>Infinity</code> to fully drain the source.</p>
 <dd>
     
     <div class="description">
-        <p>Gets or sets whether this iterator might have items available for read.</p>
-<p>A value of <code>false</code> means there are <em>definitely</em> no items available;
+        <p>Gets or sets whether this iterator might have items available for read.
+A value of <code>false</code> means there are <em>definitely</em> no items available;
 a value of <code>true</code> means items <em>might</em> be available.</p>
     </div>
     
@@ -1554,7 +1554,7 @@ a value of <code>true</code> means items <em>might</em> be available.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 758
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 736
         </div>
         
     </div>
@@ -1565,8 +1565,8 @@ a value of <code>true</code> means items <em>might</em> be available.</p>
     
     
     <div class="description">
-        <p>Writes beginning items and opens iterator resources.</p>
-<p>Should never be called before <a href="BufferedIterator.html#_init">BufferedIterator#_init</a>;
+        <p>Writes beginning items and opens iterator resources.
+Should never be called before <a href="BufferedIterator.html#_init">BufferedIterator#_init</a>;
 typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p>
     </div>
     
@@ -1674,7 +1674,7 @@ typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 117
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 106
         </div>
         
     </div>
@@ -1872,7 +1872,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 901
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 880
         </div>
         
     </div>
@@ -1951,7 +1951,7 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 241
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 222
         </div>
         
     </div>
@@ -2105,7 +2105,7 @@ Implementers can override this, but this should not be called directly.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 255
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 234
         </div>
         
     </div>
@@ -2116,8 +2116,8 @@ Implementers can override this, but this should not be called directly.</p>
     
     
     <div class="description">
-        <p>Asynchronously ends the iterator and cleans up.</p>
-<p>Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
+        <p>Asynchronously ends the iterator and cleans up.
+Should never be called before <a href="AsyncIterator.html#close">AsyncIterator#close</a>;
 typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     </div>
     
@@ -2235,7 +2235,7 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 827
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 805
         </div>
         
     </div>
@@ -2246,8 +2246,8 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
     
     <div class="description">
-        <p>Fills the internal buffer until <code>this._maxBufferSize</code> items are present.</p>
-<p>This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
+        <p>Fills the internal buffer until <code>this._maxBufferSize</code> items are present.
+This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
     </div>
     
 
@@ -2312,7 +2312,7 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 933
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 910
         </div>
         
     </div>
@@ -2323,8 +2323,8 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
     
     <div class="description">
-        <p>Writes terminating items and closes iterator resources.</p>
-<p>Should never be called before <a href="BufferedIterator.html#close">BufferedIterator#close</a>;
+        <p>Writes terminating items and closes iterator resources.
+Should never be called before <a href="BufferedIterator.html#close">BufferedIterator#close</a>;
 typically, <code>close</code> is responsible for calling <code>_flush</code>.</p>
     </div>
     
@@ -2430,7 +2430,7 @@ typically, <code>close</code> is responsible for calling <code>_flush</code>.</p
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 728
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 706
         </div>
         
     </div>
@@ -2547,7 +2547,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 811
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 791
         </div>
         
     </div>
@@ -2668,7 +2668,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 802
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 781
         </div>
         
     </div>
@@ -2679,8 +2679,8 @@ and changing state from INIT to OPEN.</p>
     
     
     <div class="description">
-        <p>Tries to generate the given number of items.</p>
-<p>Implementers should add <code>count</code> items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.</p>
+        <p>Tries to generate the given number of items.
+Implementers should add <code>count</code> items through <a href="BufferedIterator.html#_push">BufferedIterator#_push</a>.</p>
     </div>
     
 
@@ -2810,7 +2810,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 495
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 470
         </div>
         
     </div>
@@ -2883,7 +2883,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1313
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1293
         </div>
         
     </div>
@@ -2894,8 +2894,8 @@ and changing state from INIT to OPEN.</p>
     
     
     <div class="description">
-        <p>Appends the items after those of the current iterator.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Appends the items after those of the current iterator.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -3034,7 +3034,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1646
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1623
         </div>
         
     </div>
@@ -3046,8 +3046,8 @@ and changing state from INIT to OPEN.</p>
     
     <div class="description">
         <p>Creates a copy of the current iterator,
-containing all items emitted from this point onward.</p>
-<p>Further copies can be created; they will all start from this same point.
+containing all items emitted from this point onward.
+Further copies can be created; they will all start from this same point.
 After this operation, only read the returned copies instead of the original iterator.</p>
     </div>
     
@@ -3137,7 +3137,7 @@ After this operation, only read the returned copies instead of the original iter
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 884
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 864
         </div>
         
     </div>
@@ -3149,8 +3149,8 @@ After this operation, only read the returned copies instead of the original iter
     
     <div class="description">
         <p>Stops the iterator from generating new items
-after a possible pending read operation has finished.</p>
-<p>Already generated, pending, or terminating items can still be emitted.
+after a possible pending read operation has finished.
+Already generated, pending, or terminating items can still be emitted.
 After this, the iterator will end asynchronously.</p>
     </div>
     
@@ -3218,7 +3218,7 @@ After this, the iterator will end asynchronously.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 474
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 450
         </div>
         
     </div>
@@ -3359,7 +3359,7 @@ After this, the iterator will end asynchronously.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 222
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 204
         </div>
         
     </div>
@@ -3370,11 +3370,11 @@ After this, the iterator will end asynchronously.</p>
     
     
     <div class="description">
-        <p>Destroy the iterator and stop it from generating new items.</p>
-<p>This will not do anything if the iterator was already ended or destroyed.</p>
-<p>All internal resources will be released an no new items will be emitted,
-even not already generated items.</p>
-<p>Implementors should not override this method,
+        <p>Destroy the iterator and stop it from generating new items.
+This will not do anything if the iterator was already ended or destroyed.
+All internal resources will be released an no new items will be emitted,
+even not already generated items.
+Implementors should not override this method,
 but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destroy</a>.</p>
     </div>
     
@@ -3496,7 +3496,7 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 165
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 155
         </div>
         
     </div>
@@ -3507,8 +3507,8 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
     
     <div class="description">
-        <p>Invokes the callback for each remaining item in the iterator.</p>
-<p>Switches the iterator to flow mode.</p>
+        <p>Invokes the callback for each remaining item in the iterator.
+Switches the iterator to flow mode.</p>
     </div>
     
 
@@ -3650,7 +3650,7 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1289
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1273
         </div>
         
     </div>
@@ -3661,8 +3661,8 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
     
     <div class="description">
-        <p>Return items from this iterator that match the filter.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Return items from this iterator that match the filter.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -3833,7 +3833,7 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 451
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 429
         </div>
         
     </div>
@@ -3935,7 +3935,7 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 400
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 374
         </div>
         
     </div>
@@ -3946,10 +3946,10 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
     
     <div class="description">
-        <p>Retrieves the property with the given name from the iterator.</p>
-<p>If no callback is passed, it returns the value of the property
-or <code>undefined</code> if the property is not set.</p>
-<p>If a callback is passed, it returns <code>undefined</code>
+        <p>Retrieves the property with the given name from the iterator.
+If no callback is passed, it returns the value of the property
+or <code>undefined</code> if the property is not set.
+If a callback is passed, it returns <code>undefined</code>
 and calls the callback with the property the moment it is set.</p>
     </div>
     
@@ -4121,7 +4121,7 @@ and calls the callback with the property the moment it is set.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1276
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1262
         </div>
         
     </div>
@@ -4132,8 +4132,8 @@ and calls the callback with the property the moment it is set.</p>
     
     
     <div class="description">
-        <p>Maps items from this iterator using the given function.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Maps items from this iterator using the given function.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -4304,7 +4304,7 @@ and calls the callback with the property the moment it is set.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1301
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1283
         </div>
         
     </div>
@@ -4315,8 +4315,8 @@ and calls the callback with the property the moment it is set.</p>
     
     
     <div class="description">
-        <p>Prepends the items after those of the current iterator.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Prepends the items after those of the current iterator.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -4455,7 +4455,7 @@ and calls the callback with the property the moment it is set.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1363
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1335
         </div>
         
     </div>
@@ -4466,8 +4466,8 @@ and calls the callback with the property the moment it is set.</p>
     
     
     <div class="description">
-        <p>Limits the current iterator to the given range.</p>
-<p>The current iterator may not be read anymore until the returned iterator ends.</p>
+        <p>Limits the current iterator to the given range.
+The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -4624,7 +4624,7 @@ and calls the callback with the property the moment it is set.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 767
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 746
         </div>
         
     </div>
@@ -4635,8 +4635,8 @@ and calls the callback with the property the moment it is set.</p>
     
     
     <div class="description">
-        <p>Tries to read the next item from the iterator.</p>
-<p>If the buffer is empty,
+        <p>Tries to read the next item from the iterator.
+If the buffer is empty,
 this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</a> to fetch items.</p>
     </div>
     
@@ -4728,7 +4728,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 463
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 440
         </div>
         
     </div>
@@ -4846,7 +4846,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 425
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 401
         </div>
         
     </div>
@@ -4999,7 +4999,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1338
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1314
         </div>
         
     </div>
@@ -5010,8 +5010,8 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
     
     <div class="description">
-        <p>Skips the given number of items from the current iterator.</p>
-<p>The current iterator may not be read anymore until the returned iterator ends.</p>
+        <p>Skips the given number of items from the current iterator.
+The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -5147,7 +5147,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1326
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1304
         </div>
         
     </div>
@@ -5158,8 +5158,8 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
     
     <div class="description">
-        <p>Surrounds items of the current iterator with the given items.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Surrounds items of the current iterator with the given items.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -5324,7 +5324,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1350
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1324
         </div>
         
     </div>
@@ -5335,8 +5335,8 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
     
     <div class="description">
-        <p>Limits the current iterator to the given number of items.</p>
-<p>The current iterator may not be read anymore until the returned iterator ends.</p>
+        <p>Limits the current iterator to the given number of items.
+The current iterator may not be read anymore until the returned iterator ends.</p>
     </div>
     
 
@@ -5472,7 +5472,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1263
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1251
         </div>
         
     </div>
@@ -5483,8 +5483,8 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
     
     <div class="description">
-        <p>Transforms items from this iterator.</p>
-<p>After this operation, only read the returned iterator instead of the current one.</p>
+        <p>Transforms items from this iterator.
+After this operation, only read the returned iterator instead of the current one.</p>
     </div>
     
 
@@ -6012,7 +6012,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 03 2020 19:08:26 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 03 2020 20:41:14 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
