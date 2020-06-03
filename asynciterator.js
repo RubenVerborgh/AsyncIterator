@@ -110,18 +110,14 @@ AsyncIterator.prototype._changeState = function (newState, eventAsync) {
     this._state = newState;
     // Emit the `end` event when changing to ENDED
     if (newState === ENDED) {
-      if (eventAsync)
-        setImmediate(emit, this, 'end');
-      else
+      if (!eventAsync)
         this.emit('end');
+      else
+        setImmediate(() => this.emit('end'));
     }
   }
   return valid;
 };
-// Emits the event on the given EventEmitter
-function emit(self, eventName) {
-  self.emit(eventName);
-}
 
 /**
   Tries to read the next item from the iterator.
@@ -187,7 +183,7 @@ AsyncIterator.prototype._addSingleListener = function (eventName, listener) {
 */
 AsyncIterator.prototype.close = function () {
   if (this._changeState(CLOSED))
-    endAsync(this);
+    this._endAsync();
 };
 
 /**
@@ -203,12 +199,11 @@ AsyncIterator.prototype.close = function () {
 */
 AsyncIterator.prototype.destroy = function (cause) {
   if (!this.done) {
-    const self = this;
     this._destroy(cause, error => {
       cause = cause || error;
       if (cause)
-        self.emit('error', cause);
-      endSync(self, true);
+        this.emit('error', cause);
+      this._end(true);
     });
   }
 };
@@ -224,7 +219,7 @@ AsyncIterator.prototype._destroy = function (cause, callback) {
 };
 
 /**
-  Asynchronously ends the iterator and cleans up.
+  Ends the iterator and cleans up.
   Should never be called before {@link AsyncIterator#close};
   typically, `close` is responsible for calling `_end`.
   @param {boolean} [destroy] If the iterator should be forcefully destroyed.
@@ -239,12 +234,13 @@ AsyncIterator.prototype._end = function (destroy) {
     this.removeAllListeners('end');
   }
 };
-function endSync(self, destroy) {
-  self._end(destroy);
-}
-function endAsync(self) {
-  setImmediate(endSync, self);
-}
+
+/**
+  Asynchronously calls `_end`.
+*/
+AsyncIterator.prototype._endAsync = function () {
+  setImmediate(() => this._end());
+};
 
 /**
   Emitted after the last item of the iterator has been read.
@@ -270,7 +266,7 @@ Object.defineProperty(AsyncIterator.prototype, 'readable', {
       this._readable = readable;
       // If the iterator became readable, emit the `readable` event
       if (readable)
-        setImmediate(emit, this, 'readable');
+        setImmediate(() => this.emit('readable'));
     }
   },
   enumerable: true,
@@ -341,7 +337,7 @@ function waitForDataListener(eventName) {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
     if (this.readable)
-      setImmediate(call, emitData, this);
+      setImmediate(() => emitData.call(this));
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
@@ -355,10 +351,6 @@ function emitData() {
     this.removeListener('readable', emitData);
     this._addSingleListener('newListener', waitForDataListener);
   }
-}
-// Calls the given function with the specified argument as `this` value
-function call(func, self) {
-  func.call(self);
 }
 
 /**
@@ -378,7 +370,7 @@ AsyncIterator.prototype.getProperty = function (propertyName, callback) {
     return properties && properties[propertyName];
   // If the value has been set, send it through the callback
   if (properties && (propertyName in properties)) {
-    setImmediate(callback, properties[propertyName]);
+    setImmediate(() => callback(properties[propertyName]));
   }
   // If the value was not set, store the callback for when the value will be set
   else {
@@ -406,15 +398,10 @@ AsyncIterator.prototype.setProperty = function (propertyName, value) {
   const callbacks = propertyCallbacks && propertyCallbacks[propertyName];
   if (callbacks) {
     delete propertyCallbacks[propertyName];
-    if (callbacks.length === 1) {
-      setImmediate(callbacks[0], value);
-    }
-    else {
-      setImmediate(() => {
-        for (let i = 0; i < callbacks.length; i++)
-          callbacks[i](value);
-      });
-    }
+    setImmediate(() => {
+      for (const callback of callbacks)
+        callback(value);
+    });
     // Remove _propertyCallbacks if no pending callbacks are left
     for (propertyName in propertyCallbacks)
       return;
@@ -665,7 +652,7 @@ function BufferedIterator(options) {
 
   // Acquire reading lock to read initialization items
   this._reading = true;
-  setImmediate(init, this, autoStart !== false || autoStart);
+  setImmediate(() => this._init(autoStart !== false || autoStart));
 }
 AsyncIterator.subclass(BufferedIterator);
 
@@ -705,26 +692,23 @@ Object.defineProperty(BufferedIterator.prototype, 'maxBufferSize', {
 */
 BufferedIterator.prototype._init = function (autoStart) {
   // Perform initialization tasks
-  let self = this;
+  let doneCalled = false;
   this._reading = true;
   this._begin(() => {
-    if (!self)
+    if (doneCalled)
       throw new Error('done callback called multiple times');
+    doneCalled = true;
     // Open the iterator and start buffering
-    self._reading = false;
-    self._changeState(OPEN);
+    this._reading = false;
+    this._changeState(OPEN);
     if (autoStart)
-      fillBufferAsync(self);
+      this._fillBufferAsync();
     // If reading should not start automatically, the iterator doesn't become readable.
     // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
     else
-      self.readable = true;
-    self = null;
+      this.readable = true;
   });
 };
-function init(self, autoStart) {
-  self._init(autoStart);
-}
 
 /**
   Writes beginning items and opens iterator resources.
@@ -762,10 +746,10 @@ BufferedIterator.prototype.read = function () {
   if (!this._reading && buffer.length < this._maxBufferSize) {
     // If the iterator is not closed and thus may still generate new items, fill the buffer
     if (!this.closed)
-      fillBufferAsync(this);
+      this._fillBufferAsync();
     // No new items will be generated, so if none are buffered, the iterator ends here
     else if (!buffer.length)
-      endAsync(this);
+      this._endAsync();
   }
 
   return item;
@@ -803,7 +787,6 @@ BufferedIterator.prototype._push = function (item) {
   @emits AsyncIterator.readable
 */
 BufferedIterator.prototype._fillBuffer = function () {
-  const self = this;
   let neededItems;
   // Avoid recursive reads
   if (this._reading) {
@@ -824,35 +807,38 @@ BufferedIterator.prototype._fillBuffer = function () {
         throw new Error('done callback called multiple times');
       neededItems = 0;
       // Release reading lock
-      self._reading = false;
+      this._reading = false;
       // If the iterator was closed while reading, complete closing
-      if (self.closed) {
-        self._completeClose();
+      if (this.closed) {
+        this._completeClose();
       }
       // If the iterator pushed one or more items,
       // it might currently be able to generate additional items
       // (even though all pushed items might already have been read)
-      else if (self._pushedCount) {
-        self.readable = true;
+      else if (this._pushedCount) {
+        this.readable = true;
         // If the buffer is insufficiently full, continue filling
-        if (self._buffer.length < self._maxBufferSize / 2)
-          fillBufferAsync(self);
+        if (this._buffer.length < this._maxBufferSize / 2)
+          this._fillBufferAsync();
       }
     });
   }
 };
-function fillBufferAsync(self) {
+
+/**
+  Schedules `_fillBuffer` asynchronously.
+*/
+BufferedIterator.prototype._fillBufferAsync = function () {
   // Acquire reading lock to avoid recursive reads
-  if (!self._reading) {
-    self._reading = true;
-    setImmediate(fillBufferAsyncCallback, self);
+  if (!this._reading) {
+    this._reading = true;
+    setImmediate(() => {
+      // Release reading lock so _fillBuffer` can take it
+      this._reading = false;
+      this._fillBuffer();
+    });
   }
-}
-function fillBufferAsyncCallback(self) {
-  // Release reading lock so _fillBuffer` can take it
-  self._reading = false;
-  self._fillBuffer();
-}
+};
 
 /**
   Stops the iterator from generating new items
@@ -880,16 +866,15 @@ BufferedIterator.prototype.close = function () {
 BufferedIterator.prototype._completeClose = function () {
   if (this._changeState(CLOSED)) {
     // Write possible terminating items
-    const self = this;
     this._reading = true;
     this._flush(() => {
-      if (!self._reading)
+      if (!this._reading)
         throw new Error('done callback called multiple times');
-      self._reading = false;
+      this._reading = false;
       // If no items are left, end the iterator
       // Otherwise, `read` becomes responsible for ending the iterator
-      if (!self._buffer.length)
-        endAsync(self);
+      if (!this._buffer.length)
+        this._endAsync();
     });
   }
 };
@@ -955,6 +940,9 @@ BufferedIterator.subclass(TransformIterator);
   @type AsyncIterator
 */
 Object.defineProperty(TransformIterator.prototype, 'source', {
+  get() {
+    return this._source;
+  },
   set(source) {
     // Validate and set source
     this._validateSource(source);
@@ -972,12 +960,8 @@ Object.defineProperty(TransformIterator.prototype, 'source', {
       source.on('error', destinationEmitError);
     }
   },
-  get: getSource,
   enumerable: true,
 });
-function getSource() {
-  return this._source;
-}
 function destinationEmitError(error) {
   this._destination.emit('error', error);
 }
@@ -1003,40 +987,49 @@ TransformIterator.prototype._validateSource = function (source, allowDestination
     throw new Error('The source already has a destination');
 };
 
-/* Tries to read a transformed item */
+/**
+  Tries to read a transformed item.
+*/
 TransformIterator.prototype._read = function (count, done) {
-  const self = this;
-  readAndTransform(self, function next() {
+  const next = () => {
     // Continue transforming until at least `count` items have been pushed
-    if (self._pushedCount < count && !self.closed)
-      setImmediate(readAndTransform, self, next, done);
+    if (this._pushedCount < count && !this.closed)
+      setImmediate(() => this._readAndTransform(next, done));
     else
       done();
-  }, done);
+  };
+  this._readAndTransform(next, done);
 };
-function readAndTransform(self, next, done) {
+
+/**
+  Reads a transforms an item
+*/
+TransformIterator.prototype._readAndTransform = function (next, done) {
   // If the source exists and still can read items,
   // try to read and transform the next item.
-  const source = self._source;
+  const source = this._source;
   let item;
   if (source && !source.ended && (item = source.read()) !== null) {
-    if (!self._optional)
-      self._transform(item, next);
+    if (!this._optional)
+      this._transform(item, next);
     else
-      optionalTransform(self, item, next);
+      this._optionalTransform(item, next);
   }
   else { done(); }
-}
-// Tries to transform the item;
-// if the transformation yields no items, pushes the original item
-function optionalTransform(self, item, done) {
-  const pushedCount = self._pushedCount;
-  self._transform(item, () => {
-    if (pushedCount === self._pushedCount)
-      self._push(item);
+};
+
+/**
+  Tries to transform the item;
+  if the transformation yields no items, pushes the original item.
+*/
+TransformIterator.prototype._optionalTransform = function (item, done) {
+  const pushedCount = this._pushedCount;
+  this._transform(item, () => {
+    if (pushedCount === this._pushedCount)
+      this._push(item);
     done();
   });
-}
+};
 
 /**
   Generates items based on the item from the source.
@@ -1150,55 +1143,58 @@ SimpleTransformIterator.prototype._filter = function () {
 
 /* Tries to read and transform items */
 SimpleTransformIterator.prototype._read = function (count, done) {
-  const self = this;
-  readAndTransformSimple(self, count, function next() {
-    setImmediate(readAndTransformSimple, self, count, next, done);
-  }, done);
+  const next = () => this._readAndTransformSimple(count, nextAsync, done);
+  function nextAsync() {
+    setImmediate(next);
+  }
+  this._readAndTransformSimple(count, nextAsync, done);
 };
-function readAndTransformSimple(self, count, next, done) {
+
+/* Reads and transform items */
+SimpleTransformIterator.prototype._readAndTransformSimple = function (count, next, done) {
   // Verify we have a readable source
-  const source = self._source;
+  const source = this._source;
   let item;
   if (!source || source.ended) {
     done();
     return;
   }
   // Verify we are still below the limit
-  if (self._limit === 0)
-    self.close();
+  if (this._limit === 0)
+    this.close();
 
   // Try to read the next item until at least `count` items have been pushed
-  while (!self.closed && self._pushedCount < count && (item = source.read()) !== null) {
+  while (!this.closed && this._pushedCount < count && (item = source.read()) !== null) {
     // Verify the item passes the filter and we've reached the offset
-    if (!self._filter(item) || self._offset !== 0 && self._offset--)
+    if (!this._filter(item) || this._offset !== 0 && this._offset--)
       continue;
 
     // Synchronously map the item
-    const mappedItem = self._map === null ? item : self._map(item);
+    const mappedItem = this._map === null ? item : this._map(item);
     // Skip `null` items, pushing the original item if the mapping was optional
     if (mappedItem === null) {
-      if (self._optional)
-        self._push(item);
+      if (this._optional)
+        this._push(item);
     }
     // Skip the asynchronous phase if no transformation was specified
-    else if (self._transform === null) {
-      self._push(mappedItem);
+    else if (this._transform === null) {
+      this._push(mappedItem);
     }
     // Asynchronously transform the item, and wait for `next` to call back
     else {
-      if (!self._optional)
-        self._transform(mappedItem, next);
+      if (!this._optional)
+        this._transform(mappedItem, next);
       else
-        optionalTransform(self, mappedItem, next);
+        this._optionalTransform(mappedItem, next);
       return;
     }
 
     // Stop when we've reached the limit
-    if (--self._limit === 0)
-      self.close();
+    if (--this._limit === 0)
+      this.close();
   }
   done();
-}
+};
 
 // Prepends items to the iterator
 SimpleTransformIterator.prototype._begin = function (done) {
@@ -1214,16 +1210,13 @@ SimpleTransformIterator.prototype._flush = function (done) {
 
 // Inserts items in the iterator
 SimpleTransformIterator.prototype._insert = function (inserter, done) {
-  const self = this;
+  const push = item => this._push(item);
   if (!inserter || inserter.ended) {
     done();
   }
   else {
     inserter.on('data', push);
     inserter.on('end', end);
-  }
-  function push(item) {
-    self._push(item);
   }
   function end() {
     inserter.removeListener('data', push);
@@ -1445,6 +1438,9 @@ TransformIterator.subclass(ClonedIterator);
 
 // The source this iterator copies items from
 Object.defineProperty(ClonedIterator.prototype, 'source', {
+  get() {
+    return this._source;
+  },
   set(source) {
     // Validate and set the source
     let history = source && source._destination;
@@ -1474,7 +1470,6 @@ Object.defineProperty(ClonedIterator.prototype, 'source', {
         getSourceProperty(this, source, propertyName, callbacks[i]);
     }
   },
-  get: getSource,
   enumerable: true,
 });
 
