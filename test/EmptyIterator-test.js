@@ -1,90 +1,90 @@
-var EmptyIterator = require('../asynciterator').EmptyIterator;
+const AsyncIterator = require('../asynciterator');
+const { EventEmitter } = require('events');
 
-var AsyncIterator = require('../asynciterator'),
-    EventEmitter = require('events').EventEmitter;
+const { EmptyIterator } = AsyncIterator;
 
-describe('EmptyIterator', function () {
-  describe('The EmptyIterator function', function () {
-    describe('the result when called without `new`', function () {
-      var instance;
-      before(function () { instance = EmptyIterator(); });
+describe('EmptyIterator', () => {
+  describe('The EmptyIterator function', () => {
+    describe('the result when called without `new`', () => {
+      let instance;
+      before(() => { instance = EmptyIterator(); });
 
-      it('should be an EmptyIterator object', function () {
+      it('should be an EmptyIterator object', () => {
         instance.should.be.an.instanceof(EmptyIterator);
       });
 
-      it('should be an AsyncIterator object', function () {
+      it('should be an AsyncIterator object', () => {
         instance.should.be.an.instanceof(AsyncIterator);
       });
 
-      it('should be an EventEmitter object', function () {
+      it('should be an EventEmitter object', () => {
         instance.should.be.an.instanceof(EventEmitter);
       });
     });
 
-    describe('the result when called with `new`', function () {
-      var instance;
-      before(function () { instance = new EmptyIterator(); });
+    describe('the result when called with `new`', () => {
+      let instance;
+      before(() => { instance = new EmptyIterator(); });
 
-      it('should be an EmptyIterator object', function () {
+      it('should be an EmptyIterator object', () => {
         instance.should.be.an.instanceof(EmptyIterator);
       });
 
-      it('should be an AsyncIterator object', function () {
+      it('should be an AsyncIterator object', () => {
         instance.should.be.an.instanceof(AsyncIterator);
       });
 
-      it('should be an EventEmitter object', function () {
+      it('should be an EventEmitter object', () => {
         instance.should.be.an.instanceof(EventEmitter);
       });
     });
 
-    describe('the result when called through `.empty`', function () {
-      var instance;
-      before(function () { instance = AsyncIterator.empty(); });
+    describe('the result when called through `.empty`', () => {
+      let instance;
+      before(() => { instance = AsyncIterator.empty(); });
 
-      it('should be an EmptyIterator object', function () {
+      it('should be an EmptyIterator object', () => {
         instance.should.be.an.instanceof(EmptyIterator);
       });
 
-      it('should be an AsyncIterator object', function () {
+      it('should be an AsyncIterator object', () => {
         instance.should.be.an.instanceof(AsyncIterator);
       });
 
-      it('should be an EventEmitter object', function () {
+      it('should be an EventEmitter object', () => {
         instance.should.be.an.instanceof(EventEmitter);
       });
     });
   });
 
-  describe('An EmptyIterator without arguments', function () {
-    var iterator;
-    before(function () {
+  describe('An EmptyIterator without arguments', () => {
+    let iterator;
+    before(() => {
       iterator = new EmptyIterator();
       captureEvents(iterator, 'readable', 'end');
     });
 
-    it('should provide a readable `toString` representation', function () {
+    it('should provide a readable `toString` representation', () => {
       iterator.toString().should.equal('[EmptyIterator]');
     });
 
-    it('should not have emitted the `readable` event', function () {
+    it('should not have emitted the `readable` event', () => {
       iterator._eventCounts.readable.should.equal(0);
     });
 
-    it('should have emitted the `end` event', function () {
+    it('should have emitted the `end` event', () => {
       iterator._eventCounts.end.should.equal(1);
     });
 
-    it('should have ended', function () {
+    it('should have ended', () => {
       iterator.ended.should.be.true;
     });
 
-    it('should not be readable', function () {
+    it('should not be readable', () => {
       iterator.readable.should.be.false;
     });
 
-    it('should return null when read is called', function () {
+    it('should return null when read is called', () => {
       expect(iterator.read()).to.be.null;
     });
   });
