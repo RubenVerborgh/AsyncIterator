@@ -618,11 +618,10 @@ class BufferedIterator extends AsyncIterator {
     @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
     @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   */
-  constructor(options) {
+  constructor({ maxBufferSize = 4, autoStart = true } = {}) {
     super();
 
     // Set up the internal buffer
-    const { maxBufferSize, autoStart } = options || {};
     this._state = INIT;
     this._buffer = [];
     this._pushedCount = 0;
@@ -630,7 +629,7 @@ class BufferedIterator extends AsyncIterator {
 
     // Acquire reading lock to read initialization items
     this._reading = true;
-    queueMicrotask(() => this._init(autoStart !== false || autoStart));
+    queueMicrotask(() => this._init(autoStart));
   }
 }
 
@@ -897,20 +896,16 @@ class TransformIterator extends BufferedIterator {
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
     @param {AsyncIterator} [options.source] The source this iterator generates items from
   */
-  constructor(source, options) {
-    // Shift arguments if the first is not a source
-    if (!source || !isFunction(source.read)) {
-      if (!options)
-        options = source;
-      source = options && options.source;
-    }
+  constructor(source, options = source || {}) {
     super(options);
 
     // Initialize source and settings
+    if (!source || !isFunction(source.read))
+      source = options.source;
     if (source)
       this.source = source;
-    this._optional = Boolean(options && options.optional);
-    this._destroySource = !options || options.destroySource !== false;
+    this._optional = Boolean(options.optional);
+    this._destroySource = options.destroySource !== false;
   }
 }
 
