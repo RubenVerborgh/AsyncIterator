@@ -164,8 +164,6 @@
             
                 <li data-name="AsyncIterator.range"><a href="AsyncIterator.html#.range">range</a></li>
             
-                <li data-name="AsyncIterator.subclass"><a href="AsyncIterator.html#.subclass">subclass</a></li>
-            
                 <li data-name="AsyncIterator.wrap"><a href="AsyncIterator.html#.wrap">wrap</a></li>
             
                 <li data-name="AsyncIterator#_changeState"><a href="AsyncIterator.html#_changeState">_changeState</a></li>
@@ -623,8 +621,6 @@
             
             <span class="subtitle">Members</span>
             
-                <li data-name="MultiTransformIterator#_createTransformer"><a href="MultiTransformIterator.html#_createTransformer">_createTransformer</a></li>
-            
                 <li data-name="MultiTransformIterator#closed"><a href="MultiTransformIterator.html#closed">closed</a></li>
             
                 <li data-name="MultiTransformIterator#destroyed"><a href="MultiTransformIterator.html#destroyed">destroyed</a></li>
@@ -657,6 +653,8 @@
                 <li data-name="MultiTransformIterator#_closeWhenDone"><a href="MultiTransformIterator.html#_closeWhenDone">_closeWhenDone</a></li>
             
                 <li data-name="MultiTransformIterator#_completeClose"><a href="MultiTransformIterator.html#_completeClose">_completeClose</a></li>
+            
+                <li data-name="MultiTransformIterator#_createTransformer"><a href="MultiTransformIterator.html#_createTransformer">_createTransformer</a></li>
             
                 <li data-name="MultiTransformIterator#_destroy"><a href="MultiTransformIterator.html#_destroy">_destroy</a></li>
             
@@ -1077,7 +1075,7 @@ with a different iterator.</p></div>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1343
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1324
         </div>
         
     </div>
@@ -1086,10 +1084,6 @@ with a different iterator.</p></div>
 </dt>
 <dd>
     
-    
-    <div class="description">
-        <p>Creates a new <code>MultiTransformIterator</code>.</p>
-    </div>
     
 
     
@@ -1245,51 +1239,6 @@ with a different iterator.</p></div>
         <h3 class="subsection-title">Members</h3>
         
         <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="_createTransformer">_createTransformer</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Creates a transformer for the given item.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
             
 <dt>
     <div class="nameContainer">
@@ -1628,7 +1577,7 @@ a value of <code>true</code> means items <em>might</em> be available.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 721
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 701
         </div>
         
     </div>
@@ -1748,7 +1697,7 @@ typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 107
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 32
         </div>
         
     </div>
@@ -1948,7 +1897,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1052
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1033
         </div>
         
     </div>
@@ -2021,7 +1970,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 867
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 847
         </div>
         
     </div>
@@ -2090,6 +2039,151 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
         
             
 <dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_createTransformer">
+            
+            _createTransformer<span class="signature">(item)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="AsyncIterator.html">AsyncIterator</a>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1388
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates a transformer for the given item.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>The last read item from the source</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        <a href="AsyncIterator.html">AsyncIterator</a>
+                        
+                    
+            </td>
+            <td class="description last">An iterator that transforms the given item</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
     <div class="nameContainer inherited">
         <h4 class="name" id="_destroy">
             
@@ -2100,7 +2194,7 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 218
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 143
         </div>
         
     </div>
@@ -2254,7 +2348,7 @@ Implementers can override this, but this should not be called directly.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 230
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 155
         </div>
         
     </div>
@@ -2386,7 +2480,7 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 242
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 167
         </div>
         
     </div>
@@ -2459,7 +2553,7 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 790
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 770
         </div>
         
     </div>
@@ -2538,7 +2632,7 @@ This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 832
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 812
         </div>
         
     </div>
@@ -2611,7 +2705,7 @@ This method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 896
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 876
         </div>
         
     </div>
@@ -2731,7 +2825,7 @@ typically, <code>close</code> is responsible for calling <code>_flush</code>.</p
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 694
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 674
         </div>
         
     </div>
@@ -2850,7 +2944,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1026
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1007
         </div>
         
     </div>
@@ -2924,7 +3018,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 776
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 756
         </div>
         
     </div>
@@ -3047,7 +3141,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 994
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 975
         </div>
         
     </div>
@@ -3120,7 +3214,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1008
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 989
         </div>
         
     </div>
@@ -3193,7 +3287,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 458
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 383
         </div>
         
     </div>
@@ -3266,7 +3360,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1043
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1024
         </div>
         
     </div>
@@ -3409,7 +3503,7 @@ The default implementation pushes the source item as-is.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 982
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 963
         </div>
         
     </div>
@@ -3550,7 +3644,7 @@ The default implementation pushes the source item as-is.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1287
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1267
         </div>
         
     </div>
@@ -3701,7 +3795,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1619
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1597
         </div>
         
     </div>
@@ -3806,7 +3900,7 @@ After this operation, only read the returned copies instead of the original iter
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 851
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 831
         </div>
         
     </div>
@@ -3887,7 +3981,7 @@ After this, the iterator will end asynchronously.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 438
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 363
         </div>
         
     </div>
@@ -4028,7 +4122,7 @@ After this, the iterator will end asynchronously.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 201
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 126
         </div>
         
     </div>
@@ -4165,7 +4259,7 @@ but instead implement <a href="AsyncIterator.html#_destroy">AsyncIterator#_destr
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 152
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 77
         </div>
         
     </div>
@@ -4319,7 +4413,7 @@ Switches the iterator to flow mode.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1267
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1247
         </div>
         
     </div>
@@ -4502,7 +4596,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 417
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 342
         </div>
         
     </div>
@@ -4604,7 +4698,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 367
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 292
         </div>
         
     </div>
@@ -4790,7 +4884,7 @@ and calls the callback with the property the moment it is set.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1256
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1236
         </div>
         
     </div>
@@ -4973,7 +5067,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1277
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1257
         </div>
         
     </div>
@@ -5124,7 +5218,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1329
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1309
         </div>
         
     </div>
@@ -5295,7 +5389,7 @@ The current iterator may not be read anymore until the returned iterator ends.</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 731
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 711
         </div>
         
     </div>
@@ -5399,7 +5493,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 428
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 353
         </div>
         
     </div>
@@ -5517,7 +5611,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 394
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 319
         </div>
         
     </div>
@@ -5670,7 +5764,7 @@ this method calls <a href="BufferedIterator.html#_read">BufferedIterator#_read</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1308
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1288
         </div>
         
     </div>
@@ -5818,7 +5912,7 @@ The current iterator may not be read anymore until the returned iterator ends.</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1298
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1278
         </div>
         
     </div>
@@ -5995,7 +6089,7 @@ After this operation, only read the returned iterator instead of the current one
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1318
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1298
         </div>
         
     </div>
@@ -6143,7 +6237,7 @@ The current iterator may not be read anymore until the returned iterator ends.</
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1245
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1225
         </div>
         
     </div>
@@ -6683,7 +6777,7 @@ After this operation, only read the returned iterator instead of the current one
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Wed Jun 03 2020 21:52:37 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Thu Jun 04 2020 11:47:43 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
