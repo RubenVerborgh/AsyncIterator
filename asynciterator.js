@@ -5,13 +5,11 @@ const STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
 const INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
 
 /**
-  Creates a new `AsyncIterator`.
-  @public
-  @constructor
-  @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
+  An asynchronous iterator provides pull-based access to a stream of objects.
   @extends EventEmitter
 */
 class AsyncIterator extends EventEmitter {
+  /** Creates a new `AsyncIterator`. */
   constructor() {
     super();
     this._state = OPEN;
@@ -447,12 +445,11 @@ for (const id in STATES)
 
 
 /**
-  Creates a new `EmptyIterator`.
-  @constructor
-  @classdesc An iterator that doesn't emit any items.
+  An iterator that doesn't emit any items.
   @extends AsyncIterator
 */
 class EmptyIterator extends AsyncIterator {
+  /** Creates a new `EmptyIterator`. */
   constructor() {
     super();
     this._changeState(ENDED, true);
@@ -461,13 +458,14 @@ class EmptyIterator extends AsyncIterator {
 
 
 /**
-  Creates a new `SingletonIterator`.
-  @constructor
-  @classdesc An iterator that emits a single item.
-  @param {object} item The item that will be emitted.
+  An iterator that emits a single item.
   @extends AsyncIterator
 */
 class SingletonIterator extends AsyncIterator {
+  /**
+    Creates a new `SingletonIterator`.
+    @param {object} item The item that will be emitted.
+  */
   constructor(item) {
     super();
     this._item = item;
@@ -493,13 +491,14 @@ SingletonIterator.prototype._toStringDetails = function () {
 
 
 /**
-  Creates a new `ArrayIterator`.
-  @constructor
-  @classdesc An iterator that emits the items of a given array.
-  @param {Array} items The items that will be emitted.
+  An iterator that emits the items of a given array.
   @extends AsyncIterator
 */
 class ArrayIterator extends AsyncIterator {
+  /**
+    Creates a new `ArrayIterator`.
+    @param {Array} items The items that will be emitted.
+  */
   constructor(items) {
     super();
     if (!(items && items.length > 0))
@@ -536,16 +535,17 @@ ArrayIterator.prototype._destroy = function (error, callback) {
 
 
 /**
-  Creates a new `IntegerIterator`.
-  @constructor
-  @classdesc An iterator that enumerates integers in a certain range.
-  @param {object} [options] Settings of the iterator
-  @param {integer} [options.start=0] The first number to emit
-  @param {integer} [options.end=Infinity] The last number to emit
-  @param {integer} [options.step=1] The increment between two numbers
+  An iterator that enumerates integers in a certain range.
   @extends AsyncIterator
 */
 class IntegerIterator extends AsyncIterator {
+  /**
+    Creates a new `IntegerIterator`.
+    @param {object} [options] Settings of the iterator
+    @param {integer} [options.start=0] The first number to emit
+    @param {integer} [options.end=Infinity] The last number to emit
+    @param {integer} [options.step=1] The increment between two numbers
+  */
   constructor(options) {
     super();
 
@@ -610,17 +610,18 @@ AsyncIterator.range = function (start, end, step) {
 
 
 /**
-  Creates a new `BufferedIterator`.
-  @constructor
-  @classdesc A iterator that maintains an internal buffer of items.
+  A iterator that maintains an internal buffer of items.
   This class serves as a base class for other iterators
   with a typically complex item generation process.
-  @param {object} [options] Settings of the iterator
-  @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
-  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @extends AsyncIterator
 */
 class BufferedIterator extends AsyncIterator {
+  /**
+    Creates a new `BufferedIterator`.
+    @param {object} [options] Settings of the iterator
+    @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
+    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+  */
   constructor(options) {
     super();
 
@@ -885,20 +886,21 @@ BufferedIterator.prototype._toStringDetails = function () {
 
 
 /**
-  Creates a new `TransformIterator`.
+  An iterator that generates items based on a source iterator.
   This class serves as a base class for other iterators.
-  @constructor
-  @classdesc An iterator that generates items based on a source iterator.
-  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
-  @param {object} [options] Settings of the iterator
-  @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
-  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
-  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
-  @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
-  @param {AsyncIterator} [options.source] The source this iterator generates items from
   @extends BufferedIterator
 */
 class TransformIterator extends BufferedIterator {
+  /**
+    Creates a new `TransformIterator`.
+    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {object} [options] Settings of the iterator
+    @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
+    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
+    @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
+    @param {AsyncIterator} [options.source] The source this iterator generates items from
+  */
   constructor(source, options) {
     // Shift arguments if the first is not a source
     if (!source || !isFunction(source.read)) {
@@ -1061,26 +1063,27 @@ AsyncIterator.wrap = TransformIterator;
 
 
 /**
-  Creates a new `SimpleTransformIterator`.
-  @constructor
-  @classdesc An iterator that generates items based on a source iterator
-             and simple transformation steps passed as arguments.
-  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
-  @param {object|Function} [options] Settings of the iterator, or the transformation function
-  @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
-  @param {AsyncIterator} [options.source] The source this iterator generates items from
-  @param {integer} [options.offset] The number of items to skip
-  @param {integer} [options.limit] The maximum number of items
-  @param {Function} [options.filter] A function to synchronously filter items from the source
-  @param {Function} [options.map] A function to synchronously transform items from the source
-  @param {Function} [options.transform] A function to asynchronously transform items from the source
-  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
-  @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
-  @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+  An iterator that generates items based on a source iterator
+  and simple transformation steps passed as arguments.
   @extends TransformIterator
 */
 class SimpleTransformIterator extends TransformIterator {
+  /**
+    Creates a new `SimpleTransformIterator`.
+    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {object|Function} [options] Settings of the iterator, or the transformation function
+    @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
+    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {AsyncIterator} [options.source] The source this iterator generates items from
+    @param {integer} [options.offset] The number of items to skip
+    @param {integer} [options.limit] The maximum number of items
+    @param {Function} [options.filter] A function to synchronously filter items from the source
+    @param {Function} [options.map] A function to synchronously transform items from the source
+    @param {Function} [options.transform] A function to asynchronously transform items from the source
+    @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
+    @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
+    @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+  */
   constructor(source, options) {
     super(source, options);
 
@@ -1312,15 +1315,16 @@ AsyncIterator.prototype.range = function (start, end) {
 
 
 /**
-  Creates a new `MultiTransformIterator`.
-  @constructor
-  @classdesc An iterator that generates items by transforming each item of a source
+  An iterator that generates items by transforming each item of a source
   with a different iterator.
-  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
-  @param {object} [options] Settings of the iterator
   @extends TransformIterator
 */
 class MultiTransformIterator extends TransformIterator {
+  /**
+    Creates a new `MultiTransformIterator`.
+    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {object} [options] Settings of the iterator
+  */
   constructor(source, options) {
     super(source, options);
     this._transformerQueue = [];
@@ -1397,13 +1401,14 @@ MultiTransformIterator.prototype._closeWhenDone = function () {
 
 
 /**
-  Creates a new `ClonedIterator`.
-  @constructor
-  @classdesc An iterator that copies items from another iterator.
-  @param {AsyncIterator|Readable} [source] The source this iterator copies items from
+  An iterator that copies items from another iterator.
   @extends TransformIterator
 */
 class ClonedIterator extends TransformIterator {
+  /**
+    Creates a new `ClonedIterator`.
+    @param {AsyncIterator|Readable} [source] The source this iterator copies items from
+  */
   constructor(source) {
     super(source, { autoStart: false });
     this._reading = false;
