@@ -11,31 +11,6 @@ const {
 
 describe('ClonedIterator', () => {
   describe('The ClonedIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = ClonedIterator(); });
-
-      it('should be a ClonedIterator object', () => {
-        instance.should.be.an.instanceof(ClonedIterator);
-      });
-
-      it('should be a TransformIterator object', () => {
-        instance.should.be.an.instanceof(TransformIterator);
-      });
-
-      it('should be a BufferedIterator object', () => {
-        instance.should.be.an.instanceof(BufferedIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new ClonedIterator(); });

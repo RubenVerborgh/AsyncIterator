@@ -5,23 +5,6 @@ const { SingletonIterator } = AsyncIterator;
 
 describe('SingletonIterator', () => {
   describe('The SingletonIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = SingletonIterator(); });
-
-      it('should be a SingletonIterator object', () => {
-        instance.should.be.an.instanceof(SingletonIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new SingletonIterator(); });

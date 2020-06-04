@@ -5,23 +5,6 @@ const { IntegerIterator } = AsyncIterator;
 
 describe('IntegerIterator', () => {
   describe('The IntegerIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = IntegerIterator(); });
-
-      it('should be an IntegerIterator object', () => {
-        instance.should.be.an.instanceof(IntegerIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new IntegerIterator(); });

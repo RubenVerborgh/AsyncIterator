@@ -1,70 +1,8 @@
 const { EventEmitter } = require('events');
 const queueMicrotask = require('queue-microtask');
 
-/**
-  Names of possible iterator states.
-  The state's position in the array corresponds to its ID.
-  @name AsyncIterator.STATES
-  @type String[]
-  @protected
-*/
-const STATES = AsyncIterator.STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
+const STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
 const INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
-for (const id in STATES)
-  AsyncIterator[STATES[id]] = id;
-
-/**
-  ID of the INIT state.
-  An iterator is initializing if it is preparing main item generation.
-  It can already produce items.
-  @name AsyncIterator.INIT
-  @type integer
-  @protected
-*/
-
-/**
-  ID of the OPEN state.
-  An iterator is open if it can generate new items.
-  @name AsyncIterator.OPEN
-  @type integer
-  @protected
-*/
-
-/**
-  ID of the CLOSING state.
-  An iterator is closing if item generation is pending but will not be scheduled again.
-  @name AsyncIterator.CLOSING
-  @type integer
-  @protected
-*/
-
-/**
-  ID of the CLOSED state.
-  An iterator is closed if it no longer actively generates new items.
-  Items might still be available.
-  @name AsyncIterator.CLOSED
-  @type integer
-  @protected
-*/
-
-/**
-  ID of the ENDED state.
-  An iterator has ended if no further items will become available.
-  The 'end' event is guaranteed to have been called when in this state.
-  @name AsyncIterator.ENDED
-  @type integer
-  @protected
-*/
-
-/**
-  ID of the DESTROYED state.
-  An iterator has been destroyed after calling {@link AsyncIterator#destroy}.
-  The 'end' event has not been called, as pending elements were voided.
-  @name AsyncIterator.DESTROYED
-  @type integer
-  @protected
-*/
-
 
 /**
   Creates a new `AsyncIterator`.
@@ -73,27 +11,14 @@ for (const id in STATES)
   @classdesc An asynchronous iterator provides pull-based access to a stream of objects.
   @extends EventEmitter
 */
-function AsyncIterator() {
-  if (!(this instanceof AsyncIterator))
-    return new AsyncIterator();
-  EventEmitter.call(this);
-  this.on('newListener', waitForDataListener);
-  this._state = OPEN;
-  this._readable = false;
+class AsyncIterator extends EventEmitter {
+  constructor() {
+    super();
+    this._state = OPEN;
+    this._readable = false;
+    this.on('newListener', waitForDataListener);
+  }
 }
-
-/**
-  Makes the prototype of the current constructor a prototype for the given constructor.
-  @protected
-  @function AsyncIterator.subclass
-  @param {Function} Constructor The constructor that should inherit from the current constructor
-  @returns {AsyncIterator} The constructor's prototype
-*/
-(function subclass(Constructor) {
-  Constructor.prototype = Object.create(this.prototype,
-    { constructor: { value: Constructor, configurable: true, writable: true } });
-  Constructor.subclass = subclass;
-}).call(EventEmitter, AsyncIterator);
 
 /**
   Changes the iterator to the given state if possible and necessary,
@@ -457,6 +382,69 @@ AsyncIterator.prototype.toString = function () {
 */
 AsyncIterator.prototype._toStringDetails = function () { /* */ };
 
+/**
+  Names of possible iterator states.
+  The state's position in the array corresponds to its ID.
+  @name AsyncIterator.STATES
+  @type String[]
+  @protected
+*/
+AsyncIterator.STATES = STATES;
+for (const id in STATES)
+  AsyncIterator[STATES[id]] = id;
+
+/**
+  ID of the INIT state.
+  An iterator is initializing if it is preparing main item generation.
+  It can already produce items.
+  @name AsyncIterator.INIT
+  @type integer
+  @protected
+*/
+
+/**
+  ID of the OPEN state.
+  An iterator is open if it can generate new items.
+  @name AsyncIterator.OPEN
+  @type integer
+  @protected
+*/
+
+/**
+  ID of the CLOSING state.
+  An iterator is closing if item generation is pending but will not be scheduled again.
+  @name AsyncIterator.CLOSING
+  @type integer
+  @protected
+*/
+
+/**
+  ID of the CLOSED state.
+  An iterator is closed if it no longer actively generates new items.
+  Items might still be available.
+  @name AsyncIterator.CLOSED
+  @type integer
+  @protected
+*/
+
+/**
+  ID of the ENDED state.
+  An iterator has ended if no further items will become available.
+  The 'end' event is guaranteed to have been called when in this state.
+  @name AsyncIterator.ENDED
+  @type integer
+  @protected
+*/
+
+/**
+  ID of the DESTROYED state.
+  An iterator has been destroyed after calling {@link AsyncIterator#destroy}.
+  The 'end' event has not been called, as pending elements were voided.
+  @name AsyncIterator.DESTROYED
+  @type integer
+  @protected
+*/
+
 
 /**
   Creates a new `EmptyIterator`.
@@ -464,13 +452,12 @@ AsyncIterator.prototype._toStringDetails = function () { /* */ };
   @classdesc An iterator that doesn't emit any items.
   @extends AsyncIterator
 */
-function EmptyIterator() {
-  if (!(this instanceof EmptyIterator))
-    return new EmptyIterator();
-  AsyncIterator.call(this);
-  this._changeState(ENDED, true);
+class EmptyIterator extends AsyncIterator {
+  constructor() {
+    super();
+    this._changeState(ENDED, true);
+  }
 }
-AsyncIterator.subclass(EmptyIterator);
 
 
 /**
@@ -480,18 +467,16 @@ AsyncIterator.subclass(EmptyIterator);
   @param {object} item The item that will be emitted.
   @extends AsyncIterator
 */
-function SingletonIterator(item) {
-  if (!(this instanceof SingletonIterator))
-    return new SingletonIterator(item);
-  AsyncIterator.call(this);
-
-  this._item = item;
-  if (item === null)
-    this.close();
-  else
-    this.readable = true;
+class SingletonIterator extends AsyncIterator {
+  constructor(item) {
+    super();
+    this._item = item;
+    if (item === null)
+      this.close();
+    else
+      this.readable = true;
+  }
 }
-AsyncIterator.subclass(SingletonIterator);
 
 /* Reads the item from the iterator. */
 SingletonIterator.prototype.read = function () {
@@ -514,18 +499,15 @@ SingletonIterator.prototype._toStringDetails = function () {
   @param {Array} items The items that will be emitted.
   @extends AsyncIterator
 */
-function ArrayIterator(items) {
-  if (!(this instanceof ArrayIterator))
-    return new ArrayIterator(items);
-  AsyncIterator.call(this);
-
-  if (!(items && items.length > 0))
-    return this.close();
-
-  this._buffer = Array.prototype.slice.call(items);
-  this.readable = true;
+class ArrayIterator extends AsyncIterator {
+  constructor(items) {
+    super();
+    if (!(items && items.length > 0))
+      return this.close();
+    this._buffer = Array.prototype.slice.call(items);
+    this.readable = true;
+  }
 }
-AsyncIterator.subclass(ArrayIterator);
 
 /* Reads an item from the iterator. */
 ArrayIterator.prototype.read = function () {
@@ -563,42 +545,41 @@ ArrayIterator.prototype._destroy = function (error, callback) {
   @param {integer} [options.step=1] The increment between two numbers
   @extends AsyncIterator
 */
-function IntegerIterator(options) {
-  if (!(this instanceof IntegerIterator))
-    return new IntegerIterator(options);
-  AsyncIterator.call(this);
+class IntegerIterator extends AsyncIterator {
+  constructor(options) {
+    super();
 
-  // Determine step size
-  let { step, end: last, start: next } = options || {};
-  step = isFinite(step) ? Math.floor(step) : 1;
-  this._step = step;
+    // Determine step size
+    let { step, end: last, start: next } = options || {};
+    step = isFinite(step) ? Math.floor(step) : 1;
+    this._step = step;
 
-  // Determine the next number
-  if (typeof next !== 'number')
-    next = 0;
-  else if (isFinite(next))
-    next = Math.floor(next);
-  this._next = next;
+    // Determine the next number
+    if (typeof next !== 'number')
+      next = 0;
+    else if (isFinite(next))
+      next = Math.floor(next);
+    this._next = next;
 
-  // Determine the last number
-  if (isFinite(last)) {
-    last = Math.floor(last);
+    // Determine the last number
+    if (isFinite(last)) {
+      last = Math.floor(last);
+    }
+    else {
+      // Counting towards plus or minus infinity?
+      const limit = step >= 0 ? Infinity : -Infinity;
+      if (last !== -limit)
+        last = limit;
+    }
+    this._last = last;
+
+    // Start iteration if there is at least one item; close otherwise
+    if (!isFinite(next) || (step >= 0 ? next > last : next < last))
+      this.close();
+    else
+      this.readable = true;
   }
-  else {
-    // Counting towards plus or minus infinity?
-    const limit = step >= 0 ? Infinity : -Infinity;
-    if (last !== -limit)
-      last = limit;
-  }
-  this._last = last;
-
-  // Start iteration if there is at least one item; close otherwise
-  if (!isFinite(next) || (step >= 0 ? next > last : next < last))
-    this.close();
-  else
-    this.readable = true;
 }
-AsyncIterator.subclass(IntegerIterator);
 
 /* Reads an item from the iterator. */
 IntegerIterator.prototype.read = function () {
@@ -639,23 +620,22 @@ AsyncIterator.range = function (start, end, step) {
   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   @extends AsyncIterator
 */
-function BufferedIterator(options) {
-  if (!(this instanceof BufferedIterator))
-    return new BufferedIterator(options);
-  AsyncIterator.call(this);
+class BufferedIterator extends AsyncIterator {
+  constructor(options) {
+    super();
 
-  // Set up the internal buffer
-  const { maxBufferSize, autoStart } = options || {};
-  this._state = INIT;
-  this._buffer = [];
-  this._pushedCount = 0;
-  this.maxBufferSize = maxBufferSize;
+    // Set up the internal buffer
+    const { maxBufferSize, autoStart } = options || {};
+    this._state = INIT;
+    this._buffer = [];
+    this._pushedCount = 0;
+    this.maxBufferSize = maxBufferSize;
 
-  // Acquire reading lock to read initialization items
-  this._reading = true;
-  queueMicrotask(() => this._init(autoStart !== false || autoStart));
+    // Acquire reading lock to read initialization items
+    this._reading = true;
+    queueMicrotask(() => this._init(autoStart !== false || autoStart));
+  }
 }
-AsyncIterator.subclass(BufferedIterator);
 
 /**
   Gets or sets the maximum number of items to preload in the internal buffer.
@@ -918,22 +898,23 @@ BufferedIterator.prototype._toStringDetails = function () {
   @param {AsyncIterator} [options.source] The source this iterator generates items from
   @extends BufferedIterator
 */
-function TransformIterator(source, options) {
-  if (!(this instanceof TransformIterator))
-    return new TransformIterator(source, options);
-  // Shift arguments if the first is not a source
-  if (!source || !isFunction(source.read)) {
-    if (!options)
-      options = source;
-    source = options && options.source;
+class TransformIterator extends BufferedIterator {
+  constructor(source, options) {
+    // Shift arguments if the first is not a source
+    if (!source || !isFunction(source.read)) {
+      if (!options)
+        options = source;
+      source = options && options.source;
+    }
+    super(options);
+
+    // Initialize source and settings
+    if (source)
+      this.source = source;
+    this._optional = Boolean(options && options.optional);
+    this._destroySource = !options || options.destroySource !== false;
   }
-  BufferedIterator.call(this, options);
-  if (source)
-    this.source = source;
-  this._optional = Boolean(options && options.optional);
-  this._destroySource = !options || options.destroySource !== false;
 }
-BufferedIterator.subclass(TransformIterator);
 
 /**
   Gets or sets the source this iterator generates items from.
@@ -1099,39 +1080,38 @@ AsyncIterator.wrap = TransformIterator;
   @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
   @extends TransformIterator
 */
-function SimpleTransformIterator(source, options) {
-  if (!(this instanceof SimpleTransformIterator))
-    return new SimpleTransformIterator(source, options);
-  TransformIterator.call(this, source, options);
+class SimpleTransformIterator extends TransformIterator {
+  constructor(source, options) {
+    super(source, options);
 
-  // Set transformation steps from the options
-  options = options || !isFunction(source && source.read) && source;
-  if (options) {
-    const transform = isFunction(options) ? options : options.transform;
-    const { limit, offset, filter, map, prepend, append } = options;
-    // Don't emit any items when bounds are unreachable
-    if (offset === Infinity || limit === -Infinity) {
-      this._limit = 0;
+    // Set transformation steps from the options
+    options = options || !isFunction(source && source.read) && source;
+    if (options) {
+      const transform = isFunction(options) ? options : options.transform;
+      const { limit, offset, filter, map, prepend, append } = options;
+      // Don't emit any items when bounds are unreachable
+      if (offset === Infinity || limit === -Infinity) {
+        this._limit = 0;
+      }
+      else {
+        if (isFinite(offset))
+          this._offset = Math.max(Math.floor(offset), 0);
+        if (isFinite(limit))
+          this._limit = Math.max(Math.floor(limit), 0);
+        if (isFunction(filter))
+          this._filter = filter;
+        if (isFunction(map))
+          this._map = map;
+        if (isFunction(transform))
+          this._transform = transform;
+      }
+      if (prepend)
+        this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
+      if (append)
+        this._appender = append.on ? append : new ArrayIterator(append);
     }
-    else {
-      if (isFinite(offset))
-        this._offset = Math.max(Math.floor(offset), 0);
-      if (isFinite(limit))
-        this._limit = Math.max(Math.floor(limit), 0);
-      if (isFunction(filter))
-        this._filter = filter;
-      if (isFunction(map))
-        this._map = map;
-      if (isFunction(transform))
-        this._transform = transform;
-    }
-    if (prepend)
-      this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
-    if (append)
-      this._appender = append.on ? append : new ArrayIterator(append);
   }
 }
-TransformIterator.subclass(SimpleTransformIterator);
 
 // Default settings
 SimpleTransformIterator.prototype._offset = 0;
@@ -1340,13 +1320,12 @@ AsyncIterator.prototype.range = function (start, end) {
   @param {object} [options] Settings of the iterator
   @extends TransformIterator
 */
-function MultiTransformIterator(source, options) {
-  if (!(this instanceof MultiTransformIterator))
-    return new MultiTransformIterator(source, options);
-  TransformIterator.call(this, source, options);
-  this._transformerQueue = [];
+class MultiTransformIterator extends TransformIterator {
+  constructor(source, options) {
+    super(source, options);
+    this._transformerQueue = [];
+  }
 }
-TransformIterator.subclass(MultiTransformIterator);
 
 /* Tries to read and transform items */
 MultiTransformIterator.prototype._read = function (count, done) {
@@ -1406,7 +1385,8 @@ MultiTransformIterator.prototype._read = function (count, done) {
   @param {object} item The last read item from the source
   @returns {AsyncIterator} An iterator that transforms the given item
 */
-MultiTransformIterator.prototype._createTransformer = SingletonIterator;
+MultiTransformIterator.prototype._createTransformer =
+  item => new SingletonIterator(item);
 
 /* Closes the iterator when pending items are transformed. */
 MultiTransformIterator.prototype._closeWhenDone = function () {
@@ -1423,19 +1403,15 @@ MultiTransformIterator.prototype._closeWhenDone = function () {
   @param {AsyncIterator|Readable} [source] The source this iterator copies items from
   @extends TransformIterator
 */
-function ClonedIterator(source) {
-  if (!(this instanceof ClonedIterator))
-    return new ClonedIterator(source);
-  // Although ClonedIterator inherits from TransformIterator and hence BufferedIterator,
-  // we do not need the buffering because items arrive directly from a history buffer.
-  // Therefore, initialize as an AsyncIterator, which does not set up buffering.
-  AsyncIterator.call(this);
-
-  this._readPosition = 0;
-  if (source)
-    this.source = source;
+class ClonedIterator extends TransformIterator {
+  constructor(source) {
+    super(source, { autoStart: false });
+    this._reading = false;
+    this._readPosition = 0;
+  }
 }
-TransformIterator.subclass(ClonedIterator);
+
+ClonedIterator.prototype._init = function () { /* */ };
 
 // The source this iterator copies items from
 Object.defineProperty(ClonedIterator.prototype, 'source', {
@@ -1512,67 +1488,69 @@ ClonedIterator.prototype._toStringDetails = function () {
 };
 
 // Stores the history of a source, so it can be cloned
-function HistoryReader(source) {
-  const history = [];
-  let clones;
+class HistoryReader {
+  constructor(source) {
+    const history = [];
+    let clones;
 
-  // Tries to read the item at the given history position
-  this.readAt = function (pos) {
-    let item = null;
-    // Retrieve an item from history when available
-    if (pos < history.length)
-      item = history[pos];
-    // Read a new item from the source when possible
-    else if (!source.ended && (item = source.read()) !== null)
-      history[pos] = item;
-    return item;
-  };
+    // Tries to read the item at the given history position
+    this.readAt = function (pos) {
+      let item = null;
+      // Retrieve an item from history when available
+      if (pos < history.length)
+        item = history[pos];
+      // Read a new item from the source when possible
+      else if (!source.ended && (item = source.read()) !== null)
+        history[pos] = item;
+      return item;
+    };
 
-  // Determines whether the given position is the end of the source
-  this.endsAt = function (pos) {
-    return pos === history.length && source.ended;
-  };
+    // Determines whether the given position is the end of the source
+    this.endsAt = function (pos) {
+      return pos === history.length && source.ended;
+    };
 
-  // Registers a clone for history updates
-  this.register = function (clone) {
-    if (clones)
-      clones.push(clone);
-  };
+    // Registers a clone for history updates
+    this.register = function (clone) {
+      if (clones)
+        clones.push(clone);
+    };
 
-  // Unregisters a clone for history updates
-  this.unregister = function (clone) {
-    let cloneIndex;
-    if (clones && (cloneIndex = clones.indexOf(clone)) >= 0)
-      clones.splice(cloneIndex, 1);
-  };
+    // Unregisters a clone for history updates
+    this.unregister = function (clone) {
+      let cloneIndex;
+      if (clones && (cloneIndex = clones.indexOf(clone)) >= 0)
+        clones.splice(cloneIndex, 1);
+    };
 
-  // Listen to source events to trigger events in subscribed clones
-  if (!source.ended) {
-    clones = [];
-    source.on('readable', clonesMakeReadable);
-    source.on('end', clonesEnd);
-    source.on('error', clonesEmitError);
-  }
-  // When the source becomes readable, makes all clones readable
-  function clonesMakeReadable() {
-    for (let i = 0; i < clones.length; i++)
-      clones[i].readable = true;
-  }
-  // When the source ends, closes all clones that are fully read
-  function clonesEnd() {
-    for (let i = 0; i < clones.length; i++) {
-      if (clones[i]._readPosition === history.length)
-        clones[i].close();
+    // Listen to source events to trigger events in subscribed clones
+    if (!source.ended) {
+      clones = [];
+      source.on('readable', clonesMakeReadable);
+      source.on('end', clonesEnd);
+      source.on('error', clonesEmitError);
     }
-    clones = null;
-    source.removeListener('end', clonesEnd);
-    source.removeListener('error', clonesEmitError);
-    source.removeListener('readable', clonesMakeReadable);
-  }
-  // When the source errors, re-emits the error
-  function clonesEmitError(error) {
-    for (let i = 0; i < clones.length; i++)
-      clones[i].emit('error', error);
+    // When the source becomes readable, makes all clones readable
+    function clonesMakeReadable() {
+      for (let i = 0; i < clones.length; i++)
+        clones[i].readable = true;
+    }
+    // When the source ends, closes all clones that are fully read
+    function clonesEnd() {
+      for (let i = 0; i < clones.length; i++) {
+        if (clones[i]._readPosition === history.length)
+          clones[i].close();
+      }
+      clones = null;
+      source.removeListener('end', clonesEnd);
+      source.removeListener('error', clonesEmitError);
+      source.removeListener('readable', clonesMakeReadable);
+    }
+    // When the source errors, re-emits the error
+    function clonesEmitError(error) {
+      for (let i = 0; i < clones.length; i++)
+        clones[i].emit('error', error);
+    }
   }
 }
 
@@ -1629,12 +1607,16 @@ function isFunction(object) {
 // Export all submodules
 module.exports = AsyncIterator;
 AsyncIterator.AsyncIterator = AsyncIterator;
-AsyncIterator.EmptyIterator = AsyncIterator.empty = EmptyIterator;
-AsyncIterator.SingletonIterator = AsyncIterator.single = SingletonIterator;
-AsyncIterator.ArrayIterator = AsyncIterator.fromArray = ArrayIterator;
+AsyncIterator.EmptyIterator = EmptyIterator;
+AsyncIterator.SingletonIterator = SingletonIterator;
+AsyncIterator.ArrayIterator = ArrayIterator;
 AsyncIterator.IntegerIterator = IntegerIterator;
 AsyncIterator.BufferedIterator = BufferedIterator;
 AsyncIterator.TransformIterator = TransformIterator;
 AsyncIterator.SimpleTransformIterator = SimpleTransformIterator;
 AsyncIterator.MultiTransformIterator = MultiTransformIterator;
 AsyncIterator.ClonedIterator = ClonedIterator;
+
+AsyncIterator.empty = () => new EmptyIterator();
+AsyncIterator.single = item => new SingletonIterator(item);
+AsyncIterator.fromArray = array => new ArrayIterator(array);

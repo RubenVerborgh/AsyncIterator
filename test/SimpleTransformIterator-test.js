@@ -13,31 +13,6 @@ const {
 
 describe('SimpleTransformIterator', () => {
   describe('The SimpleTransformIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = SimpleTransformIterator(); });
-
-      it('should be a SimpleTransformIterator object', () => {
-        instance.should.be.an.instanceof(SimpleTransformIterator);
-      });
-
-      it('should be a TransformIterator object', () => {
-        instance.should.be.an.instanceof(TransformIterator);
-      });
-
-      it('should be a BufferedIterator object', () => {
-        instance.should.be.an.instanceof(BufferedIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new SimpleTransformIterator(); });

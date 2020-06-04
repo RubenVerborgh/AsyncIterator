@@ -13,31 +13,6 @@ const {
 
 describe('MultiTransformIterator', () => {
   describe('The MultiTransformIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = MultiTransformIterator(); });
-
-      it('should be a MultiTransformIterator object', () => {
-        instance.should.be.an.instanceof(MultiTransformIterator);
-      });
-
-      it('should be a TransformIterator object', () => {
-        instance.should.be.an.instanceof(TransformIterator);
-      });
-
-      it('should be a BufferedIterator object', () => {
-        instance.should.be.an.instanceof(BufferedIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new MultiTransformIterator(); });
@@ -89,7 +64,7 @@ describe('MultiTransformIterator', () => {
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       iterator = new MultiTransformIterator(source, { autoStart: false });
-      iterator._createTransformer = sinon.spy(EmptyIterator);
+      iterator._createTransformer = sinon.spy(() => new EmptyIterator());
     });
 
     describe('when reading items', () => {

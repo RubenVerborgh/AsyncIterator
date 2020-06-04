@@ -5,23 +5,6 @@ const { ArrayIterator } = AsyncIterator;
 
 describe('ArrayIterator', () => {
   describe('The ArrayIterator function', () => {
-    describe('the result when called without `new`', () => {
-      let instance;
-      before(() => { instance = ArrayIterator(); });
-
-      it('should be an ArrayIterator object', () => {
-        instance.should.be.an.instanceof(ArrayIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new ArrayIterator(); });
