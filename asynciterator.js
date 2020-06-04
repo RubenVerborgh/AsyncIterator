@@ -546,35 +546,30 @@ class IntegerIterator extends AsyncIterator {
     @param {integer} [options.end=Infinity] The last number to emit
     @param {integer} [options.step=1] The increment between two numbers
   */
-  constructor(options) {
+  constructor({ start = 0, step = 1, end } = {}) {
     super();
 
+    // Determine the first number
+    if (Number.isFinite(start))
+      start = Math.trunc(start);
+    this._next = start;
+
     // Determine step size
-    let { step, end: last, start: next } = options || {};
-    step = isFinite(step) ? Math.floor(step) : 1;
+    if (Number.isFinite(step))
+      step = Math.trunc(step);
     this._step = step;
 
-    // Determine the next number
-    if (typeof next !== 'number')
-      next = 0;
-    else if (isFinite(next))
-      next = Math.floor(next);
-    this._next = next;
-
     // Determine the last number
-    if (isFinite(last)) {
-      last = Math.floor(last);
-    }
-    else {
-      // Counting towards plus or minus infinity?
-      const limit = step >= 0 ? Infinity : -Infinity;
-      if (last !== -limit)
-        last = limit;
-    }
-    this._last = last;
+    const ascending = step >= 0;
+    const direction = ascending ? Infinity : -Infinity;
+    if (Number.isFinite(end))
+      end = Math.trunc(end);
+    else if (end !== -direction)
+      end = direction;
+    this._last = end;
 
     // Start iteration if there is at least one item; close otherwise
-    if (!isFinite(next) || (step >= 0 ? next > last : next < last))
+    if (!Number.isFinite(start) || (ascending ? start > end : start < end))
       this.close();
     else
       this.readable = true;
@@ -585,7 +580,8 @@ class IntegerIterator extends AsyncIterator {
 IntegerIterator.prototype.read = function () {
   if (this.closed)
     return null;
-  const current = this._next, step = this._step, last = this._last, next = this._next += step;
+  const current = this._next, step = this._step, last = this._last,
+        next = this._next += step;
   if (step >= 0 ? next > last : next < last)
     this.close();
   return current;
@@ -652,8 +648,8 @@ Object.defineProperty(BufferedIterator.prototype, 'maxBufferSize', {
   set(maxBufferSize) {
     // Allow only positive integers and infinity
     if (maxBufferSize !== Infinity) {
-      maxBufferSize = !isFinite(maxBufferSize) ? 4 :
-        Math.max(Math.floor(maxBufferSize), 1);
+      maxBufferSize = !Number.isFinite(maxBufferSize) ? 4 :
+        Math.max(Math.trunc(maxBufferSize), 1);
     }
     // Only set the maximum buffer size if it changes
     if (this._maxBufferSize !== maxBufferSize) {
@@ -1097,10 +1093,10 @@ class SimpleTransformIterator extends TransformIterator {
         this._limit = 0;
       }
       else {
-        if (isFinite(offset))
-          this._offset = Math.max(Math.floor(offset), 0);
-        if (isFinite(limit))
-          this._limit = Math.max(Math.floor(limit), 0);
+        if (Number.isFinite(offset))
+          this._offset = Math.max(Math.trunc(offset), 0);
+        if (Number.isFinite(limit))
+          this._limit = Math.max(Math.trunc(limit), 0);
         if (isFunction(filter))
           this._filter = filter;
         if (isFunction(map))

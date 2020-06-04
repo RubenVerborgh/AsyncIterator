@@ -323,6 +323,40 @@ describe('IntegerIterator', () => {
     });
   });
 
+  describe('An IntegerIterator starting at Infinity and counting down', () => {
+    let iterator;
+    before(() => {
+      iterator = new IntegerIterator({ start: Infinity, step: -1 });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[IntegerIterator (Infinity...-Infinity)]');
+    });
+
+    describe('before reading', () => {
+      it('should not have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when read is called', () => {
+        expect(iterator.read()).to.equal(null);
+      });
+    });
+  });
+
   describe('An IntegerIterator starting at -Infinity', () => {
     let iterator;
     before(() => {
@@ -387,6 +421,32 @@ describe('IntegerIterator', () => {
 
       it('should return null when read is called', () => {
         expect(iterator.read()).to.equal(null);
+      });
+    });
+  });
+
+  describe('An IntegerIterator with Infinity as step size', () => {
+    let iterator;
+    before(() => {
+      iterator = new IntegerIterator({ step: Infinity });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[IntegerIterator (0...Infinity)]');
+    });
+
+    describe('when reading items', () => {
+      it('should return 0 on read call 1', () => {
+        expect(iterator.read()).to.equal(0);
+      });
+
+      it('should return Infinity on read call 1', () => {
+        expect(iterator.read()).to.equal(Infinity);
+      });
+
+      it('should return Infinity on read call 2', () => {
+        expect(iterator.read()).to.equal(Infinity);
       });
     });
   });
