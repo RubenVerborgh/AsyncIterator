@@ -169,39 +169,6 @@ describe('IntegerIterator', () => {
     });
   });
 
-  describe('An IntegerIterator from 10 to -5 in steps of 5', () => {
-    let iterator;
-    before(() => {
-      iterator = AsyncIterator.range(10, -5, 5);
-      captureEvents(iterator, 'readable', 'end');
-    });
-
-    it('should provide a readable `toString` representation', () => {
-      iterator.toString().should.equal('[IntegerIterator (10...-5)]');
-    });
-
-    describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
-      });
-
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
-      });
-
-      it('should have ended', () => {
-        iterator.ended.should.be.true;
-      });
-
-      it('should not be readable', () => {
-        iterator.readable.should.be.false;
-      });
-
-      it('should return null when read is called', () => {
-        expect(iterator.read()).to.equal(null);
-      });
-    });
-  });
 
   describe('An IntegerIterator from 10 to -5 in steps of -5', () => {
     let iterator;
