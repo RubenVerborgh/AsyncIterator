@@ -249,6 +249,20 @@ class AsyncIterator extends EventEmitter {
     return this._state >= ENDED;
   }
 
+  /* Generates a textual representation of the iterator. */
+  toString() {
+    const details = this._toStringDetails();
+    return `[${this.constructor.name}${details ? ` ${details}` : ''}]`;
+  }
+
+  /**
+    Generates details for a textual representation of the iterator.
+    @protected
+  */
+  _toStringDetails() {
+    return '';
+  }
+
   /**
     Retrieves the property with the given name from the iterator.
     If no callback is passed, it returns the value of the property
@@ -337,18 +351,132 @@ class AsyncIterator extends EventEmitter {
     }
   }
 
-  /* Generates a textual representation of the iterator. */
-  toString() {
-    const details = this._toStringDetails();
-    return `[${this.constructor.name}${details ? ` ${details}` : ''}]`;
+  /**
+    Creates an iterator that wraps around a given iterator or readable stream.
+    Use this to convert an iterator-like object into a full-featured AsyncIterator.
+    After this operation, only read the returned iterator instead of the given one.
+    @function
+    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {object} [options] Settings of the iterator
+    @returns {AsyncIterator} A new iterator with the items from the given iterator
+  */
+  static wrap(source, options) {
+    return new TransformIterator(source, options);
   }
 
   /**
-    Generates details for a textual representation of the iterator.
-    @protected
+    Transforms items from this iterator.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {object|Function} [options] Settings of the iterator, or the transformation function
+    @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
+    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {integer} [options.offset] The number of items to skip
+    @param {integer} [options.limit] The maximum number of items
+    @param {Function} [options.filter] A function to synchronously filter items from the source
+    @param {Function} [options.map] A function to synchronously transform items from the source
+    @param {Function} [options.transform] A function to asynchronously transform items from the source
+    @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
+    @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
+    @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+    @returns {AsyncIterator} A new iterator that maps the items from this iterator
   */
-  _toStringDetails() {
-    return '';
+  transform(options) {
+    return new SimpleTransformIterator(this, options);
+  }
+
+  /**
+    Maps items from this iterator using the given function.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {Function} mapper A mapping function to call on this iterator's (remaining) items
+    @param {object?} self The `this` pointer for the mapping function
+    @returns {AsyncIterator} A new iterator that maps the items from this iterator
+  */
+  map(mapper, self) {
+    return this.transform({ map: self ? mapper.bind(self) : mapper });
+  }
+
+  /**
+    Return items from this iterator that match the filter.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {Function} filter A filter function to call on this iterator's (remaining) items
+    @param {object?} self The `this` pointer for the filter function
+    @returns {AsyncIterator} A new iterator that filters items from this iterator
+  */
+  filter(filter, self) {
+    return this.transform({ filter: self ? filter.bind(self) : filter });
+  }
+
+  /**
+    Prepends the items after those of the current iterator.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {Array|AsyncIterator} items Items to insert before this iterator's (remaining) items
+    @returns {AsyncIterator} A new iterator that prepends items to this iterator
+  */
+  prepend(items) {
+    return this.transform({ prepend: items });
+  }
+
+  /**
+    Appends the items after those of the current iterator.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {Array|AsyncIterator} items Items to insert after this iterator's (remaining) items
+    @returns {AsyncIterator} A new iterator that appends items to this iterator
+  */
+  append(items) {
+    return this.transform({ append: items });
+  }
+
+  /**
+    Surrounds items of the current iterator with the given items.
+    After this operation, only read the returned iterator instead of the current one.
+    @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
+    @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
+    @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+  */
+  surround(prepend, append) {
+    return this.transform({ prepend, append });
+  }
+
+  /**
+    Skips the given number of items from the current iterator.
+    The current iterator may not be read anymore until the returned iterator ends.
+    @param {integer} offset The number of items to skip
+    @returns {AsyncIterator} A new iterator that skips the given number of items
+  */
+  skip(offset) {
+    return this.transform({ offset });
+  }
+
+  /**
+    Limits the current iterator to the given number of items.
+    The current iterator may not be read anymore until the returned iterator ends.
+    @param {integer} limit The maximum number of items
+    @returns {AsyncIterator} A new iterator with at most the given number of items
+  */
+  take(limit) {
+    return this.transform({ limit });
+  }
+
+  /**
+    Limits the current iterator to the given range.
+    The current iterator may not be read anymore until the returned iterator ends.
+    @param {integer} start Index of the first item to return
+    @param {integer} end Index of the last item to return
+    @returns {AsyncIterator} A new iterator with items in the given range
+  */
+  range(start, end) {
+    return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
+  }
+
+  /**
+    Creates a copy of the current iterator,
+    containing all items emitted from this point onward.
+    Further copies can be created; they will all start from this same point.
+    After this operation, only read the returned copies instead of the original iterator.
+    @returns {AsyncIterator} A new iterator that contains all future items of this iterator
+  */
+  clone() {
+    return new ClonedIterator(this);
   }
 }
 
@@ -1021,17 +1149,6 @@ function destinationFillBuffer() {
   this._destination._fillBuffer();
 }
 
-/**
-  Creates an iterator that wraps around a given iterator or readable stream.
-  Use this to convert an iterator-like object into a full-featured AsyncIterator.
-  After this operation, only read the returned iterator instead of the given one.
-  @function
-  @param {AsyncIterator|Readable} [source] The source this iterator generates items from
-  @param {object} [options] Settings of the iterator
-  @returns {AsyncIterator} A new iterator with the items from the given iterator
-*/
-AsyncIterator.wrap = (source, options) => new TransformIterator(source, options);
-
 
 /**
   An iterator that generates items based on a source iterator
@@ -1179,110 +1296,6 @@ Object.assign(SimpleTransformIterator.prototype, {
   _transform: null,
   _filter: () => true,
 });
-
-/**
-  Transforms items from this iterator.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {object|Function} [options] Settings of the iterator, or the transformation function
-  @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-  @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
-  @param {integer} [options.offset] The number of items to skip
-  @param {integer} [options.limit] The maximum number of items
-  @param {Function} [options.filter] A function to synchronously filter items from the source
-  @param {Function} [options.map] A function to synchronously transform items from the source
-  @param {Function} [options.transform] A function to asynchronously transform items from the source
-  @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
-  @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
-  @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
-  @returns {AsyncIterator} A new iterator that maps the items from this iterator
-*/
-AsyncIterator.prototype.transform = function (options) {
-  return new SimpleTransformIterator(this, options);
-};
-
-/**
-  Maps items from this iterator using the given function.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {Function} mapper A mapping function to call on this iterator's (remaining) items
-  @param {object?} self The `this` pointer for the mapping function
-  @returns {AsyncIterator} A new iterator that maps the items from this iterator
-*/
-AsyncIterator.prototype.map = function (mapper, self) {
-  return this.transform({ map: self ? mapper.bind(self) : mapper });
-};
-
-/**
-  Return items from this iterator that match the filter.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {Function} filter A filter function to call on this iterator's (remaining) items
-  @param {object?} self The `this` pointer for the filter function
-  @returns {AsyncIterator} A new iterator that filters items from this iterator
-*/
-AsyncIterator.prototype.filter = function (filter, self) {
-  return this.transform({ filter: self ? filter.bind(self) : filter });
-};
-
-/**
-  Prepends the items after those of the current iterator.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {Array|AsyncIterator} items Items to insert before this iterator's (remaining) items
-  @returns {AsyncIterator} A new iterator that prepends items to this iterator
-*/
-AsyncIterator.prototype.prepend = function (items) {
-  return this.transform({ prepend: items });
-};
-
-/**
-  Appends the items after those of the current iterator.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {Array|AsyncIterator} items Items to insert after this iterator's (remaining) items
-  @returns {AsyncIterator} A new iterator that appends items to this iterator
-*/
-AsyncIterator.prototype.append = function (items) {
-  return this.transform({ append: items });
-};
-
-/**
-  Surrounds items of the current iterator with the given items.
-  After this operation, only read the returned iterator instead of the current one.
-  @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
-  @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
-  @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
-*/
-AsyncIterator.prototype.surround = function (prepend, append) {
-  return this.transform({ prepend, append });
-};
-
-/**
-  Skips the given number of items from the current iterator.
-  The current iterator may not be read anymore until the returned iterator ends.
-  @param {integer} offset The number of items to skip
-  @returns {AsyncIterator} A new iterator that skips the given number of items
-*/
-AsyncIterator.prototype.skip = function (offset) {
-  return this.transform({ offset });
-};
-
-/**
-  Limits the current iterator to the given number of items.
-  The current iterator may not be read anymore until the returned iterator ends.
-  @param {integer} limit The maximum number of items
-  @returns {AsyncIterator} A new iterator with at most the given number of items
-*/
-AsyncIterator.prototype.take = function (limit) {
-  return this.transform({ limit });
-};
-
-/**
-  Limits the current iterator to the given range.
-  The current iterator may not be read anymore until the returned iterator ends.
-  @param {integer} start Index of the first item to return
-  @param {integer} end Index of the last item to return
-  @returns {AsyncIterator} A new iterator with items in the given range
-*/
-AsyncIterator.prototype.range = function (start, end) {
-  return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
-};
 
 
 /**
@@ -1574,18 +1587,6 @@ class HistoryReader {
     return this._source.ended && this._history.length === pos;
   }
 }
-
-
-/**
-  Creates a copy of the current iterator,
-  containing all items emitted from this point onward.
-  Further copies can be created; they will all start from this same point.
-  After this operation, only read the returned copies instead of the original iterator.
-  @returns {AsyncIterator} A new iterator that contains all future items of this iterator
-*/
-AsyncIterator.prototype.clone = function () {
-  return new ClonedIterator(this);
-};
 
 
 // Determines whether the given object is a function
