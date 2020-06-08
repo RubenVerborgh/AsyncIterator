@@ -1050,7 +1050,7 @@ TransformIterator.prototype._end = function (destroy) {
   @param {object} [options] Settings of the iterator
   @returns {AsyncIterator} A new iterator with the items from the given iterator
 */
-AsyncIterator.wrap = TransformIterator;
+AsyncIterator.wrap = (source, options) => new TransformIterator(source, options);
 
 
 /**

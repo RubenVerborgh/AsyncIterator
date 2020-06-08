@@ -912,4 +912,29 @@ describe('TransformIterator', () => {
       });
     });
   });
+
+  describe('A TransformIterator created via AsyncIterator.wrap', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = ArrayIterator.wrap(source, { optional: true });
+      iterator._transform = function (item, done) {
+        if (item % 3 !== 0)
+          this._push(`t${ item}`);
+        done();
+      };
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items', () => {
+        items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
+      });
+    });
+  });
 });
