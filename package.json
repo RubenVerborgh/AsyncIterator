@@ -9,6 +9,8 @@
     "import": "./asynciterator.js",
     "require": "./asynciterator.cjs"
   },
+  "module": "./asynciterator.js",
+  "sideEffects": false,
   "files": [
     "asynciterator.js",
     "asynciterator.cjs"
