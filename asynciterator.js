@@ -400,19 +400,6 @@ export class AsyncIterator extends EventEmitter {
   }
 
   /**
-    Creates an iterator that wraps around a given iterator or readable stream.
-    Use this to convert an iterator-like object into a full-featured AsyncIterator.
-    After this operation, only read the returned iterator instead of the given one.
-    @function
-    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
-    @param {object} [options] Settings of the iterator
-    @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
-  */
-  static wrap(source, options) {
-    return new TransformIterator(source, options);
-  }
-
-  /**
     Transforms items from this iterator.
     After this operation, only read the returned iterator instead of the current one.
     @param {object|Function} [options] Settings of the iterator, or the transformation function
@@ -1572,6 +1559,19 @@ class HistoryReader {
   endsAt(pos) {
     return this._source.ended && this._history.length === pos;
   }
+}
+
+/**
+  Creates an iterator that wraps around a given iterator or readable stream.
+  Use this to convert an iterator-like object into a full-featured AsyncIterator.
+  After this operation, only read the returned iterator instead of the given one.
+  @function
+  @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
+  @param {object} [options] Settings of the iterator
+  @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
+*/
+export function wrap(source, options) {
+  return new TransformIterator(source, options);
 }
 
 /**

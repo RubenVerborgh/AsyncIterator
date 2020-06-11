@@ -4,6 +4,7 @@ import {
   EmptyIterator,
   ArrayIterator,
   TransformIterator,
+  wrap,
 } from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -21,6 +22,23 @@ describe('TransformIterator', () => {
 
       it('should be a BufferedIterator object', () => {
         instance.should.be.an.instanceof(BufferedIterator);
+      });
+
+      it('should be an AsyncIterator object', () => {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', () => {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `wrap`', () => {
+      let instance;
+      before(() => { instance = wrap(); });
+
+      it('should be an TransformIterator object', () => {
+        instance.should.be.an.instanceof(TransformIterator);
       });
 
       it('should be an AsyncIterator object', () => {
@@ -908,31 +926,6 @@ describe('TransformIterator', () => {
       });
 
       it('should return the transformed items, or if none, the item itself', () => {
-        items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
-      });
-    });
-  });
-
-  describe('A TransformIterator created via AsyncIterator.wrap', () => {
-    let iterator, source;
-    before(() => {
-      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
-      iterator = ArrayIterator.wrap(source, { optional: true });
-      iterator._transform = function (item, done) {
-        if (item % 3 !== 0)
-          this._push(`t${ item}`);
-        done();
-      };
-    });
-
-    describe('when reading items', () => {
-      const items = [];
-      before(done => {
-        iterator.on('data', item => { items.push(item); });
-        iterator.on('end', done);
-      });
-
-      it('should return the transformed items', () => {
         items.should.deep.equal(['t1', 't2', 3, 't4', 't5', 6]);
       });
     });
