@@ -35,15 +35,11 @@
     "c8": "^7.2.0",
     "chai": "^4.2.0",
     "eslint": "^5.15.1",
+    "husky": "^4.2.5",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
     "mocha": "^8.0.0",
-    "pre-commit": "^1.2.2",
     "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0"
-  },
-  "pre-commit": [
-    "lint",
-    "test"
-  ]
+  }
 }
