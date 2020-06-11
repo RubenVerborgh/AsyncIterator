@@ -1,6 +1,8 @@
 .nyc_output
-docs
 coverage
+docs
 node_modules
+package
 *.cjs
 *.log
+*.tgz

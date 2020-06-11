@@ -5,12 +5,23 @@ node_js:
   - "14"
   - "node"
 env:
-  - DEFAULT_NODE_VERSION=12
+  - DEFAULT_NODE_VERSION=14
 
 script:
+  # Test code
   - npm run lint
   - npm test
+  # Test documentation
   - npm run docs
+  # Test packaging
+  - npm pack
+  - tar -xzf asynciterator-*.tgz
+  - cd package
+  - node -e 'require(".")'
+  - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
+      echo 'import { AsyncIterator } from "asynciterator"' > test.mjs;
+      node test.mjs;
+    fi
 
 after_success:
   - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
