@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Index</title>
+    <title>Module: asynciterator</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -1017,175 +1017,1167 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="index.html">Index</h1>
+        <h1 class="page-title" data-filename="module-asynciterator.html">Module: asynciterator</h1>
         
 
 
+
+<section>
+    
+<header>
+    <h2>
+    asynciterator
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+            <div class="description"><p>An asynchronous iterator library for advanced object pipelines</p></div>
+        
+        
+        
+<dl class="details">
+    
+        
+    
+    
     
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
-    <h3> </h3>
+        
+        
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Classes</h3>
+        
+        <dl>
+            <dt><a href="module-asynciterator.ArrayIterator.html">ArrayIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.AsyncIterator.html">AsyncIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.BufferedIterator.html">BufferedIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.ClonedIterator.html">ClonedIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.EmptyIterator.html">EmptyIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.IntegerIterator.html">IntegerIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.MultiTransformIterator.html">MultiTransformIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.SimpleTransformIterator.html">SimpleTransformIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.SingletonIterator.html">SingletonIterator</a></dt>
+            <dd></dd>
+        
+            <dt><a href="module-asynciterator.TransformIterator.html">TransformIterator</a></dt>
+            <dd></dd>
+        </dl>
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Members</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".CLOSED"><span class="type-signature static">static,constant</span>module:asynciterator.CLOSED<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the CLOSED state.
+An iterator is closed if it no longer actively generates new items.
+Items might still be available.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
+    
+    
+</dd>
 
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".CLOSING"><span class="type-signature static">static,constant</span>module:asynciterator.CLOSING<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the CLOSING state.
+An iterator is closing if item generation is pending but will not be scheduled again.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
+    
+    
+</dd>
 
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".DESTROYED"><span class="type-signature static">static,constant</span>module:asynciterator.DESTROYED<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the DESTROYED state.
+An iterator has been destroyed
+after calling <a href="module-asynciterator.AsyncIterator.html#destroy">module:asynciterator.AsyncIterator#destroy</a>.
+The 'end' event has not been called, as pending elements were voided.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".ENDED"><span class="type-signature static">static,constant</span>module:asynciterator.ENDED<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the ENDED state.
+An iterator has ended if no further items will become available.
+The 'end' event is guaranteed to have been called when in this state.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".INIT"><span class="type-signature static">static,constant</span>module:asynciterator.INIT<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the INIT state.
+An iterator is initializing if it is preparing main item generation.
+It can already produce items.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".OPEN"><span class="type-signature static">static,constant</span>module:asynciterator.OPEN<span class="type-signature type integer">integer</span> </h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>ID of the OPEN state.
+An iterator is open if it can generate new items.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".empty">
+            
+            <span class="type-signature static">static</span>module:asynciterator.empty<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1580
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an empty iterator.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
 
     
 
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".fromArray">
+            
+            <span class="type-signature static">static</span>module:asynciterator.fromArray<span class="signature">(items)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1596
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator for the given array.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
 
 
-
-    <section>
-        <article class="readme"><h1>Asynchronous iterators for JavaScript</h1>
-<p><a target="_blank" href="https://travis-ci.org/RubenVerborgh/AsyncIterator"><img src="https://travis-ci.org/RubenVerborgh/AsyncIterator.svg?branch=master" alt="Build Status"></a>
-<a target="_blank" href="https://coveralls.io/github/RubenVerborgh/AsyncIterator"><img src="https://coveralls.io/repos/github/RubenVerborgh/AsyncIterator/badge.svg" alt="Coverage Status"></a>
-<a target="_blank" href="https://www.npmjs.com/package/asynciterator"><img src="https://badge.fury.io/js/asynciterator.svg" alt="npm version"></a></p>
-<p><strong>AsyncIterator is a lightweight JavaScript implementation of demand-driven object streams,</strong>
-and an alternative to the two-way flow controlled <a target="_blank" href="https://nodejs.org/api/stream.html">Node.js <code>Stream</code></a>.
-As opposed to <code>Stream</code>, you cannot <em>push</em> anything into an <code>AsyncIterator</code>;
-instead, an iterator <em>pulls</em> things from another iterator.
-This eliminates the need for expensive, complex flow control.</p>
-<p><a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/">Read the full API documentation.</a></p>
-<h2>Data streams that only generate what you need</h2>
-<p><code>AsyncIterator</code> allows functions to
-<strong>return multiple <em>asynchronously</em> and <em>lazily</em> created values</strong>.
-This adds a missing piece to JavaScript,
-which natively supports returning a single value synchronously
-and asynchronously (through <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"><code>Promise</code></a>),
-but multiple values only synchronously (through <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols"><code>Iterable</code></a>):</p>
-<table>
-  <tr>
-    <td>&nbsp;</td>
-    <th>single value</th>
-    <th>multiple values</th>
-  </tr>
-  <tr>
-    <th>synchronous</th>
-    <td><code>T getValue()</code></td>
-    <td><code>Iterable&lt;T&gt; getValues()</code></td>
-  </tr>
-  <tr>
-    <th>asynchronous</th>
-    <td><code>Promise&lt;T&gt; getValue()</code></td>
-    <td><strong><code>AsyncIterator&lt;T&gt; getValues()</code></strong></td>
-  </tr>
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>the items</p></td>
+        </tr>
+	
+	
+	</tbody>
 </table>
-<p>Like <code>Iterable</code>, <strong>an <code>AsyncIterator</code> only generates items when you ask it to</strong>.
-This contrast with patterns such as <a target="_blank" href="http://reactivex.io/intro.html"><code>Observable</code></a>,
-which are data-driven and don't wait for consumers to process items.</p>
-<h3>The asynchronous iterator interface</h3>
-<p>An asynchronous iterator is an object that exposes a series of data items by:</p>
-<ul>
-<li>implementing <a target="_blank" href="https://nodejs.org/api/events.html#events_class_eventemitter"><code>EventEmitter</code></a></li>
-<li>returning an item when you call <code>iterator.read</code> (yielding <code>null</code> when none is available at the moment)</li>
-<li>informing when new items might be available through <code>iterator.on('readable', callback)</code></li>
-<li>informing when no more items will become available through <code>iterator.on('end', callback)</code></li>
-<li>streaming all of its items when you register through <code>iterator.on('data', callback)</code></li>
-</ul>
-<p>Any object that conforms to the above conditions can be used with the AsyncIterator library
-(this includes <a target="_blank" href="https://nodejs.org/api/stream.html">Node.js Streams</a>).
-The <code>AsyncIterator</code> interface additionally exposes
-<a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html">several other methods and properties</a>.</p>
-<h2>Example: fetching Wikipedia links related to natural numbers</h2>
-<p>In the example below, we create an iterator of links found on Wikipedia pages for natural numbers.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var AsyncIterator = require('asynciterator');
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
-// Iterate over the natural numbers
-var numbers = new AsyncIterator.IntegerIterator({ start: 0, end: Infinity });
-// Transform these numbers into Wikipedia URLs
-var urls = numbers.map(function (number) {
-  return 'https://en.wikipedia.org/wiki/' + number;
-});
-// Fetch each corresponding Wikipedia page
-var pages = urls.transform(function (url, done) {
-  require('https').get(url, function (response) {
-    var page = '';
-    response.on('data', function (data) { page += data; });
-    response.on('end',  function () { pages._push(page); done(); });
-  });
-});
-// Extract the links from each page
-var links = pages.transform(function (page, done) {
-  var search = /href=&quot;([^&quot;]+)&quot;/g, match, resolve = require('url').resolve;
-  while (match = search.exec(page))
-    this._push(resolve('https://en.wikipedia.org/', match[1]));
-  done();
-});
-</code></pre>
-<p>We could display a link every 0.1 seconds:</p>
-<pre class="prettyprint source lang-JavaScript"><code>setInterval(function () {
-  var link = links.read();
-  if (link) console.log(link);
-}, 100);
-</code></pre>
-<p>Or we can get the first 30 links and display them:</p>
-<pre class="prettyprint source lang-JavaScript"><code>links.take(30).on('data', console.log);
-</code></pre>
-<p>In both cases, pages from Wikipedia will only be fetched when needed—the data consumer is in control.
-This is what makes <code>AsyncIterator</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy</a>.</p>
-<p>If we had implemented this using the <code>Observable</code> pattern,
-an entire flow of unnecessary pages would be fetched,
-because it is controlled by the data publisher instead.</p>
-<h2>Usage</h2>
-<p><code>AsyncIterator</code> implements the <a target="_blank" href="https://nodejs.org/api/events.html#events_class_eventemitter"><code>EventEmitter</code></a> interface
-and a superset of the <a target="_blank" href="https://nodejs.org/api/stream.html"><code>Stream</code></a> interface.</p>
-<h3>Consuming an AsyncIterator in on-demand mode</h3>
-<p>By default, an AsyncIterator is in <em>on-demand</em> mode,
-meaning it only generates items when asked to.</p>
-<p>The <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#read"><code>read</code> method</a> returns the next item,
-or <code>null</code> when no item is available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 2 });
-console.log(numbers.read()); // 1
-console.log(numbers.read()); // 2
-console.log(numbers.read()); // null
-</code></pre>
-<p>If you receive <code>null</code>,
-you should wait until the next <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:readable"><code>readable</code> event</a> before reading again.
-This event is not a guarantee that an item <em>will</em> be available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>links.on('readable', function () {
-  var link;
-  while (link = links.read())
-    console.log(link);
-});
-</code></pre>
-<p>The <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:end"><code>end</code> event</a> is emitted after you have read the last item from the iterator.</p>
-<h3>Consuming an AsyncIterator in flow mode</h3>
-<p>An AsyncIterator can be switched to <em>flow</em> mode by listening to the <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:data"><code>data</code> event</a>.
-In flow mode, iterators generate items as fast as possible.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 100 });
-numbers.on('data', function (number) { console.log('number', number); });
-numbers.on('end',  function () { console.log('all done!'); });
-</code></pre>
-<p>To switch back to on-demand mode, simply remove all <code>data</code> listeners.</p>
-<h3>Setting and reading properties</h3>
-<p>An AsyncIterator can have custom properties assigned to it,
-which are preserved when the iterator is cloned.
-This is useful to pass around metadata about the iterator.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator();
-numbers.setProperty('rate', 1234);
-console.log(numbers.getProperty('rate')); // 1234
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
-var clone = numbers.clone();
-console.log(clone.getProperty('rate'));   // 1234
+    
+    
 
-numbers.setProperty('rate', 4567);
-console.log(clone.getProperty('rate'));   // 4567
-</code></pre>
-<p>You can also attach a callback
-that will be called as soon as the property is set:</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator();
-numbers.getProperty('later', console.log);
-numbers.setProperty('later', 'value');
-// 'value'
-</code></pre>
-<h2>License</h2>
-<p>The asynciterator library is copyrighted by <a target="_blank" href="http://ruben.verborgh.org/">Ruben Verborgh</a>
-and released under the <a target="_blank" href="http://opensource.org/licenses/MIT">MIT License</a>.</p></article>
-    </section>
+    
 
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".single">
+            
+            <span class="type-signature static">static</span>module:asynciterator.single<span class="signature">(item)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1588
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator with a single item.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>the item</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".wrap">
+            
+            <span class="type-signature static">static</span>module:asynciterator.wrap<span class="signature">(<span class="optional">source</span>, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 1573
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator that wraps around a given iterator or readable stream.
+Use this to convert an iterator-like object into a full-featured AsyncIterator.
+After this operation, only read the returned iterator instead of the given one.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
+|
+
+<span class="param-type">Readable</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The source this iterator generates items from</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Settings of the iterator</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Type</th>
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            
+            <td class="type">
+            
+                        <a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>
+                        
+                    
+            </td>
+            <td class="description last">A new iterator with the items from the given iterator</td>
+        </tr>
+    
+    </tbody>
+</table>
+
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".event:data">
+            
+            module:asynciterator.event:data
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 120
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The iterator emits a <code>data</code> event with a new item as soon as it becomes available.
+When one or more listeners are attached to the <code>data</code> event,
+the iterator switches to <em>flow mode</em>,
+generating and emitting new items as fast as possible.
+This drains the source and might create backpressure on the consumers,
+so only subscribe to this event if this behavior is intended.
+In flow mode, don't use <a href="module-asynciterator.AsyncIterator.html#read">module:asynciterator.AsyncIterator#read</a>.
+To switch back to <em>on-demand mode</em>, remove all listeners from the <code>data</code> event.
+You can then obtain items through <code>read</code> again.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>The new item</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".event:end">
+            
+            module:asynciterator.event:end
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 236
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The <code>end</code> event is emitted after the last item of the iterator has been read.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".event:readable">
+            
+            module:asynciterator.event:readable
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.js, line 112
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>The iterator emits a <code>readable</code> event when it might have new items available
+after having had no items available right before this event.
+If the iterator is not in flow mode, items can be retrieved
+by calling <a href="module-asynciterator.AsyncIterator.html#read">module:asynciterator.AsyncIterator#read</a>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+</article>
+
+</section>  
 
 
 
