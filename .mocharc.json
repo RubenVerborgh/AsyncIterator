@@ -1,0 +1,6 @@
+{
+  "require": [
+    "test/setup"
+  ],
+  "timeout": 500
+}
