@@ -1,7 +1,10 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
+import {
+  AsyncIterator,
+  EmptyIterator,
+  empty,
+} from '..';
 
-const { EmptyIterator } = AsyncIterator;
+import { EventEmitter } from 'events';
 
 describe('EmptyIterator', () => {
   describe('The EmptyIterator function', () => {
@@ -24,7 +27,7 @@ describe('EmptyIterator', () => {
 
     describe('the result when called through `.empty`', () => {
       let instance;
-      before(() => { instance = AsyncIterator.empty(); });
+      before(() => { instance = empty(); });
 
       it('should be an EmptyIterator object', () => {
         instance.should.be.an.instanceof(EmptyIterator);

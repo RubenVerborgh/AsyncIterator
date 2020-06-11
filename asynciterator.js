@@ -1,5 +1,5 @@
-const { EventEmitter } = require('events');
-const queueMicrotask = require('queue-microtask');
+import { EventEmitter } from 'events';
+import queueMicrotask from 'queue-microtask';
 
 const STATES = ['INIT', 'OPEN', 'CLOSING', 'CLOSED', 'ENDED', 'DESTROYED'];
 const INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
@@ -8,7 +8,7 @@ const INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
   An asynchronous iterator provides pull-based access to a stream of objects.
   @extends EventEmitter
 */
-class AsyncIterator extends EventEmitter {
+export class AsyncIterator extends EventEmitter {
   /** Creates a new `AsyncIterator`. */
   constructor() {
     super();
@@ -571,7 +571,7 @@ for (const id in STATES)
   An iterator that doesn't emit any items.
   @extends AsyncIterator
 */
-class EmptyIterator extends AsyncIterator {
+export class EmptyIterator extends AsyncIterator {
   /** Creates a new `EmptyIterator`. */
   constructor() {
     super();
@@ -584,7 +584,7 @@ class EmptyIterator extends AsyncIterator {
   An iterator that emits a single item.
   @extends AsyncIterator
 */
-class SingletonIterator extends AsyncIterator {
+export class SingletonIterator extends AsyncIterator {
   /**
     Creates a new `SingletonIterator`.
     @param {object} item The item that will be emitted.
@@ -617,7 +617,7 @@ class SingletonIterator extends AsyncIterator {
   An iterator that emits the items of a given array.
   @extends AsyncIterator
 */
-class ArrayIterator extends AsyncIterator {
+export class ArrayIterator extends AsyncIterator {
   /**
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
@@ -661,7 +661,7 @@ class ArrayIterator extends AsyncIterator {
   An iterator that enumerates integers in a certain range.
   @extends AsyncIterator
 */
-class IntegerIterator extends AsyncIterator {
+export class IntegerIterator extends AsyncIterator {
   /**
     Creates a new `IntegerIterator`.
     @param {object} [options] Settings of the iterator
@@ -722,7 +722,7 @@ class IntegerIterator extends AsyncIterator {
   with a typically complex item generation process.
   @extends AsyncIterator
 */
-class BufferedIterator extends AsyncIterator {
+export class BufferedIterator extends AsyncIterator {
   /**
     Creates a new `BufferedIterator`.
     @param {object} [options] Settings of the iterator
@@ -994,7 +994,7 @@ class BufferedIterator extends AsyncIterator {
   This class serves as a base class for other iterators.
   @extends BufferedIterator
 */
-class TransformIterator extends BufferedIterator {
+export class TransformIterator extends BufferedIterator {
   /**
     Creates a new `TransformIterator`.
     @param {AsyncIterator|Readable} [source] The source this iterator generates items from
@@ -1155,7 +1155,7 @@ function destinationFillBuffer() {
   and simple transformation steps passed as arguments.
   @extends TransformIterator
 */
-class SimpleTransformIterator extends TransformIterator {
+export class SimpleTransformIterator extends TransformIterator {
   /**
     Creates a new `SimpleTransformIterator`.
     @param {AsyncIterator|Readable} [source] The source this iterator generates items from
@@ -1303,7 +1303,7 @@ Object.assign(SimpleTransformIterator.prototype, {
   with a different iterator.
   @extends TransformIterator
 */
-class MultiTransformIterator extends TransformIterator {
+export class MultiTransformIterator extends TransformIterator {
   /**
     Creates a new `MultiTransformIterator`.
     @param {AsyncIterator|Readable} [source] The source this iterator generates items from
@@ -1389,7 +1389,7 @@ class MultiTransformIterator extends TransformIterator {
   An iterator that copies items from another iterator.
   @extends TransformIterator
 */
-class ClonedIterator extends TransformIterator {
+export class ClonedIterator extends TransformIterator {
   /**
     Creates a new `ClonedIterator`.
     @param {AsyncIterator|Readable} [source] The source this iterator copies items from
@@ -1588,25 +1588,22 @@ class HistoryReader {
   }
 }
 
+/** Creates an empty iterator */
+export function empty() {
+  return new EmptyIterator();
+}
+
+/** Creates an iterator with a single item */
+export function single(item) {
+  return new SingletonIterator(item);
+}
+
+/** Creates an iterator for the given array */
+export function fromArray(array) {
+  return new ArrayIterator(array);
+}
 
 // Determines whether the given object is a function
 function isFunction(object) {
   return typeof object === 'function';
 }
-
-// Export all submodules
-module.exports = AsyncIterator;
-AsyncIterator.AsyncIterator = AsyncIterator;
-AsyncIterator.EmptyIterator = EmptyIterator;
-AsyncIterator.SingletonIterator = SingletonIterator;
-AsyncIterator.ArrayIterator = ArrayIterator;
-AsyncIterator.IntegerIterator = IntegerIterator;
-AsyncIterator.BufferedIterator = BufferedIterator;
-AsyncIterator.TransformIterator = TransformIterator;
-AsyncIterator.SimpleTransformIterator = SimpleTransformIterator;
-AsyncIterator.MultiTransformIterator = MultiTransformIterator;
-AsyncIterator.ClonedIterator = ClonedIterator;
-
-AsyncIterator.empty = () => new EmptyIterator();
-AsyncIterator.single = item => new SingletonIterator(item);
-AsyncIterator.fromArray = array => new ArrayIterator(array);

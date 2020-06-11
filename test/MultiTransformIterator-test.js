@@ -1,15 +1,15 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
-const queueMicrotask = require('queue-microtask');
-
-const {
+import {
+  AsyncIterator,
   MultiTransformIterator,
   TransformIterator,
   BufferedIterator,
   EmptyIterator,
   SingletonIterator,
   ArrayIterator,
-} = AsyncIterator;
+} from '..';
+
+import { EventEmitter } from 'events';
+import queueMicrotask from 'queue-microtask';
 
 describe('MultiTransformIterator', () => {
   describe('The MultiTransformIterator function', () => {

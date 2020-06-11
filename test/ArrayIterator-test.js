@@ -1,7 +1,10 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
+import {
+  AsyncIterator,
+  ArrayIterator,
+  fromArray,
+} from '..';
 
-const { ArrayIterator } = AsyncIterator;
+import { EventEmitter } from 'events';
 
 describe('ArrayIterator', () => {
   describe('The ArrayIterator function', () => {
@@ -24,7 +27,7 @@ describe('ArrayIterator', () => {
 
     describe('the result when called through `fromArray`', () => {
       let instance;
-      before(() => { instance = AsyncIterator.fromArray(); });
+      before(() => { instance = fromArray(); });
 
       it('should be an ArrayIterator object', () => {
         instance.should.be.an.instanceof(ArrayIterator);

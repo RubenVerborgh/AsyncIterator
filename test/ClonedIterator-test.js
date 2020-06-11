@@ -1,13 +1,13 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
-
-const {
+import {
+  AsyncIterator,
   ClonedIterator,
   TransformIterator,
   BufferedIterator,
   EmptyIterator,
   ArrayIterator,
-} = AsyncIterator;
+} from '..';
+
+import { EventEmitter } from 'events';
 
 describe('ClonedIterator', () => {
   describe('The ClonedIterator function', () => {

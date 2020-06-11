@@ -1,7 +1,10 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
+import {
+  AsyncIterator,
+  SingletonIterator,
+  single,
+} from '..';
 
-const { SingletonIterator } = AsyncIterator;
+import { EventEmitter } from 'events';
 
 describe('SingletonIterator', () => {
   describe('The SingletonIterator function', () => {
@@ -24,7 +27,7 @@ describe('SingletonIterator', () => {
 
     describe('the result when called through `single`', () => {
       let instance;
-      before(() => { instance = AsyncIterator.single(); });
+      before(() => { instance = single(); });
 
       it('should be a SingletonIterator object', () => {
         instance.should.be.an.instanceof(SingletonIterator);

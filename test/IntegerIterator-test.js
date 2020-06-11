@@ -1,7 +1,9 @@
-const AsyncIterator = require('../asynciterator');
-const { EventEmitter } = require('events');
+import {
+  AsyncIterator,
+  IntegerIterator,
+} from '..';
 
-const { IntegerIterator } = AsyncIterator;
+import { EventEmitter } from 'events';
 
 describe('IntegerIterator', () => {
   describe('The IntegerIterator function', () => {

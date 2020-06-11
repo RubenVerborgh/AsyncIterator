@@ -1,16 +1,12 @@
-const AsyncIterator = require('../asynciterator');
-const queueMicrotask = require('queue-microtask');
+import { AsyncIterator } from '..';
 
-const { EventEmitter } = require('events');
+import { EventEmitter } from 'events';
+import queueMicrotask from 'queue-microtask';
 
 describe('AsyncIterator', () => {
   describe('The AsyncIterator module', () => {
     describe('is a function', () => {
       AsyncIterator.should.be.a('function');
-    });
-
-    describe('exposes itself as the AsyncIterator property', () => {
-      AsyncIterator.AsyncIterator.should.equal(AsyncIterator);
     });
   });
 
