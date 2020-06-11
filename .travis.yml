@@ -8,6 +8,10 @@ node_js:
 env:
   - DEFAULT_NODE_VERSION=14
 
+branches:
+  except:
+    - gh-pages
+
 script:
   # Test code
   - npm run lint
