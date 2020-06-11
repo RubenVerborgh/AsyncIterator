@@ -1,4 +1,10 @@
-import { AsyncIterator } from '../asynciterator.js';
+import {
+  AsyncIterator,
+  OPEN,
+  CLOSED,
+  ENDED,
+  DESTROYED,
+} from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';
@@ -221,39 +227,39 @@ describe('AsyncIterator', () => {
 
     describe('when in OPEN state', () => {
       it('cannot transition to OPEN state', () => {
-        expect(iterator._changeState(AsyncIterator.OPEN)).to.be.false;
+        expect(iterator._changeState(OPEN)).to.be.false;
       });
 
       it('can transition to CLOSED state', () => {
-        expect(iterator._changeState(AsyncIterator.CLOSED)).to.be.true;
+        expect(iterator._changeState(CLOSED)).to.be.true;
       });
     });
 
     describe('when in CLOSED state', () => {
       before(() => {
-        iterator._changeState(AsyncIterator.CLOSED);
+        iterator._changeState(CLOSED);
       });
 
       it('cannot transition to CLOSED state', () => {
-        expect(iterator._changeState(AsyncIterator.CLOSED)).to.be.false;
+        expect(iterator._changeState(CLOSED)).to.be.false;
       });
 
       it('can transition to ENDED state', () => {
-        expect(iterator._changeState(AsyncIterator.ENDED)).to.be.true;
+        expect(iterator._changeState(ENDED)).to.be.true;
       });
     });
 
     describe('when in ENDED state', () => {
       before(() => {
-        iterator._changeState(AsyncIterator.ENDED);
+        iterator._changeState(ENDED);
       });
 
       it('cannot transition to ENDED state', () => {
-        expect(iterator._changeState(AsyncIterator.ENDED)).to.be.false;
+        expect(iterator._changeState(ENDED)).to.be.false;
       });
 
       it('cannot transition to DESTROYED state', () => {
-        expect(iterator._changeState(AsyncIterator.DESTROYED)).to.be.false;
+        expect(iterator._changeState(DESTROYED)).to.be.false;
       });
     });
   });

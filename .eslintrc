@@ -157,7 +157,7 @@
     new-parens: error,
     newline-per-chained-call: off,
     no-array-constructor: error,
-    no-bitwise: error,
+    no-bitwise: off,
     no-continue: off,
     no-control-regex: off,
     no-inline-comments: off,

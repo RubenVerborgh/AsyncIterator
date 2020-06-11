@@ -1,6 +1,7 @@
 import {
   AsyncIterator,
   BufferedIterator,
+  CLOSED,
 } from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1615,7 +1616,7 @@ describe('BufferedIterator', () => {
     before(() => {
       iterator = new BufferedIterator();
       iterator.close();
-      iterator._changeState(AsyncIterator.CLOSED);
+      iterator._changeState(CLOSED);
       sinon.spy(iterator, '_flush');
     });
 
