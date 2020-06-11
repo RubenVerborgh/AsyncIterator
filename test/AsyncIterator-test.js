@@ -4,7 +4,7 @@ import {
   CLOSED,
   ENDED,
   DESTROYED,
-} from '../asynciterator.js';
+} from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';

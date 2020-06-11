@@ -58,12 +58,17 @@ export const DESTROYED = 1 << 5;
   An asynchronous iterator provides pull-based access to a stream of objects.
   @extends module:asynciterator.EventEmitter
 */
-export class AsyncIterator extends EventEmitter {
+export class AsyncIterator<T> extends EventEmitter {
+  protected _state: number;
+  private _readable = false;
+  private _events?: { [name: string]: any };
+  protected _properties?: { [name: string]: any };
+  protected _propertyCallbacks?: { [name: string]: [(value: any) => void] };
+
   /** Creates a new `AsyncIterator`. */
-  constructor() {
+  constructor(initialState = OPEN) {
     super();
-    this._state = OPEN;
-    this._readable = false;
+    this._state = initialState;
     this.on('newListener', waitForDataListener);
   }
 
@@ -76,7 +81,7 @@ export class AsyncIterator extends EventEmitter {
     @returns {boolean} Whether the state was changed
     @emits module:asynciterator.AsyncIterator.end
   */
-  _changeState(newState, eventAsync) {
+  _changeState(newState: number, eventAsync = false) {
     // Validate the state change
     const valid = newState > this._state && this._state < ENDED;
     if (valid) {
@@ -105,7 +110,7 @@ export class AsyncIterator extends EventEmitter {
     When in flow mode, do not use the `read` method.
     @returns {object?} The next item, or `null` if none is available
   */
-  read() {
+  read(): T | null {
     return null;
   }
 
@@ -137,7 +142,7 @@ export class AsyncIterator extends EventEmitter {
     @param {Function} callback A function that will be called with each item
     @param {object?} self The `this` pointer for the callback
   */
-  forEach(callback, self) {
+  forEach(callback: (item: T) => void, self?: object) {
     this.on('data', self ? callback.bind(self) : callback);
   }
 
@@ -147,7 +152,7 @@ export class AsyncIterator extends EventEmitter {
     @param {string} eventName The name of the event
     @returns {boolean} Whether the iterator has listeners
   */
-  _hasListeners(eventName) {
+  _hasListeners(eventName: string) {
     return this._events && (eventName in this._events);
   }
 
@@ -157,7 +162,7 @@ export class AsyncIterator extends EventEmitter {
     @param {string} eventName The name of the event
     @param {Function} listener The listener to add
   */
-  _addSingleListener(eventName, listener) {
+  _addSingleListener(eventName: string, listener: (...args: any[]) => void) {
     const listeners = this._events && this._events[eventName];
     if (!listeners ||
         (isFunction(listeners) ? listeners !== listener : listeners.indexOf(listener) < 0))
@@ -186,7 +191,7 @@ export class AsyncIterator extends EventEmitter {
     @emits module:asynciterator.AsyncIterator.end
     @emits module:asynciterator.AsyncIterator.error Only if an error is passed.
   */
-  destroy(cause) {
+  destroy(cause?: Error) {
     if (!this.done) {
       this._destroy(cause, error => {
         cause = cause || error;
@@ -204,7 +209,7 @@ export class AsyncIterator extends EventEmitter {
     @param {?Error} cause The reason why the iterator is destroyed.
     @param {Function} callback A callback function with an optional error argument.
   */
-  _destroy(cause, callback) {
+  _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
     callback();
   }
 
@@ -216,7 +221,7 @@ export class AsyncIterator extends EventEmitter {
     @protected
     @emits module:asynciterator.AsyncIterator.end
   */
-  _end(destroy) {
+  _end(destroy = false) {
     if (this._changeState(destroy ? DESTROYED : ENDED)) {
       this._readable = false;
       this.removeAllListeners('readable');
@@ -318,10 +323,10 @@ export class AsyncIterator extends EventEmitter {
     If a callback is passed, it returns `undefined`
     and calls the callback with the property the moment it is set.
     @param {string} propertyName The name of the property to retrieve
-    @param {Function} [callback] A one-argument callback to receive the property value
+    @param {Function?} [callback] A one-argument callback to receive the property value
     @returns {object?} The value of the property (if set and no callback is given)
   */
-  getProperty(propertyName, callback) {
+  getProperty(propertyName: string, callback?: (value: any) => void): any {
     const properties = this._properties;
     // If no callback was passed, return the property value
     if (!callback)
@@ -348,12 +353,12 @@ export class AsyncIterator extends EventEmitter {
     @param {string} propertyName The name of the property to set
     @param {object?} value The new value of the property
   */
-  setProperty(propertyName, value) {
+  setProperty(propertyName: string, value: any) {
     const properties = this._properties || (this._properties = Object.create(null));
     properties[propertyName] = value;
     // Execute getter callbacks that were waiting for this property to be set
-    const propertyCallbacks = this._propertyCallbacks;
-    const callbacks = propertyCallbacks && propertyCallbacks[propertyName];
+    const propertyCallbacks = this._propertyCallbacks || {};
+    const callbacks = propertyCallbacks[propertyName];
     if (callbacks) {
       delete propertyCallbacks[propertyName];
       queueMicrotask(() => {
@@ -372,7 +377,8 @@ export class AsyncIterator extends EventEmitter {
     @returns {object} An object with property names as keys.
   */
   getProperties() {
-    const properties = this._properties, copy = {};
+    const properties = this._properties;
+    const copy : { [name: string] : any } = {};
     for (const name in properties)
       copy[name] = properties[name];
     return copy;
@@ -382,7 +388,7 @@ export class AsyncIterator extends EventEmitter {
     Sets all of the given properties.
     @param {object} properties Key/value pairs of properties to set
   */
-  setProperties(properties) {
+  setProperties(properties: { [name: string] : any }) {
     for (const propertyName in properties)
       this.setProperty(propertyName, properties[propertyName]);
   }
@@ -392,7 +398,7 @@ export class AsyncIterator extends EventEmitter {
     @param {module:asynciterator.AsyncIterator} source The iterator to copy from
     @param {Array} propertyNames List of property names to copy
   */
-  copyProperties(source, propertyNames) {
+  copyProperties(source: AsyncIterator<any>, propertyNames: [string]) {
     for (const propertyName of propertyNames) {
       source.getProperty(propertyName, value =>
         this.setProperty(propertyName, value));
@@ -415,19 +421,19 @@ export class AsyncIterator extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
-  transform(options) {
-    return new SimpleTransformIterator(this, options);
+  transform<D>(options: TransformOptions<T, D>) : AsyncIterator<D> {
+    return new SimpleTransformIterator<T, D>(this, options);
   }
 
   /**
     Maps items from this iterator using the given function.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Function} mapper A mapping function to call on this iterator's (remaining) items
+    @param {Function} map A mapping function to call on this iterator's (remaining) items
     @param {object?} self The `this` pointer for the mapping function
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
-  map(mapper, self) {
-    return this.transform({ map: self ? mapper.bind(self) : mapper });
+  map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
+    return this.transform({ map: self ? map.bind(self) : map });
   }
 
   /**
@@ -437,7 +443,7 @@ export class AsyncIterator extends EventEmitter {
     @param {object?} self The `this` pointer for the filter function
     @returns {module:asynciterator.AsyncIterator} A new iterator that filters items from this iterator
   */
-  filter(filter, self) {
+  filter(filter: (item: T) => boolean, self: any): AsyncIterator<T> {
     return this.transform({ filter: self ? filter.bind(self) : filter });
   }
 
@@ -447,7 +453,7 @@ export class AsyncIterator extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} items Items to insert before this iterator's (remaining) items
     @returns {module:asynciterator.AsyncIterator} A new iterator that prepends items to this iterator
   */
-  prepend(items) {
+  prepend(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
     return this.transform({ prepend: items });
   }
 
@@ -457,7 +463,7 @@ export class AsyncIterator extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} items Items to insert after this iterator's (remaining) items
     @returns {module:asynciterator.AsyncIterator} A new iterator that appends items to this iterator
   */
-  append(items) {
+  append(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
     return this.transform({ append: items });
   }
 
@@ -468,7 +474,7 @@ export class AsyncIterator extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} append Items to insert after this iterator's (remaining) items
     @returns {module:asynciterator.AsyncIterator} A new iterator that appends and prepends items to this iterator
   */
-  surround(prepend, append) {
+  surround(prepend: T[] | AsyncIterator<T>, append: T[] | AsyncIterator<T>): AsyncIterator<T> {
     return this.transform({ prepend, append });
   }
 
@@ -478,7 +484,7 @@ export class AsyncIterator extends EventEmitter {
     @param {integer} offset The number of items to skip
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
-  skip(offset) {
+  skip(offset: number): AsyncIterator<T> {
     return this.transform({ offset });
   }
 
@@ -488,7 +494,7 @@ export class AsyncIterator extends EventEmitter {
     @param {integer} limit The maximum number of items
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
-  take(limit) {
+  take(limit: number): AsyncIterator<T> {
     return this.transform({ limit });
   }
 
@@ -499,7 +505,7 @@ export class AsyncIterator extends EventEmitter {
     @param {integer} end Index of the last item to return
     @returns {module:asynciterator.AsyncIterator} A new iterator with items in the given range
   */
-  range(start, end) {
+  range(start: number, end: number): AsyncIterator<T> {
     return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
   }
 
@@ -510,14 +516,14 @@ export class AsyncIterator extends EventEmitter {
     After this operation, only read the returned copies instead of the original iterator.
     @returns {module:asynciterator.AsyncIterator} A new iterator that contains all future items of this iterator
   */
-  clone() {
-    return new ClonedIterator(this);
+  clone(): AsyncIterator<T> {
+    return new ClonedIterator<T>(this);
   }
 }
 
 
 // Starts emitting `data` events when `data` listeners are added
-function waitForDataListener(eventName) {
+function waitForDataListener(this: AsyncIterator<any>, eventName: string) {
   if (eventName === 'data') {
     this.removeListener('newListener', waitForDataListener);
     this._addSingleListener('readable', emitData);
@@ -526,7 +532,7 @@ function waitForDataListener(eventName) {
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
-function emitData() {
+function emitData(this: AsyncIterator<any>) {
   // While there are `data` listeners and items, emit them
   let item;
   while (this._hasListeners('data') && (item = this.read()) !== null)
@@ -543,7 +549,7 @@ function emitData() {
   An iterator that doesn't emit any items.
   @extends module:asynciterator.AsyncIterator
 */
-export class EmptyIterator extends AsyncIterator {
+export class EmptyIterator<T> extends AsyncIterator<T> {
   /** Creates a new `EmptyIterator`. */
   constructor() {
     super();
@@ -556,12 +562,14 @@ export class EmptyIterator extends AsyncIterator {
   An iterator that emits a single item.
   @extends module:asynciterator.AsyncIterator
 */
-export class SingletonIterator extends AsyncIterator {
+export class SingletonIterator<T> extends AsyncIterator<T> {
+  private _item: T | null;
+
   /**
     Creates a new `SingletonIterator`.
     @param {object} item The item that will be emitted.
   */
-  constructor(item) {
+  constructor(item: T) {
     super();
     this._item = item;
     if (item === null)
@@ -589,17 +597,22 @@ export class SingletonIterator extends AsyncIterator {
   An iterator that emits the items of a given array.
   @extends module:asynciterator.AsyncIterator
 */
-export class ArrayIterator extends AsyncIterator {
+export class ArrayIterator<T> extends AsyncIterator<T> {
+  private _buffer?: T[];
+
   /**
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items) {
+  constructor(items?: T[]) {
     super();
-    if (!(items && items.length > 0))
-      return this.close();
-    this._buffer = Array.prototype.slice.call(items);
-    this.readable = true;
+    if (!items?.length) {
+      this.close();
+    }
+    else {
+      this._buffer = Array.prototype.slice.call(items);
+      this.readable = true;
+    }
   }
 
   /* Reads an item from the iterator. */
@@ -607,7 +620,7 @@ export class ArrayIterator extends AsyncIterator {
     const buffer = this._buffer;
     let item = null;
     if (buffer) {
-      item = buffer.shift();
+      item = buffer.shift() as T;
       if (!buffer.length) {
         delete this._buffer;
         this.close();
@@ -622,7 +635,7 @@ export class ArrayIterator extends AsyncIterator {
   }
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
-  _destroy(error, callback) {
+  _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
     delete this._buffer;
     callback();
   }
@@ -633,7 +646,11 @@ export class ArrayIterator extends AsyncIterator {
   An iterator that enumerates integers in a certain range.
   @extends module:asynciterator.AsyncIterator
 */
-export class IntegerIterator extends AsyncIterator {
+export class IntegerIterator extends AsyncIterator<number> {
+  private _next: number;
+  private _step: number;
+  private _last: number;
+
   /**
     Creates a new `IntegerIterator`.
     @param {object} [options] Settings of the iterator
@@ -641,7 +658,8 @@ export class IntegerIterator extends AsyncIterator {
     @param {integer} [options.end=Infinity] The last number to emit
     @param {integer} [options.step=1] The increment between two numbers
   */
-  constructor({ start = 0, step = 1, end } = {}) {
+  constructor({ start = 0, step = 1, end } :
+      { start?: number, step?: number, end?: number } = {}) {
     super();
 
     // Determine the first number
@@ -657,8 +675,8 @@ export class IntegerIterator extends AsyncIterator {
     // Determine the last number
     const ascending = step >= 0;
     const direction = ascending ? Infinity : -Infinity;
-    if (Number.isFinite(end))
-      end = Math.trunc(end);
+    if (Number.isFinite(end as number))
+      end = Math.trunc(end as number);
     else if (end !== -direction)
       end = direction;
     this._last = end;
@@ -694,7 +712,12 @@ export class IntegerIterator extends AsyncIterator {
   with a typically complex item generation process.
   @extends module:asynciterator.AsyncIterator
 */
-export class BufferedIterator extends AsyncIterator {
+export class BufferedIterator<T> extends AsyncIterator<T> {
+  private _buffer: T[] = [];
+  private _maxBufferSize = 4;
+  protected _reading = true;
+  protected _pushedCount = 0;
+
   /**
     Creates a new `BufferedIterator`.
     @param {object} [options] Settings of the iterator
@@ -702,16 +725,8 @@ export class BufferedIterator extends AsyncIterator {
     @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
   */
   constructor({ maxBufferSize = 4, autoStart = true } = {}) {
-    super();
-
-    // Set up the internal buffer
-    this._state = INIT;
-    this._buffer = [];
-    this._pushedCount = 0;
+    super(INIT);
     this.maxBufferSize = maxBufferSize;
-
-    // Acquire reading lock to read initialization items
-    this._reading = true;
     queueMicrotask(() => this._init(autoStart));
   }
 
@@ -746,7 +761,7 @@ export class BufferedIterator extends AsyncIterator {
     @protected
     @param {boolean} autoStart Whether reading of items should immediately start after OPEN.
   */
-  _init(autoStart) {
+  _init(autoStart: boolean) {
     // Perform initialization tasks
     let doneCalled = false;
     this._reading = true;
@@ -773,7 +788,7 @@ export class BufferedIterator extends AsyncIterator {
     @protected
     @param {function} done To be called when initialization is complete
   */
-  _begin(done) {
+  _begin(done: () => void) {
     done();
   }
 
@@ -791,7 +806,7 @@ export class BufferedIterator extends AsyncIterator {
     const buffer = this._buffer;
     let item;
     if (buffer.length !== 0) {
-      item = buffer.shift();
+      item = buffer.shift() as T;
     }
     else {
       item = null;
@@ -818,7 +833,7 @@ export class BufferedIterator extends AsyncIterator {
     @param {integer} count The number of items to generate
     @param {function} done To be called when reading is complete
   */
-  _read(count, done) {
+  _read(count: number, done: () => void) {
     done();
   }
 
@@ -828,7 +843,7 @@ export class BufferedIterator extends AsyncIterator {
     @param {object} item The item to add
     @emits module:asynciterator.AsyncIterator.readable
   */
-  _push(item) {
+  _push(item: T) {
     if (!this.done) {
       this._pushedCount++;
       this._buffer.push(item);
@@ -843,7 +858,7 @@ export class BufferedIterator extends AsyncIterator {
     @emits module:asynciterator.AsyncIterator.readable
   */
   _fillBuffer() {
-    let neededItems;
+    let neededItems: number;
     // Avoid recursive reads
     if (this._reading) {
       // Do nothing
@@ -936,7 +951,7 @@ export class BufferedIterator extends AsyncIterator {
   }
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
-  _destroy(error, callback) {
+  _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
     this._buffer = [];
     callback();
   }
@@ -948,7 +963,7 @@ export class BufferedIterator extends AsyncIterator {
     @protected
     @param {function} done To be called when termination is complete
   */
-  _flush(done) {
+  _flush(done: () => void) {
     done();
   }
 
@@ -962,13 +977,18 @@ export class BufferedIterator extends AsyncIterator {
   }
 }
 
+type Source<S> = AsyncIterator<S> & { _destination: TransformIterator<any, any> };
 
 /**
   An iterator that generates items based on a source iterator.
   This class serves as a base class for other iterators.
   @extends module:asynciterator.BufferedIterator
 */
-export class TransformIterator extends BufferedIterator {
+export class TransformIterator<S, D = S> extends BufferedIterator<D> {
+  protected _source?: Source<S>;
+  protected _destroySource: boolean;
+  protected _optional: boolean;
+
   /**
     Creates a new `TransformIterator`.
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
@@ -979,7 +999,9 @@ export class TransformIterator extends BufferedIterator {
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
   */
-  constructor(source, options = source || {}) {
+  constructor(source?: AsyncIterator<S>,
+              options: TransformIteratorOptions<S> =
+                source as TransformIteratorOptions<S> || {}) {
     super(options);
 
     // Initialize source and settings
@@ -995,13 +1017,13 @@ export class TransformIterator extends BufferedIterator {
     The source this iterator generates items from.
     @type module:asynciterator.AsyncIterator
   */
-  get source() {
+  get source() : AsyncIterator<S> | undefined {
     return this._source;
   }
 
-  set source(source) {
+  set source(value: AsyncIterator<S> | undefined) {
     // Validate and set source
-    this._source = this._validateSource(source);
+    const source = this._source = this._validateSource(value);
     source._destination = this;
 
     // Close this iterator if the source has already ended
@@ -1022,20 +1044,20 @@ export class TransformIterator extends BufferedIterator {
     @param {object} source The source to validate
     @param {boolean} allowDestination Whether the source can already have a destination
   */
-  _validateSource(source, allowDestination) {
+  _validateSource(source?: AsyncIterator<S>, allowDestination = false) {
     if (this._source)
       throw new Error('The source cannot be changed after it has been set');
     if (!source || !isFunction(source.read) || !isFunction(source.on))
       throw new Error(`Invalid source: ${ source}`);
-    if (!allowDestination && source._destination)
+    if (!allowDestination && (source as any)._destination)
       throw new Error('The source already has a destination');
-    return source;
+    return source as Source<S>;
   }
 
   /**
     Tries to read a transformed item.
   */
-  _read(count, done) {
+  _read(count: number, done: () => void) {
     const next = () => {
       // Continue transforming until at least `count` items have been pushed
       if (this._pushedCount < count && !this.closed)
@@ -1049,7 +1071,7 @@ export class TransformIterator extends BufferedIterator {
   /**
     Reads a transforms an item
   */
-  _readAndTransform(next, done) {
+  _readAndTransform(next: () => void, done: () => void) {
     // If the source exists and still can read items,
     // try to read and transform the next item.
     const source = this._source;
@@ -1067,11 +1089,11 @@ export class TransformIterator extends BufferedIterator {
     Tries to transform the item;
     if the transformation yields no items, pushes the original item.
   */
-  _optionalTransform(item, done) {
+  _optionalTransform(item: S, done: () => void) {
     const pushedCount = this._pushedCount;
     this._transform(item, () => {
       if (pushedCount === this._pushedCount)
-        this._push(item);
+        this._push(item as any as D);
       done();
     });
   }
@@ -1084,8 +1106,8 @@ export class TransformIterator extends BufferedIterator {
     @param {object} item The last read item from the source
     @param {function} done To be called when reading is complete
   */
-  _transform(item, done) {
-    this._push(item);
+  _transform(item: S, done: () => void) {
+    this._push(item as any as D);
     done();
   }
 
@@ -1098,7 +1120,7 @@ export class TransformIterator extends BufferedIterator {
   }
 
   /* Cleans up the source iterator and ends. */
-  _end(destroy) {
+  _end(destroy: boolean) {
     const source = this._source;
     if (source) {
       source.removeListener('end', destinationCloseWhenDone);
@@ -1112,13 +1134,13 @@ export class TransformIterator extends BufferedIterator {
   }
 }
 
-function destinationEmitError(error) {
+function destinationEmitError(this: Source<any>, error: Error) {
   this._destination.emit('error', error);
 }
-function destinationCloseWhenDone() {
+function destinationCloseWhenDone(this: Source<any>) {
   this._destination._closeWhenDone();
 }
-function destinationFillBuffer() {
+function destinationFillBuffer(this: Source<any>) {
   this._destination._fillBuffer();
 }
 
@@ -1128,7 +1150,14 @@ function destinationFillBuffer() {
   and simple transformation steps passed as arguments.
   @extends module:asynciterator.TransformIterator
 */
-export class SimpleTransformIterator extends TransformIterator {
+export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
+  private _offset = 0;
+  private _limit = Infinity;
+  private _prepender?: AsyncIterator<D>;
+  private _appender?: AsyncIterator<D>;
+  private _filter = (item: S) => true;
+  private _map?: (item: S) => D;
+
   /**
     Creates a new `SimpleTransformIterator`.
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
@@ -1145,8 +1174,10 @@ export class SimpleTransformIterator extends TransformIterator {
     @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
     @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
   */
-  constructor(source, options) {
-    super(source, options);
+  constructor(source: AsyncIterator<S>,
+              options: TransformOptions<S, D> |
+                       TransformOptions<S, D> & ((item: S, done: () => void) => void)) {
+    super(source, options as TransformIteratorOptions<S>);
 
     // Set transformation steps from the options
     options = options || !isFunction(source && source.read) && source;
@@ -1158,26 +1189,25 @@ export class SimpleTransformIterator extends TransformIterator {
         this._limit = 0;
       }
       else {
-        if (Number.isFinite(offset))
-          this._offset = Math.max(Math.trunc(offset), 0);
-        if (Number.isFinite(limit))
-          this._limit = Math.max(Math.trunc(limit), 0);
+        if (Number.isFinite(offset as number))
+          this._offset = Math.max(Math.trunc(offset as number), 0);
+        if (Number.isFinite(limit as number))
+          this._limit = Math.max(Math.trunc(limit as number), 0);
         if (isFunction(filter))
           this._filter = filter;
         if (isFunction(map))
           this._map = map;
-        if (isFunction(transform))
-          this._transform = transform;
+        this._transform = isFunction(transform) ? transform : null as any;
       }
       if (prepend)
-        this._prepender = prepend.on ? prepend : new ArrayIterator(prepend);
+        this._prepender = isEventEmitter(prepend) ? prepend : fromArray(prepend);
       if (append)
-        this._appender = append.on ? append : new ArrayIterator(append);
+        this._appender = isEventEmitter(append) ? append : fromArray(append);
     }
   }
 
   /* Tries to read and transform items */
-  _read(count, done) {
+  _read(count: number, done: () => void) {
     const next = () => this._readAndTransformSimple(count, nextAsync, done);
     function nextAsync() {
       queueMicrotask(next);
@@ -1186,7 +1216,7 @@ export class SimpleTransformIterator extends TransformIterator {
   }
 
   /* Reads and transform items */
-  _readAndTransformSimple(count, next, done) {
+  _readAndTransformSimple(count: number, next: () => void, done: () => void) {
     // Verify we have a readable source
     const source = this._source;
     let item;
@@ -1205,22 +1235,22 @@ export class SimpleTransformIterator extends TransformIterator {
         continue;
 
       // Synchronously map the item
-      const mappedItem = this._map === null ? item : this._map(item);
+      const mappedItem = typeof this._map === 'undefined' ? item : this._map(item);
       // Skip `null` items, pushing the original item if the mapping was optional
       if (mappedItem === null) {
         if (this._optional)
-          this._push(item);
+          this._push(item as any as D);
       }
       // Skip the asynchronous phase if no transformation was specified
-      else if (this._transform === null) {
-        this._push(mappedItem);
+      else if (!isFunction(this._transform)) {
+        this._push(mappedItem as D);
       }
       // Asynchronously transform the item, and wait for `next` to call back
       else {
         if (!this._optional)
-          this._transform(mappedItem, next);
+          this._transform(mappedItem as S, next);
         else
-          this._optionalTransform(mappedItem, next);
+          this._optionalTransform(mappedItem as S, next);
         return;
       }
 
@@ -1232,20 +1262,20 @@ export class SimpleTransformIterator extends TransformIterator {
   }
 
   // Prepends items to the iterator
-  _begin(done) {
+  _begin(done: () => void) {
     this._insert(this._prepender, done);
     delete this._prepender;
   }
 
   // Appends items to the iterator
-  _flush(done) {
+  _flush(done: () => void) {
     this._insert(this._appender, done);
     delete this._appender;
   }
 
   // Inserts items in the iterator
-  _insert(inserter, done) {
-    const push = item => this._push(item);
+  _insert(inserter: AsyncIterator<D> | undefined, done: () => void) {
+    const push = (item: D) => this._push(item);
     if (!inserter || inserter.ended) {
       done();
     }
@@ -1254,21 +1284,12 @@ export class SimpleTransformIterator extends TransformIterator {
       inserter.on('end', end);
     }
     function end() {
-      inserter.removeListener('data', push);
-      inserter.removeListener('end', end);
+      (inserter as AsyncIterator<D>).removeListener('data', push);
+      (inserter as AsyncIterator<D>).removeListener('end', end);
       done();
     }
   }
 }
-
-// Default settings
-Object.assign(SimpleTransformIterator.prototype, {
-  _offset: 0,
-  _limit: Infinity,
-  _map: null,
-  _transform: null,
-  _filter: () => true,
-});
 
 
 /**
@@ -1276,45 +1297,38 @@ Object.assign(SimpleTransformIterator.prototype, {
   with a different iterator.
   @extends module:asynciterator.TransformIterator
 */
-export class MultiTransformIterator extends TransformIterator {
-  /**
-    Creates a new `MultiTransformIterator`.
-    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
-    @param {object} [options] Settings of the iterator
-  */
-  constructor(source, options) {
-    super(source, options);
-    this._transformerQueue = [];
-  }
+export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
+  private _transformerQueue: { item: S | null, transformer: Source<D> }[] = [];
 
   /* Tries to read and transform items */
-  _read(count, done) {
+  _read(count: number, done: () => void) {
     // Remove transformers that have ended
     const transformerQueue = this._transformerQueue,
           source = this._source, optional = this._optional;
-    let item, head, transformer;
+    let head, item;
     while ((head = transformerQueue[0]) && head.transformer.ended) {
       // If transforming is optional, push the original item if none was pushed
       if (optional && head.item !== null) {
         count--;
-        this._push(head.item);
+        this._push(head.item as any as D);
       }
       // Remove listeners from the transformer
-      head = transformerQueue.shift();
-      transformer = head.transformer;
+      transformerQueue.shift();
+      const { transformer } = head;
       transformer.removeListener('end', destinationFillBuffer);
       transformer.removeListener('readable', destinationFillBuffer);
       transformer.removeListener('error', destinationEmitError);
     }
 
     // Create new transformers if there are less than the maximum buffer size
-    while (source && !source.ended && transformerQueue.length < this._maxBufferSize) {
+    while (source && !source.ended && transformerQueue.length < this.maxBufferSize) {
       // Read an item to create the next transformer
-      item = this._source.read();
+      item = source.read();
       if (item === null)
         break;
       // Create the transformer and listen to its events
-      transformer = this._createTransformer(item) || new EmptyIterator();
+      const transformer = (this._createTransformer(item) ||
+        new EmptyIterator()) as Source<D>;
       transformer._destination = this;
       transformer.on('end', destinationFillBuffer);
       transformer.on('readable', destinationFillBuffer);
@@ -1325,7 +1339,7 @@ export class MultiTransformIterator extends TransformIterator {
     // Try to read `count` items from the transformer
     head = transformerQueue[0];
     if (head) {
-      transformer = head.transformer;
+      const { transformer } = head;
       while (count-- > 0 && (item = transformer.read()) !== null) {
         this._push(item);
         // If a transformed item was pushed, no need to push the original anymore
@@ -1345,8 +1359,8 @@ export class MultiTransformIterator extends TransformIterator {
     @param {object} item The last read item from the source
     @returns {module:asynciterator.AsyncIterator} An iterator that transforms the given item
   */
-  _createTransformer(item) {
-    return new SingletonIterator(item);
+  _createTransformer(item: S): AsyncIterator<D> {
+    return new SingletonIterator<D>(item as any as D);
   }
 
   /* Closes the iterator when pending items are transformed. */
@@ -1362,15 +1376,16 @@ export class MultiTransformIterator extends TransformIterator {
   An iterator that copies items from another iterator.
   @extends module:asynciterator.TransformIterator
 */
-export class ClonedIterator extends TransformIterator {
+export class ClonedIterator<T> extends TransformIterator<T> {
+  private _readPosition = 0;
+
   /**
     Creates a new `ClonedIterator`.
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator copies items from
   */
-  constructor(source) {
+  constructor(source: AsyncIterator<T>) {
     super(source, { autoStart: false });
     this._reading = false;
-    this._readPosition = 0;
   }
 
   _init() {
@@ -1383,18 +1398,18 @@ export class ClonedIterator extends TransformIterator {
   }
 
   // The source this iterator copies items from
-  get source() {
+  get source(): AsyncIterator<T> | undefined {
     return this._source;
   }
 
-  set source(source) {
+  set source(value: AsyncIterator<T> | undefined) {
     // Validate and set the source
-    let history = source && source._destination;
-    this._validateSource(source, !history || history instanceof HistoryReader);
-    this._source = source;
+    let history = (value && (value as any)._destination) as HistoryReader<T>;
+    const source = this._source =
+      this._validateSource(value, !history || history instanceof HistoryReader);
     // Create a history reader for the source if none already existed
     if (!history)
-      history = source._destination = new HistoryReader(source);
+      history = source._destination = new HistoryReader<T>(source) as any;
 
     // Close this clone if history is empty and the source has ended
     if (history.endsAt(0)) {
@@ -1413,28 +1428,30 @@ export class ClonedIterator extends TransformIterator {
     for (const propertyName in propertyCallbacks) {
       const callbacks = propertyCallbacks[propertyName];
       for (const callback of callbacks)
-        this._getSourceProperty(source, propertyName, callback);
+        this._getSourceProperty(propertyName, callback);
     }
   }
 
   // Retrieves the property with the given name from the clone or its source.
-  getProperty(propertyName, callback) {
+  getProperty(propertyName: string, callback?: (value: any) => void): any {
     const properties = this._properties, source = this._source,
           hasProperty = properties && (propertyName in properties);
     // If no callback was passed, return the property value
-    if (!callback)
-      return hasProperty ? properties[propertyName] : source && source.getProperty(propertyName);
+    if (!callback) {
+      return hasProperty ? properties && properties[propertyName] :
+        source && source.getProperty(propertyName);
+    }
     // Try to look up the property in this clone
     super.getProperty(propertyName, callback);
     // If the property is not set on this clone, it might become set on the source first
     if (source && !hasProperty)
-      this._getSourceProperty(source, propertyName, callback);
+      this._getSourceProperty(propertyName, callback);
     return undefined;
   }
 
   // Retrieves the property with the given name from the source
-  _getSourceProperty(source, propertyName, callback) {
-    source.getProperty(propertyName, value => {
+  _getSourceProperty(propertyName: string, callback: (value: any) => void) {
+    (this._source as AsyncIterator<T>).getProperty(propertyName, value => {
       // Only send the source's property if it was not set on the clone in the meantime
       if (!this._properties || !(propertyName in this._properties))
         callback(value);
@@ -1443,7 +1460,8 @@ export class ClonedIterator extends TransformIterator {
 
   // Retrieves all properties of the iterator and its source.
   getProperties() {
-    const base = this._source ? this._source.getProperties() : {}, properties = this._properties;
+    const base = this._source ? this._source.getProperties() : {},
+          properties = this._properties;
     for (const name in properties)
       base[name] = properties[name];
     return base;
@@ -1461,7 +1479,7 @@ export class ClonedIterator extends TransformIterator {
     let item = null;
     if (!this.done && source) {
       // Try to read an item at the current point in history
-      const history = source._destination;
+      const history = source._destination as any as HistoryReader<T>;
       if ((item = history.readAt(this._readPosition)) !== null)
         this._readPosition++;
       else
@@ -1474,9 +1492,9 @@ export class ClonedIterator extends TransformIterator {
   }
 
   /* End the iterator and cleans up. */
-  _end(destroy) {
+  _end(destroy: boolean) {
     // Unregister from a possible history reader
-    const history = this._source && this._source._destination;
+    const history = this._source?._destination as any as HistoryReader<T>;
     if (history)
       history.unregister(this);
 
@@ -1488,31 +1506,32 @@ export class ClonedIterator extends TransformIterator {
 
 
 // Stores the history of a source, so it can be cloned
-class HistoryReader {
-  constructor(source) {
-    this._source = source;
-    this._clones = null;
-    this._history = [];
+class HistoryReader<T> {
+  private _source: AsyncIterator<T>;
+  private _clones: ClonedIterator<T>[] | null = null;
+  private _history: T[] = [];
 
+  constructor(source: AsyncIterator<T>) {
     // If the source can still emit items, set up cloning
+    this._source = source;
     if (!source.ended) {
       // When the source becomes readable, makes all clones readable
       const setReadable = () => {
-        for (const clone of this._clones)
+        for (const clone of this._clones as ClonedIterator<T>[])
           clone.readable = true;
       };
 
       // When the source errors, re-emits the error
-      const emitError = error => {
-        for (const clone of this._clones)
+      const emitError = (error: Error) => {
+        for (const clone of this._clones as ClonedIterator<T>[])
           clone.emit('error', error);
       };
 
       // When the source ends, closes all clones that are fully read
       const end = () => {
         // Close the clone if all items had been emitted
-        for (const clone of this._clones) {
-          if (clone._readPosition === this._history.length)
+        for (const clone of this._clones as ClonedIterator<T>[]) {
+          if ((clone as any)._readPosition === this._history.length)
             clone.close();
         }
         this._clones = null;
@@ -1532,19 +1551,19 @@ class HistoryReader {
   }
 
   // Registers a clone for history updates
-  register(clone) {
+  register(clone: ClonedIterator<T>) {
     if (this._clones !== null)
       this._clones.push(clone);
   }
 
   // Unregisters a clone for history updates
-  unregister(clone) {
+  unregister(clone: ClonedIterator<T>) {
     if (this._clones !== null)
       this._clones = this._clones.filter(c => c !== clone);
   }
 
   // Tries to read the item at the given history position
-  readAt(pos) {
+  readAt(pos: number) {
     let item = null;
     // Retrieve an item from history when available
     if (pos < this._history.length)
@@ -1556,7 +1575,7 @@ class HistoryReader {
   }
 
   // Determines whether the given position is the end of the source
-  endsAt(pos) {
+  endsAt(pos: number) {
     return this._source.ended && this._history.length === pos;
   }
 }
@@ -1570,34 +1589,61 @@ class HistoryReader {
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap(source, options) {
-  return new TransformIterator(source, options);
+export function wrap<T>(source: EventEmitter, options?: TransformIteratorOptions<T>) {
+  return new TransformIterator<T>(source as AsyncIterator<T>, options);
 }
 
 /**
-   Creates an empty iterator.
+  Creates an empty iterator.
  */
-export function empty() {
-  return new EmptyIterator();
+export function empty<T>() {
+  return new EmptyIterator<T>();
 }
 
 /**
   Creates an iterator with a single item.
   @param {object} item the item
  */
-export function single(item) {
-  return new SingletonIterator(item);
+export function single<T>(item: T) {
+  return new SingletonIterator<T>(item);
 }
 
 /**
-   Creates an iterator for the given array.
-   @param {Array} items the items
+  Creates an iterator for the given array.
+  @param {Array} items the items
  */
-export function fromArray(items) {
-  return new ArrayIterator(items);
+export function fromArray<T>(items: T[]) {
+  return new ArrayIterator<T>(items);
 }
 
 // Determines whether the given object is a function
-function isFunction(object) {
+function isFunction(object: any): object is Function {
   return typeof object === 'function';
+}
+
+// Determines whether the given object is an EventEmitter
+function isEventEmitter(object: any): object is EventEmitter {
+  return typeof object.on === 'function';
+}
+
+export interface BufferedIteratorOptions {
+  maxBufferSize?: number;
+  autoStart?: boolean;
+}
+
+export interface TransformIteratorOptions<S> extends BufferedIteratorOptions {
+  source?: AsyncIterator<S>;
+  optional?: boolean;
+  destroySource?: boolean;
+}
+
+export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
+  offset?: number;
+  limit?: number;
+  prepend?: D[] | AsyncIterator<D>;
+  append?: D[] | AsyncIterator<D>;
+
+  filter?: (item: S) => boolean;
+  map?: (item: S) => D;
+  transform?: (item: S, done: () => void) => void;
 }

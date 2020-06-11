@@ -9,5 +9,12 @@
     "default": {
       "outputSourceFiles": false
     }
+  },
+  "source": {
+    "include": [
+      "README.md",
+      "asynciterator.mjs"
+    ],
+    "includePattern": ".+\\.mjs"
   }
 }

@@ -5,7 +5,7 @@ import {
   BufferedIterator,
   EmptyIterator,
   ArrayIterator,
-} from '../asynciterator.js';
+} from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
 

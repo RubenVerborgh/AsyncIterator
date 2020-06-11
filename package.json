@@ -6,21 +6,25 @@
   "type": "module",
   "main": "./asynciterator.cjs",
   "exports": {
-    "import": "./asynciterator.js",
+    "import": "./asynciterator.mjs",
     "require": "./asynciterator.cjs"
   },
-  "module": "./asynciterator.js",
+  "module": "./asynciterator.mjs",
   "sideEffects": false,
   "files": [
-    "asynciterator.js",
+    "asynciterator.mjs",
     "asynciterator.cjs"
   ],
   "scripts": {
-    "build": "babel asynciterator.js > asynciterator.cjs",
+    "build": "npm run build:module && npm run build:commonjs",
+    "build:module": "tsc --module es2015 && mv asynciterator.js asynciterator.mjs",
+    "build:commonjs": "tsc --module commonjs && mv asynciterator.js asynciterator.cjs",
     "prepare": "npm run build",
-    "test": "c8 mocha",
-    "lint": "eslint *.js test",
-    "docs": "jsdoc -c jsdoc.json README.md *.js"
+    "test": "npm run build:module && npm run mocha",
+    "mocha": "c8 mocha",
+    "lint": "eslint asynciterator.ts test",
+    "docs": "npm run build:module && npm run jsdoc",
+    "jsdoc": "jsdoc -c jsdoc.json"
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
@@ -32,14 +36,18 @@
     "@babel/core": "^7.10.2",
     "@babel/plugin-transform-modules-commonjs": "^7.10.1",
     "@babel/register": "^7.10.1",
+    "@types/node": "^14.0.13",
+    "@typescript-eslint/eslint-plugin": "^3.2.0",
+    "@typescript-eslint/parser": "^3.2.0",
     "c8": "^7.2.0",
     "chai": "^4.2.0",
-    "eslint": "^5.15.1",
+    "eslint": "^5.16.0",
     "husky": "^4.2.5",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
     "mocha": "^8.0.0",
     "sinon": "^7.2.7",
-    "sinon-chai": "^3.3.0"
+    "sinon-chai": "^3.3.0",
+    "typescript": "^3.9.5"
   }
 }

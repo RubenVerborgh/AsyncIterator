@@ -4,11 +4,19 @@
     node: true,
   },
 
+  parser: "@typescript-eslint/parser",
+
   parserOptions: {
-    sourceType: "module",
+    sourceType: module,
   },
 
-  extends: eslint:recommended,
+  plugins: [
+    "@typescript-eslint",
+  ],
+
+  extends: [
+    "eslint:recommended",
+  ],
 
   rules: {
     // Best Practices
@@ -97,7 +105,7 @@
     no-undef: error,
     no-undef-init: error,
     no-undefined: off,
-    no-unused-vars: error,
+    no-unused-vars: [ error, { args: none } ],
     no-use-before-define: [ error, { functions: false, classes: false } ],
 
     // Node.js
@@ -136,14 +144,17 @@
     id-length: off,
     id-match: error,
     implicit-arrow-linebreak: off,
-    indent: [ error, 2, { VariableDeclarator: first } ],
+    indent: [ error, 2, {
+      VariableDeclarator: first,
+      FunctionExpression: { parameters: first },
+    } ],
     jsx-quotes: error,
     key-spacing: [ error, { mode: minimum } ],
     keyword-spacing: error,
     line-comment-position: off,
     linebreak-style: error,
     lines-around-comment: [ error, { allowBlockStart: true } ],
-    lines-between-class-members: error,
+    lines-between-class-members: [ error, always, { exceptAfterSingleLine: true } ],
     max-depth: error,
     max-len: off,
     max-lines: off,
