@@ -996,7 +996,7 @@ describe('AsyncIterator', () => {
 
   describe('The AsyncIterator#each function', () => {
     it('should be a function', () => {
-      expect(AsyncIterator.prototype.each).to.be.a('function');
+      expect(AsyncIterator.prototype.forEach).to.be.a('function');
     });
 
     describe('called on an empty iterator', () => {
@@ -1004,7 +1004,7 @@ describe('AsyncIterator', () => {
       before(() => {
         iterator = new AsyncIterator();
         callback = sinon.stub();
-        result = iterator.each(callback);
+        result = iterator.forEach(callback);
       });
 
       it('should return undefined', () => {
@@ -1024,7 +1024,7 @@ describe('AsyncIterator', () => {
         iterator.readable = true;
         iterator.read = function () { return i++ < 2 ? i : null; };
         callback = sinon.stub();
-        result = iterator.each(callback);
+        result = iterator.forEach(callback);
       });
 
       it('should return undefined', () => {
@@ -1057,7 +1057,7 @@ describe('AsyncIterator', () => {
         iterator.readable = true;
         iterator.read = function () { return i++ < 2 ? i : null; };
         callback = sinon.stub();
-        result = iterator.each(callback, self);
+        result = iterator.forEach(callback, self);
       });
 
       it('should return undefined', () => {

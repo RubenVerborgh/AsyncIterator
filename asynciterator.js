@@ -137,7 +137,7 @@ export class AsyncIterator extends EventEmitter {
     @param {Function} callback A function that will be called with each item
     @param {object?} self The `this` pointer for the callback
   */
-  each(callback, self) {
+  forEach(callback, self) {
     this.on('data', self ? callback.bind(self) : callback);
   }
 
