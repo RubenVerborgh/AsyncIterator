@@ -1,11 +1,12 @@
 language: node_js
 node_js:
-  - "10"
-  - "12"
-  - "14"
-  - "node"
+  - 10
+  - 12
+  - 14
+  - lts/*
+  - node
 env:
-  - DEFAULT_NODE_VERSION=14
+  - DEFAULT_NODE_VERSION=10
 
 script:
   # Test code
@@ -16,17 +17,17 @@ script:
   # Test packaging
   - npm pack
   - tar -xzf asynciterator-*.tgz
-  - cd package
+  - pushd package
   - node -e 'require(".")'
-  - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
+  - if [ "$TRAVIS_NODE_VERSION" == "14" ]; then
       echo 'import { AsyncIterator } from "asynciterator"' > test.mjs;
       node test.mjs;
     fi
+  - popd
 
 after_success:
   - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
-      npm install coveralls;
-      node_modules/.bin/nyc --reporter=text-lcov -- node_modules/.bin/mocha |
-        node_modules/.bin/coveralls;
+      npm run cover;
+      npx nyc report --reporter=text-lcov | npx coveralls;
       ./.travis_publish_docs;
     fi
