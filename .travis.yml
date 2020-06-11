@@ -6,7 +6,7 @@ node_js:
   - lts/*
   - node
 env:
-  - DEFAULT_NODE_VERSION=10
+  - DEFAULT_NODE_VERSION=14
 
 script:
   # Test code
@@ -19,7 +19,7 @@ script:
   - tar -xzf asynciterator-*.tgz
   - pushd package
   - node -e 'require(".")'
-  - if [ "$TRAVIS_NODE_VERSION" == "14" ]; then
+  - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
       echo 'import { AsyncIterator } from "asynciterator"' > test.mjs;
       node test.mjs;
     fi
@@ -27,7 +27,6 @@ script:
 
 after_success:
   - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
-      npm run cover;
-      npx nyc report --reporter=text-lcov | npx coveralls;
+      npx c8 report --reporter=text-lcov | npx coveralls;
       ./.travis_publish_docs;
     fi

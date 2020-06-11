@@ -18,33 +18,32 @@
   "scripts": {
     "build": "babel asynciterator.js > asynciterator.cjs",
     "prepare": "npm run build",
-    "test": "mocha",
-    "cover": "nyc -- mocha -R dot",
+    "test": "c8 mocha",
     "lint": "eslint *.js test",
     "docs": "jsdoc -c jsdoc.json README.md *.js"
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
+  "dependencies": {
+    "queue-microtask": "^1.1.2"
+  },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
     "@babel/plugin-transform-modules-commonjs": "^7.10.1",
     "@babel/register": "^7.10.1",
+    "c8": "^7.2.0",
     "chai": "^4.2.0",
     "eslint": "^5.15.1",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
     "mocha": "^8.0.0",
-    "nyc": "^15.1.0",
     "pre-commit": "^1.2.2",
     "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0"
   },
   "pre-commit": [
     "lint",
-    "cover"
-  ],
-  "dependencies": {
-    "queue-microtask": "^1.1.2"
-  }
+    "test"
+  ]
 }
