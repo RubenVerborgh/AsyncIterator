@@ -3,11 +3,19 @@
   "version": "3.0.0-alpha.0",
   "description": "An asynchronous iterator library for advanced object pipelines.",
   "author": "Ruben Verborgh <ruben@verborgh.org>",
-  "main": "asynciterator.js",
+  "type": "module",
+  "main": "./asynciterator.cjs",
+  "exports": {
+    "import": "./asynciterator.js",
+    "require": "./asynciterator.cjs"
+  },
   "files": [
-    "asynciterator.js"
+    "asynciterator.js",
+    "asynciterator.cjs"
   ],
   "scripts": {
+    "build": "babel asynciterator.js > asynciterator.cjs",
+    "prepare": "npm run build",
     "test": "mocha",
     "cover": "nyc -- mocha -R dot",
     "lint": "eslint *.js test",
@@ -24,7 +32,7 @@
     "eslint": "^5.15.1",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
-    "mocha": "^7.0.0",
+    "mocha": "^8.0.0",
     "nyc": "^15.1.0",
     "pre-commit": "^1.2.2",
     "sinon": "^7.2.7",

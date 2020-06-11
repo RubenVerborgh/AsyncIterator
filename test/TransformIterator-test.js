@@ -4,7 +4,7 @@ import {
   EmptyIterator,
   ArrayIterator,
   TransformIterator,
-} from '..';
+} from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';

@@ -2,7 +2,7 @@ import {
   AsyncIterator,
   SingletonIterator,
   single,
-} from '..';
+} from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
 

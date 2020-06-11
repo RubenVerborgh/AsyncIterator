@@ -1,7 +1,7 @@
 import {
   AsyncIterator,
   IntegerIterator,
-} from '..';
+} from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
 

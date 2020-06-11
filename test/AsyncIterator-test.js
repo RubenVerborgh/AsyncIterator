@@ -1,4 +1,4 @@
-import { AsyncIterator } from '..';
+import { AsyncIterator } from '../asynciterator.js';
 
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';
