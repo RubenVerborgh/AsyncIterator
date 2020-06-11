@@ -1,3 +1,8 @@
+/**
+ * An asynchronous iterator library for advanced object pipelines
+ * @module asynciterator
+ */
+
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';
 
@@ -6,7 +11,7 @@ const INIT = 0, OPEN = 1, CLOSING = 2, CLOSED = 3, ENDED = 4, DESTROYED = 5;
 
 /**
   An asynchronous iterator provides pull-based access to a stream of objects.
-  @extends EventEmitter
+  @extends module:asynciterator.EventEmitter
 */
 export class AsyncIterator extends EventEmitter {
   /** Creates a new `AsyncIterator`. */
@@ -21,10 +26,10 @@ export class AsyncIterator extends EventEmitter {
     Changes the iterator to the given state if possible and necessary,
     possibly emitting events to signal that change.
     @protected
-    @param {integer} newState The ID of the new state (from the `STATES` array)
+    @param {integer} newState The ID of the new state
     @param {boolean} [eventAsync=false] Whether resulting events should be emitted asynchronously
     @returns {boolean} Whether the state was changed
-    @emits AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.end
   */
   _changeState(newState, eventAsync) {
     // Validate the state change
@@ -47,10 +52,11 @@ export class AsyncIterator extends EventEmitter {
     This is the main method for reading the iterator in _on-demand mode_,
     where new items are only created when needed by consumers.
     If no items are currently available, this methods returns `null`.
-    The {@link AsyncIterator.event:readable} event
+    The {@link module:asynciterator.event:readable} event
     will then signal when new items might be ready.
     To read all items from the iterator,
-    switch to _flow mode_ by subscribing to the {@link AsyncIterator.event:data} event.
+    switch to _flow mode_ by subscribing
+    to the {@link module:asynciterator.event:data} event.
     When in flow mode, do not use the `read` method.
     @returns {object?} The next item, or `null` if none is available
   */
@@ -61,9 +67,9 @@ export class AsyncIterator extends EventEmitter {
   /**
     The iterator emits a `readable` event when it might have new items available
     after having had no items available right before this event.
-    If the iterator is not in flow mode,
-    items can be retrieved by calling {@link AsyncIterator#read}.
-    @event AsyncIterator.readable
+    If the iterator is not in flow mode, items can be retrieved
+    by calling {@link module:asynciterator.AsyncIterator#read}.
+    @event module:asynciterator.readable
   */
 
   /**
@@ -73,10 +79,10 @@ export class AsyncIterator extends EventEmitter {
     generating and emitting new items as fast as possible.
     This drains the source and might create backpressure on the consumers,
     so only subscribe to this event if this behavior is intended.
-    In flow mode, don't use the {@link AsyncIterator#read} method.
+    In flow mode, don't use {@link module:asynciterator.AsyncIterator#read}.
     To switch back to _on-demand mode_, remove all listeners from the `data` event.
-    You can then obtain items through {@link AsyncIterator#read} again.
-    @event AsyncIterator.data
+    You can then obtain items through `read` again.
+    @event module:asynciterator.data
     @param {object} item The new item
   */
 
@@ -117,7 +123,7 @@ export class AsyncIterator extends EventEmitter {
     Stops the iterator from generating new items.
     Already generated items or terminating items can still be emitted.
     After this, the iterator will end asynchronously.
-    @emits AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.end
   */
   close() {
     if (this._changeState(CLOSED))
@@ -130,10 +136,10 @@ export class AsyncIterator extends EventEmitter {
     All internal resources will be released an no new items will be emitted,
     even not already generated items.
     Implementors should not override this method,
-    but instead implement {@link AsyncIterator#_destroy}.
+    but instead implement {@link module:asynciterator.AsyncIterator#_destroy}.
     @param {Error} [cause] An optional error to emit.
-    @emits AsyncIterator.end
-    @emits AsyncIterator.error Only emitted if an error is passed.
+    @emits module:asynciterator.AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.error Only if an error is passed.
   */
   destroy(cause) {
     if (!this.done) {
@@ -147,8 +153,9 @@ export class AsyncIterator extends EventEmitter {
   }
 
   /**
-    Called by {@link AsyncIterator#destroy}.
+    Called by {@link module:asynciterator.AsyncIterator#destroy}.
     Implementers can override this, but this should not be called directly.
+    @protected
     @param {?Error} cause The reason why the iterator is destroyed.
     @param {Function} callback A callback function with an optional error argument.
   */
@@ -158,11 +165,11 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Ends the iterator and cleans up.
-    Should never be called before {@link AsyncIterator#close};
+    Should never be called before {@link module:asynciterator.AsyncIterator#close};
     typically, `close` is responsible for calling `_end`.
     @param {boolean} [destroy] If the iterator should be forcefully destroyed.
     @protected
-    @emits AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.end
   */
   _end(destroy) {
     if (this._changeState(destroy ? DESTROYED : ENDED)) {
@@ -175,23 +182,23 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Asynchronously calls `_end`.
+    @protected
   */
   _endAsync() {
     queueMicrotask(() => this._end());
   }
 
   /**
-    Emitted after the last item of the iterator has been read.
-    @event AsyncIterator.end
+    The `end` event is emitted after the last item of the iterator has been read.
+    @event module:asynciterator.end
   */
 
   /**
     Gets or sets whether this iterator might have items available for read.
     A value of `false` means there are _definitely_ no items available;
     a value of `true` means items _might_ be available.
-    @name AsyncIterator#readable
     @type boolean
-    @emits AsyncIterator.readable
+    @emits module:asynciterator.AsyncIterator.readable
   */
   get readable() {
     return this._readable;
@@ -210,7 +217,6 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Gets whether the iterator has stopped generating new items.
-    @name AsyncIterator#closed
     @type boolean
     @readonly
   */
@@ -220,7 +226,6 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Gets whether the iterator has finished emitting items.
-    @name AsyncIterator#ended
     @type boolean
     @readonly
   */
@@ -230,7 +235,6 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Gets whether the iterator has been destroyed.
-    @name AsyncIterator#destroyed
     @type boolean
     @readonly
   */
@@ -241,7 +245,6 @@ export class AsyncIterator extends EventEmitter {
   /**
     Gets whether the iterator will not emit anymore items,
     either due to being closed or due to being destroyed.
-    @name AsyncIterator#done
     @type boolean
     @readonly
   */
@@ -341,7 +344,7 @@ export class AsyncIterator extends EventEmitter {
 
   /**
     Copies the given properties from the source iterator.
-    @param {AsyncIterator} source The iterator to copy from
+    @param {module:asynciterator.AsyncIterator} source The iterator to copy from
     @param {Array} propertyNames List of property names to copy
   */
   copyProperties(source, propertyNames) {
@@ -356,9 +359,9 @@ export class AsyncIterator extends EventEmitter {
     Use this to convert an iterator-like object into a full-featured AsyncIterator.
     After this operation, only read the returned iterator instead of the given one.
     @function
-    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object} [options] Settings of the iterator
-    @returns {AsyncIterator} A new iterator with the items from the given iterator
+    @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
   */
   static wrap(source, options) {
     return new TransformIterator(source, options);
@@ -376,9 +379,9 @@ export class AsyncIterator extends EventEmitter {
     @param {Function} [options.map] A function to synchronously transform items from the source
     @param {Function} [options.transform] A function to asynchronously transform items from the source
     @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
-    @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
-    @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
-    @returns {AsyncIterator} A new iterator that maps the items from this iterator
+    @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
+    @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
+    @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   transform(options) {
     return new SimpleTransformIterator(this, options);
@@ -389,7 +392,7 @@ export class AsyncIterator extends EventEmitter {
     After this operation, only read the returned iterator instead of the current one.
     @param {Function} mapper A mapping function to call on this iterator's (remaining) items
     @param {object?} self The `this` pointer for the mapping function
-    @returns {AsyncIterator} A new iterator that maps the items from this iterator
+    @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map(mapper, self) {
     return this.transform({ map: self ? mapper.bind(self) : mapper });
@@ -400,7 +403,7 @@ export class AsyncIterator extends EventEmitter {
     After this operation, only read the returned iterator instead of the current one.
     @param {Function} filter A filter function to call on this iterator's (remaining) items
     @param {object?} self The `this` pointer for the filter function
-    @returns {AsyncIterator} A new iterator that filters items from this iterator
+    @returns {module:asynciterator.AsyncIterator} A new iterator that filters items from this iterator
   */
   filter(filter, self) {
     return this.transform({ filter: self ? filter.bind(self) : filter });
@@ -409,8 +412,8 @@ export class AsyncIterator extends EventEmitter {
   /**
     Prepends the items after those of the current iterator.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Array|AsyncIterator} items Items to insert before this iterator's (remaining) items
-    @returns {AsyncIterator} A new iterator that prepends items to this iterator
+    @param {Array|module:asynciterator.AsyncIterator} items Items to insert before this iterator's (remaining) items
+    @returns {module:asynciterator.AsyncIterator} A new iterator that prepends items to this iterator
   */
   prepend(items) {
     return this.transform({ prepend: items });
@@ -419,8 +422,8 @@ export class AsyncIterator extends EventEmitter {
   /**
     Appends the items after those of the current iterator.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Array|AsyncIterator} items Items to insert after this iterator's (remaining) items
-    @returns {AsyncIterator} A new iterator that appends items to this iterator
+    @param {Array|module:asynciterator.AsyncIterator} items Items to insert after this iterator's (remaining) items
+    @returns {module:asynciterator.AsyncIterator} A new iterator that appends items to this iterator
   */
   append(items) {
     return this.transform({ append: items });
@@ -429,9 +432,9 @@ export class AsyncIterator extends EventEmitter {
   /**
     Surrounds items of the current iterator with the given items.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Array|AsyncIterator} prepend Items to insert before this iterator's (remaining) items
-    @param {Array|AsyncIterator} append Items to insert after this iterator's (remaining) items
-    @returns {AsyncIterator} A new iterator that appends and prepends items to this iterator
+    @param {Array|module:asynciterator.AsyncIterator} prepend Items to insert before this iterator's (remaining) items
+    @param {Array|module:asynciterator.AsyncIterator} append Items to insert after this iterator's (remaining) items
+    @returns {module:asynciterator.AsyncIterator} A new iterator that appends and prepends items to this iterator
   */
   surround(prepend, append) {
     return this.transform({ prepend, append });
@@ -441,7 +444,7 @@ export class AsyncIterator extends EventEmitter {
     Skips the given number of items from the current iterator.
     The current iterator may not be read anymore until the returned iterator ends.
     @param {integer} offset The number of items to skip
-    @returns {AsyncIterator} A new iterator that skips the given number of items
+    @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset) {
     return this.transform({ offset });
@@ -451,7 +454,7 @@ export class AsyncIterator extends EventEmitter {
     Limits the current iterator to the given number of items.
     The current iterator may not be read anymore until the returned iterator ends.
     @param {integer} limit The maximum number of items
-    @returns {AsyncIterator} A new iterator with at most the given number of items
+    @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit) {
     return this.transform({ limit });
@@ -462,7 +465,7 @@ export class AsyncIterator extends EventEmitter {
     The current iterator may not be read anymore until the returned iterator ends.
     @param {integer} start Index of the first item to return
     @param {integer} end Index of the last item to return
-    @returns {AsyncIterator} A new iterator with items in the given range
+    @returns {module:asynciterator.AsyncIterator} A new iterator with items in the given range
   */
   range(start, end) {
     return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
@@ -473,7 +476,7 @@ export class AsyncIterator extends EventEmitter {
     containing all items emitted from this point onward.
     Further copies can be created; they will all start from this same point.
     After this operation, only read the returned copies instead of the original iterator.
-    @returns {AsyncIterator} A new iterator that contains all future items of this iterator
+    @returns {module:asynciterator.AsyncIterator} A new iterator that contains all future items of this iterator
   */
   clone() {
     return new ClonedIterator(this);
@@ -559,7 +562,8 @@ for (const id in STATES)
 
 /**
   ID of the DESTROYED state.
-  An iterator has been destroyed after calling {@link AsyncIterator#destroy}.
+  An iterator has been destroyed
+  after calling {@link module:asynciterator.AsyncIterator#destroy}.
   The 'end' event has not been called, as pending elements were voided.
   @name AsyncIterator.DESTROYED
   @type integer
@@ -569,7 +573,7 @@ for (const id in STATES)
 
 /**
   An iterator that doesn't emit any items.
-  @extends AsyncIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class EmptyIterator extends AsyncIterator {
   /** Creates a new `EmptyIterator`. */
@@ -582,7 +586,7 @@ export class EmptyIterator extends AsyncIterator {
 
 /**
   An iterator that emits a single item.
-  @extends AsyncIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class SingletonIterator extends AsyncIterator {
   /**
@@ -615,7 +619,7 @@ export class SingletonIterator extends AsyncIterator {
 
 /**
   An iterator that emits the items of a given array.
-  @extends AsyncIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class ArrayIterator extends AsyncIterator {
   /**
@@ -649,7 +653,7 @@ export class ArrayIterator extends AsyncIterator {
     return `(${ this._buffer && this._buffer.length || 0 })`;
   }
 
-  /* Called by {@link AsyncIterator#destroy} */
+  /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
   _destroy(error, callback) {
     delete this._buffer;
     callback();
@@ -659,7 +663,7 @@ export class ArrayIterator extends AsyncIterator {
 
 /**
   An iterator that enumerates integers in a certain range.
-  @extends AsyncIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class IntegerIterator extends AsyncIterator {
   /**
@@ -720,7 +724,7 @@ export class IntegerIterator extends AsyncIterator {
   A iterator that maintains an internal buffer of items.
   This class serves as a base class for other iterators
   with a typically complex item generation process.
-  @extends AsyncIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class BufferedIterator extends AsyncIterator {
   /**
@@ -747,7 +751,6 @@ export class BufferedIterator extends AsyncIterator {
     The maximum number of items to preload in the internal buffer.
     A `BufferedIterator` tries to fill its buffer as far as possible.
     Set to `Infinity` to fully drain the source.
-    @name BufferedIterator#maxBufferSize
     @type number
   */
   get maxBufferSize() {
@@ -855,7 +858,7 @@ export class BufferedIterator extends AsyncIterator {
     Adds an item to the internal buffer.
     @protected
     @param {object} item The item to add
-    @emits AsyncIterator.readable
+    @emits module:asynciterator.AsyncIterator.readable
   */
   _push(item) {
     if (!this.done) {
@@ -869,7 +872,7 @@ export class BufferedIterator extends AsyncIterator {
     Fills the internal buffer until `this._maxBufferSize` items are present.
     This method calls {@link BufferedIterator#_read} to fetch items.
     @protected
-    @emits AsyncIterator.readable
+    @emits module:asynciterator.AsyncIterator.readable
   */
   _fillBuffer() {
     let neededItems;
@@ -930,7 +933,7 @@ export class BufferedIterator extends AsyncIterator {
     after a possible pending read operation has finished.
     Already generated, pending, or terminating items can still be emitted.
     After this, the iterator will end asynchronously.
-    @emits AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.end
   */
   close() {
     // If the iterator is not currently reading, we can close immediately
@@ -946,7 +949,7 @@ export class BufferedIterator extends AsyncIterator {
     Stops the iterator from generating new items,
     switching from `CLOSING` state into `CLOSED` state.
     @protected
-    @emits AsyncIterator.end
+    @emits module:asynciterator.AsyncIterator.end
   */
   _completeClose() {
     if (this._changeState(CLOSED)) {
@@ -964,7 +967,7 @@ export class BufferedIterator extends AsyncIterator {
     }
   }
 
-  /* Called by {@link AsyncIterator#destroy} */
+  /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
   _destroy(error, callback) {
     this._buffer = [];
     callback();
@@ -981,7 +984,10 @@ export class BufferedIterator extends AsyncIterator {
     done();
   }
 
-  /* Generates details for a textual representation of the iterator. */
+  /**
+    Generates details for a textual representation of the iterator.
+    @protected
+   */
   _toStringDetails() {
     const buffer = this._buffer, { length } = buffer;
     return `{${ length ? `next: ${ buffer[0] }, ` : '' }buffer: ${ length }}`;
@@ -992,18 +998,18 @@ export class BufferedIterator extends AsyncIterator {
 /**
   An iterator that generates items based on a source iterator.
   This class serves as a base class for other iterators.
-  @extends BufferedIterator
+  @extends module:asynciterator.BufferedIterator
 */
 export class TransformIterator extends BufferedIterator {
   /**
     Creates a new `TransformIterator`.
-    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object} [options] Settings of the iterator
     @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
     @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
     @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
-    @param {AsyncIterator} [options.source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
   */
   constructor(source, options = source || {}) {
     super(options);
@@ -1019,8 +1025,7 @@ export class TransformIterator extends BufferedIterator {
 
   /**
     The source this iterator generates items from.
-    @name TransformIterator#source
-    @type AsyncIterator
+    @type module:asynciterator.AsyncIterator
   */
   get source() {
     return this._source;
@@ -1153,24 +1158,24 @@ function destinationFillBuffer() {
 /**
   An iterator that generates items based on a source iterator
   and simple transformation steps passed as arguments.
-  @extends TransformIterator
+  @extends module:asynciterator.TransformIterator
 */
 export class SimpleTransformIterator extends TransformIterator {
   /**
     Creates a new `SimpleTransformIterator`.
-    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object|Function} [options] Settings of the iterator, or the transformation function
     @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
     @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
-    @param {AsyncIterator} [options.source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
     @param {integer} [options.offset] The number of items to skip
     @param {integer} [options.limit] The maximum number of items
     @param {Function} [options.filter] A function to synchronously filter items from the source
     @param {Function} [options.map] A function to synchronously transform items from the source
     @param {Function} [options.transform] A function to asynchronously transform items from the source
     @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
-    @param {Array|AsyncIterator} [options.prepend] Items to insert before the source items
-    @param {Array|AsyncIterator} [options.append]  Items to insert after the source items
+    @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
+    @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
   */
   constructor(source, options) {
     super(source, options);
@@ -1301,12 +1306,12 @@ Object.assign(SimpleTransformIterator.prototype, {
 /**
   An iterator that generates items by transforming each item of a source
   with a different iterator.
-  @extends TransformIterator
+  @extends module:asynciterator.TransformIterator
 */
 export class MultiTransformIterator extends TransformIterator {
   /**
     Creates a new `MultiTransformIterator`.
-    @param {AsyncIterator|Readable} [source] The source this iterator generates items from
+    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object} [options] Settings of the iterator
   */
   constructor(source, options) {
@@ -1370,7 +1375,7 @@ export class MultiTransformIterator extends TransformIterator {
   /**
     Creates a transformer for the given item.
     @param {object} item The last read item from the source
-    @returns {AsyncIterator} An iterator that transforms the given item
+    @returns {module:asynciterator.AsyncIterator} An iterator that transforms the given item
   */
   _createTransformer(item) {
     return new SingletonIterator(item);
@@ -1387,12 +1392,12 @@ export class MultiTransformIterator extends TransformIterator {
 
 /**
   An iterator that copies items from another iterator.
-  @extends TransformIterator
+  @extends module:asynciterator.TransformIterator
 */
 export class ClonedIterator extends TransformIterator {
   /**
     Creates a new `ClonedIterator`.
-    @param {AsyncIterator|Readable} [source] The source this iterator copies items from
+    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator copies items from
   */
   constructor(source) {
     super(source, { autoStart: false });
@@ -1588,19 +1593,27 @@ class HistoryReader {
   }
 }
 
-/** Creates an empty iterator */
+/**
+   Creates an empty iterator.
+ */
 export function empty() {
   return new EmptyIterator();
 }
 
-/** Creates an iterator with a single item */
+/**
+  Creates an iterator with a single item.
+  @param {object} item the item
+ */
 export function single(item) {
   return new SingletonIterator(item);
 }
 
-/** Creates an iterator for the given array */
-export function fromArray(array) {
-  return new ArrayIterator(array);
+/**
+   Creates an iterator for the given array.
+   @param {Array} items the items
+ */
+export function fromArray(items) {
+  return new ArrayIterator(items);
 }
 
 // Determines whether the given object is a function
