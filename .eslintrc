@@ -146,6 +146,7 @@
     implicit-arrow-linebreak: off,
     indent: [ error, 2, {
       VariableDeclarator: first,
+      FunctionDeclaration: { parameters: first },
       FunctionExpression: { parameters: first },
     } ],
     jsx-quotes: error,
