@@ -569,7 +569,7 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    return this._item === null ? '' : `(${ this._item })`;
+    return this._item === null ? '' : `(${this._item})`;
   }
 }
 
@@ -612,7 +612,7 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    return `(${ this._buffer && this._buffer.length || 0 })`;
+    return `(${this._buffer && this._buffer.length || 0})`;
   }
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
@@ -682,7 +682,7 @@ export class IntegerIterator extends AsyncIterator<number> {
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    return `(${ this._next }...${ this._last })`;
+    return `(${this._next}...${this._last})`;
   }
 }
 
@@ -954,7 +954,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
    */
   protected _toStringDetails() {
     const buffer = this._buffer, { length } = buffer;
-    return `{${ length ? `next: ${ buffer[0] }, ` : '' }buffer: ${ length }}`;
+    return `{${length ? `next: ${buffer[0]}, ` : ''}buffer: ${length}}`;
   }
 }
 
@@ -1029,7 +1029,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     if (this._source)
       throw new Error('The source cannot be changed after it has been set');
     if (!source || !isFunction(source.read) || !isFunction(source.on))
-      throw new Error(`Invalid source: ${ source}`);
+      throw new Error(`Invalid source: ${source}`);
     if (!allowDestination && (source as any)._destination)
       throw new Error('The source already has a destination');
     return source as Source<S>;
@@ -1451,7 +1451,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
     const source = this._source;
-    return `{source: ${ source ? source.toString() : 'none' }}`;
+    return `{source: ${source ? source.toString() : 'none'}}`;
   }
 
   /* Tries to read an item */

@@ -215,6 +215,7 @@
     spaced-comment: error,
     switch-colon-spacing: error,
     template-tag-spacing: error,
+    template-curly-spacing: error,
     unicode-bom: error,
     wrap-regex: error,
 

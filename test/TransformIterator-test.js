@@ -367,8 +367,8 @@ describe('TransformIterator', () => {
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
-        this._push(`${item }1`);
-        this._push(`${item }2`);
+        this._push(`${item}1`);
+        this._push(`${item}2`);
         done();
       };
       captureEvents(iterator, 'readable', 'end');
@@ -475,8 +475,8 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
         queueMicrotask(() => {
-          iterator._push(`${item }1`);
-          iterator._push(`${item }2`);
+          iterator._push(`${item}1`);
+          iterator._push(`${item}2`);
           done();
         });
       };
@@ -888,7 +888,7 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source, { optional: false });
       iterator._transform = function (item, done) {
         if (item % 3 !== 0)
-          this._push(`t${ item}`);
+          this._push(`t${item}`);
         done();
       };
     });
@@ -913,7 +913,7 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source, { optional: true });
       iterator._transform = function (item, done) {
         if (item % 3 !== 0)
-          this._push(`t${ item}`);
+          this._push(`t${item}`);
         done();
       };
     });

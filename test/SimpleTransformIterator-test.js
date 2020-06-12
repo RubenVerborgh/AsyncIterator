@@ -1039,7 +1039,7 @@ describe('SimpleTransformIterator', () => {
         map(item) { return item % 2 === 0 ? null : item; },
         transform(item, done) {
           if (item % 3 !== 0)
-            this._push(`t${ item}`);
+            this._push(`t${item}`);
           done();
         },
       });
@@ -1067,7 +1067,7 @@ describe('SimpleTransformIterator', () => {
         map(item) { return item % 2 === 0 ? null : item; },
         transform(item, done) {
           if (item % 3 !== 0)
-            this._push(`t${ item}`);
+            this._push(`t${item}`);
           done();
         },
       });

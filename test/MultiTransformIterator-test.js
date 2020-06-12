@@ -95,7 +95,7 @@ describe('MultiTransformIterator', () => {
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       iterator = new MultiTransformIterator(source);
-      iterator._createTransformer = sinon.spy(item => new SingletonIterator(`${item }1`));
+      iterator._createTransformer = sinon.spy(item => new SingletonIterator(`${item}1`));
     });
 
     describe('when reading items', () => {
@@ -116,7 +116,7 @@ describe('MultiTransformIterator', () => {
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       iterator = new MultiTransformIterator(source);
-      iterator._createTransformer = sinon.spy(item => new ArrayIterator([`${item }1`, `${item }2`, `${item }3`]));
+      iterator._createTransformer = sinon.spy(item => new ArrayIterator([`${item}1`, `${item}2`, `${item}3`]));
     });
 
     describe('when reading items', () => {
@@ -182,7 +182,7 @@ describe('MultiTransformIterator', () => {
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
         queueMicrotask(() => {
-          transformer._push(`${item }1`);
+          transformer._push(`${item}1`);
           transformer.close();
         });
         return transformer;
@@ -210,9 +210,9 @@ describe('MultiTransformIterator', () => {
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
         queueMicrotask(() => {
-          transformer._push(`${item }1`);
-          transformer._push(`${item }2`);
-          transformer._push(`${item }3`);
+          transformer._push(`${item}1`);
+          transformer._push(`${item}2`);
+          transformer._push(`${item}3`);
           transformer.close();
         });
         return transformer;
@@ -248,7 +248,7 @@ describe('MultiTransformIterator', () => {
         switch (item) {
         case 3: return new EmptyIterator();
         case 6: return null;
-        default: return new SingletonIterator(`t${ item}`);
+        default: return new SingletonIterator(`t${item}`);
         }
       });
     });
@@ -275,7 +275,7 @@ describe('MultiTransformIterator', () => {
         switch (item) {
         case 3: return new EmptyIterator();
         case 6: return null;
-        default: return new SingletonIterator(`t${ item}`);
+        default: return new SingletonIterator(`t${item}`);
         }
       });
     });
@@ -301,7 +301,7 @@ describe('MultiTransformIterator', () => {
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
         queueMicrotask(() => {
-          transformer.emit('error', new Error(`Error ${ item}`));
+          transformer.emit('error', new Error(`Error ${item}`));
         });
         return transformer;
       });
