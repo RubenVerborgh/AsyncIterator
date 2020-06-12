@@ -9,16 +9,19 @@
     "import": "./asynciterator.mjs",
     "require": "./asynciterator.cjs"
   },
+  "types": "./asynciterator.d.ts",
   "module": "./asynciterator.mjs",
   "sideEffects": false,
   "files": [
     "asynciterator.mjs",
-    "asynciterator.cjs"
+    "asynciterator.cjs",
+    "asynciterator.d.ts"
   ],
   "scripts": {
-    "build": "npm run build:module && npm run build:commonjs",
+    "build": "npm run build:module && npm run build:commonjs && npm run build:types",
     "build:module": "tsc --module es2015 && mv asynciterator.js asynciterator.mjs",
     "build:commonjs": "tsc --module commonjs && mv asynciterator.js asynciterator.cjs",
+    "build:types": "tsc -d && rm asynciterator.js",
     "prepare": "npm run build",
     "test": "npm run build:module && npm run mocha",
     "mocha": "c8 mocha",

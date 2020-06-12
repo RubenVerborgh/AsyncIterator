@@ -28,6 +28,7 @@ script:
       node test.mjs;
     fi
   - popd
+  - npx tsc package/asynciterator.d.ts
 
 after_success:
   - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
