@@ -302,7 +302,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {Function?} [callback] A one-argument callback to receive the property value
     @returns {object?} The value of the property (if set and no callback is given)
   */
-  getProperty(propertyName: string, callback?: (value: any) => void): any {
+  getProperty<P>(propertyName: string, callback?: (value: P) => void): P | undefined {
     const properties = this._properties;
     // If no callback was passed, return the property value
     if (!callback)
@@ -329,7 +329,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {string} propertyName The name of the property to set
     @param {object?} value The new value of the property
   */
-  setProperty(propertyName: string, value: any) {
+  setProperty<P>(propertyName: string, value: P) {
     const properties = this._properties || (this._properties = Object.create(null));
     properties[propertyName] = value;
     // Execute getter callbacks that were waiting for this property to be set
@@ -1415,7 +1415,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   }
 
   // Retrieves the property with the given name from the clone or its source.
-  getProperty(propertyName: string, callback?: (value: any) => void): any {
+  getProperty<P>(propertyName: string, callback?: (value: P) => void): P | undefined {
     const properties = this._properties, source = this._source,
           hasProperty = properties && (propertyName in properties);
     // If no callback was passed, return the property value
@@ -1432,8 +1432,8 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   }
 
   // Retrieves the property with the given name from the source
-  protected _getSourceProperty(propertyName: string, callback: (value: any) => void) {
-    (this._source as AsyncIterator<T>).getProperty(propertyName, value => {
+  protected _getSourceProperty<P>(propertyName: string, callback: (value: P) => void) {
+    (this._source as AsyncIterator<T>).getProperty<P>(propertyName, value => {
       // Only send the source's property if it was not set on the clone in the meantime
       if (!this._properties || !(propertyName in this._properties))
         callback(value);
