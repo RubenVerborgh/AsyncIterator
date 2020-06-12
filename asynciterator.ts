@@ -61,7 +61,6 @@ export const DESTROYED = 1 << 5;
 export class AsyncIterator<T> extends EventEmitter {
   protected _state: number;
   private _readable = false;
-  private _events?: { [name: string]: any };
   protected _properties?: { [name: string]: any };
   protected _propertyCallbacks?: { [name: string]: [(value: any) => void] };
 
