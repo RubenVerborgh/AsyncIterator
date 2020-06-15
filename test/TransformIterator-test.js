@@ -611,6 +611,251 @@ describe('TransformIterator', () => {
     });
   });
 
+  describe('A default TransformIterator with a promise to a source', () => {
+    let iterator, source, sourcePromise, resolvePromise;
+    before(() => {
+      source = new ArrayIterator(['a']);
+      sourcePromise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+      sinon.spy(source, 'read');
+      sinon.spy(sourcePromise, 'then');
+      iterator = new TransformIterator(sourcePromise);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the promise resolves', () => {
+      it('should have called `then` on the promise', () => {
+        sourcePromise.then.should.have.been.called;
+      });
+
+      it('should not have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+    });
+
+    describe('after the promise resolves', () => {
+      before(() => resolvePromise(source));
+
+      it('should have called `read` on the source', () => {
+        source.read.should.have.been.calledOnce;
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after reading an item', () => {
+      let item;
+      before(() => { item = iterator.read(); });
+
+      it('should have read the original item', () => {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when `read` is called', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+  });
+
+  describe('A default TransformIterator with a promise and without autoStart', () => {
+    let iterator, source, sourcePromise, resolvePromise;
+    before(() => {
+      source = new ArrayIterator(['a']);
+      sourcePromise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+      sinon.spy(source, 'read');
+      sinon.spy(sourcePromise, 'then');
+      iterator = new TransformIterator(sourcePromise, { autoStart: false });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the promise resolves', () => {
+      it('does not allow setting another source', () => {
+        (() => { iterator.source = {}; })
+          .should.throw('The source cannot be changed after it has been set');
+      });
+
+      it('should not have called `then` on the promise', () => {
+        sourcePromise.then.should.not.have.been.called;
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after calling read', () => {
+      let item;
+      before(() => { item = iterator.read(); });
+
+      it('should not have returned an item', () => {
+        expect(item).to.be.null;
+      });
+
+      it('should have called `then` on the promise', () => {
+        sourcePromise.then.should.have.been.called;
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+    });
+
+    describe('after the promise resolves', () => {
+      before(() => resolvePromise(source));
+
+      it('should have called `read` on the source', () => {
+        source.read.should.have.been.calledOnce;
+      });
+
+      it('should have emitted another `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(2);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after reading an item', () => {
+      let item;
+      before(() => { item = iterator.read(); });
+
+      it('should have read the original item', () => {
+        item.should.equal('a');
+      });
+
+      it('should not have emitted the `readable` event anymore', () => {
+        iterator._eventCounts.readable.should.equal(2);
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+
+      it('should return null when `read` is called', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+  });
+
+  describe('A default TransformIterator with a promise that resolves after closing', () => {
+    let iterator, source, sourcePromise, resolvePromise;
+    before(() => {
+      source = new ArrayIterator(['a']);
+      sourcePromise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+      sinon.spy(source, 'read');
+      sinon.spy(sourcePromise, 'then');
+      iterator = new TransformIterator(sourcePromise);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('after closing and resolving', () => {
+      before(() => {
+        iterator.close();
+        resolvePromise(source);
+      });
+
+      it('should not have called read on the source', () => {
+        source.read.should.not.have.been.called;
+      });
+    });
+
+    describe('after calling read', () => {
+      before(() => { iterator.read(); });
+
+      it('should not have called read on the source', () => {
+        source.read.should.not.have.been.called;
+      });
+    });
+  });
+
   describe('A TransformIterator with destroySource set to its default', () => {
     let iterator, source;
     before(() => {

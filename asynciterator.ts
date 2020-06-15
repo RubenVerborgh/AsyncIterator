@@ -967,6 +967,7 @@ type Source<S> = AsyncIterator<S> & { _destination: TransformIterator<any, any> 
 */
 export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _source?: Source<S>;
+  protected _sourcePromise?: Promise<Source<S>>;
   protected _destroySource: boolean;
   protected _optional: boolean;
 
@@ -980,16 +981,25 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
   */
-  constructor(source?: AsyncIterator<S>,
+  constructor(source?: AsyncIterator<S> | Promise<AsyncIterator<S>>,
               options: TransformIteratorOptions<S> =
                 source as TransformIteratorOptions<S> || {}) {
+    // Shift parameters if needed
+    if (!source || !(isEventEmitter(source) || isPromise(source)))
+      source = options.source;
     super(options);
 
-    // Initialize source and settings
-    if (!source || !isFunction(source.read))
-      source = options.source;
-    if (source)
+    // The passed source is an AsyncIterator or readable stream
+    if (isEventEmitter(source)) {
       this.source = source;
+    }
+    // The passed value is a promise to a source
+    else if (isPromise(source)) {
+      this._sourcePromise = source as Promise<Source<S>>;
+      if (options.autoStart !== false)
+        this._loadSourceAsync();
+    }
+    // Set other options
     this._optional = Boolean(options.optional);
     this._destroySource = options.destroySource !== false;
   }
@@ -999,6 +1009,8 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @type module:asynciterator.AsyncIterator
   */
   get source() : AsyncIterator<S> | undefined {
+    if (this._sourcePromise)
+      this._loadSourceAsync();
     return this._source;
   }
 
@@ -1020,13 +1032,27 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   }
 
   /**
+    Initializes a source that was set through a promise
+    @protected
+  */
+  protected _loadSourceAsync() {
+    if (this._sourcePromise) {
+      this._sourcePromise.then(source => {
+        this.source = source;
+        this._fillBuffer();
+      });
+      delete this._sourcePromise;
+    }
+  }
+
+  /**
     Validates whether the given iterator can be used as a source.
     @protected
     @param {object} source The source to validate
     @param {boolean} allowDestination Whether the source can already have a destination
   */
   protected _validateSource(source?: AsyncIterator<S>, allowDestination = false) {
-    if (this._source)
+    if (this._source || this._sourcePromise)
       throw new Error('The source cannot be changed after it has been set');
     if (!source || !isFunction(source.read) || !isFunction(source.on))
       throw new Error(`Invalid source: ${source}`);
@@ -1055,15 +1081,14 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _readAndTransform(next: () => void, done: () => void) {
     // If the source exists and still can read items,
     // try to read and transform the next item.
-    const source = this._source;
     let item;
-    if (source && !source.ended && (item = source.read()) !== null) {
-      if (!this._optional)
-        this._transform(item, next);
-      else
-        this._optionalTransform(item, next);
-    }
-    else { done(); }
+    const source = this.source as Source<S>;
+    if (!source || source.ended || (item = source.read()) === null)
+      done();
+    else if (!this._optional)
+      this._transform(item, next);
+    else
+      this._optionalTransform(item, next);
   }
 
   /**
@@ -1199,8 +1224,8 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
   /* Reads and transform items */
   protected _readAndTransformSimple(count: number, next: () => void, done: () => void) {
     // Verify we have a readable source
-    const source = this._source;
     let item;
+    const { source } = this;
     if (!source || source.ended) {
       done();
       return;
@@ -1284,8 +1309,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   /* Tries to read and transform items */
   protected _read(count: number, done: () => void) {
     // Remove transformers that have ended
-    const transformerQueue = this._transformerQueue,
-          source = this._source, optional = this._optional;
+    const transformerQueue = this._transformerQueue, optional = this._optional;
     let head, item;
     while ((head = transformerQueue[0]) && head.transformer.ended) {
       // If transforming is optional, push the original item if none was pushed
@@ -1302,6 +1326,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
     }
 
     // Create new transformers if there are less than the maximum buffer size
+    const { source } = this;
     while (source && !source.ended && transformerQueue.length < this.maxBufferSize) {
       // Read an item to create the next transformer
       item = source.read();
@@ -1380,17 +1405,15 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   // The source this iterator copies items from
   get source(): AsyncIterator<T> | undefined {
-    return this._source;
+    return super.source;
   }
 
   set source(value: AsyncIterator<T> | undefined) {
     // Validate and set the source
-    let history = (value && (value as any)._destination) as HistoryReader<T>;
-    const source = this._source =
-      this._validateSource(value, !history || history instanceof HistoryReader);
+    const source = this._source = this._validateSource(value);
     // Create a history reader for the source if none already existed
-    if (!history)
-      history = source._destination = new HistoryReader<T>(source) as any;
+    const history = (source && (source as any)._destination) ||
+      (source._destination = new HistoryReader<T>(source) as any);
 
     // Close this clone if history is empty and the source has ended
     if (history.endsAt(0)) {
@@ -1413,9 +1436,20 @@ export class ClonedIterator<T> extends TransformIterator<T> {
     }
   }
 
+  /**
+    Validates whether the given iterator can be used as a source.
+    @protected
+    @param {object} source The source to validate
+    @param {boolean} allowDestination Whether the source can already have a destination
+  */
+  protected _validateSource(source?: AsyncIterator<T>, allowDestination = false) {
+    const history = (source && (source as any)._destination);
+    return super._validateSource(source, !history || history instanceof HistoryReader);
+  }
+
   // Retrieves the property with the given name from the clone or its source.
   getProperty<P>(propertyName: string, callback?: (value: P) => void): P | undefined {
-    const properties = this._properties, source = this._source,
+    const { source } = this, properties = this._properties,
           hasProperty = properties && (propertyName in properties);
     // If no callback was passed, return the property value
     if (!callback) {
@@ -1432,7 +1466,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   // Retrieves the property with the given name from the source
   protected _getSourceProperty<P>(propertyName: string, callback: (value: P) => void) {
-    (this._source as AsyncIterator<T>).getProperty<P>(propertyName, value => {
+    (this.source as AsyncIterator<T>).getProperty<P>(propertyName, value => {
       // Only send the source's property if it was not set on the clone in the meantime
       if (!this._properties || !(propertyName in this._properties))
         callback(value);
@@ -1441,7 +1475,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   // Retrieves all properties of the iterator and its source.
   getProperties() {
-    const base = this._source ? this._source.getProperties() : {},
+    const base = this.source ? this.source.getProperties() : {},
           properties = this._properties;
     for (const name in properties)
       base[name] = properties[name];
@@ -1450,13 +1484,12 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    const source = this._source;
-    return `{source: ${source ? source.toString() : 'none'}}`;
+    return `{source: ${this.source ? this.source.toString() : 'none'}}`;
   }
 
   /* Tries to read an item */
   read() {
-    const source = this._source;
+    const source = this.source as Source<T>;
     let item = null;
     if (!this.done && source) {
       // Try to read an item at the current point in history
@@ -1475,7 +1508,8 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   /* End the iterator and cleans up. */
   protected _end(destroy: boolean) {
     // Unregister from a possible history reader
-    const history = this._source?._destination as any as HistoryReader<T>;
+    const source = this.source as Source<T>;
+    const history = source?._destination as any as HistoryReader<T>;
     if (history)
       history.unregister(this);
 
@@ -1604,7 +1638,12 @@ function isFunction(object: any): object is Function {
 
 // Determines whether the given object is an EventEmitter
 function isEventEmitter(object: any): object is EventEmitter {
-  return typeof object.on === 'function';
+  return typeof object?.on === 'function';
+}
+
+// Determines whether the given object is a promise
+function isPromise<T>(object: any): object is Promise<T> {
+  return typeof object?.then === 'function';
 }
 
 export interface BufferedIteratorOptions {
@@ -1613,7 +1652,7 @@ export interface BufferedIteratorOptions {
 }
 
 export interface TransformIteratorOptions<S> extends BufferedIteratorOptions {
-  source?: AsyncIterator<S>;
+  source?: AsyncIterator<S> | Promise<AsyncIterator<S>>;
   optional?: boolean;
   destroySource?: boolean;
 }
