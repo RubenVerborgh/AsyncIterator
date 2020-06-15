@@ -117,7 +117,7 @@ describe('ClonedIterator', () => {
     it('should throw an exception', () => {
       const source = new AsyncIterator(), destination = new TransformIterator(source);
       source.should.have.property('_destination', destination);
-      (function () { source.clone(); }).should.throw('The source already has a destination');
+      (() => source.clone()).should.throw('The source already has a destination');
     });
   });
 
@@ -889,7 +889,7 @@ describe('ClonedIterator', () => {
 // Returns a wrapper function that remembers its return value for subsequent calls
 function memoize(func, arg) {
   let result;
-  return function () { return result || (result = func(arg)); };
+  return () => (result || (result = func(arg)));
 }
 
 // Creates a single clone

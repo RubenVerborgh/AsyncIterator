@@ -128,7 +128,10 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       let i = 0;
       source = new ArrayIterator(['a', 'b', 'c']);
-      transform = sinon.spy(function (item, done) { this._push(item + (++i)); done(); });
+      transform = sinon.spy(function (item, done) {
+        this._push(item + (++i));
+        done();
+      });
       iterator = new SimpleTransformIterator(source, { transform });
     });
 
@@ -1455,7 +1458,7 @@ describe('SimpleTransformIterator', () => {
       before(() => {
         let i = 0;
         iterator = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-        map = function (item) { return item + (++i); };
+        map = item => item + (++i);
         prepend = new ArrayIterator(['i', 'ii', 'iii']);
         append = new ArrayIterator(['I', 'II', 'III']);
         result = iterator.transform({

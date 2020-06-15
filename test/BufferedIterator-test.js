@@ -105,7 +105,10 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that closes itself synchronously on read', () => {
     function createIterator(options) {
       const iterator = new BufferedIterator(options);
-      iterator._read = function (count, done) { this.close(); done(); };
+      iterator._read = function (count, done) {
+        this.close();
+        done();
+      };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
     }
@@ -561,7 +564,7 @@ describe('BufferedIterator', () => {
     let iterator, _readDone;
     function createIterator() {
       iterator = new BufferedIterator({ autoStart: false, maxBufferSize: 1 });
-      iterator._read = function (count, done) { _readDone = done; };
+      iterator._read = (count, done) => { _readDone = done; };
       sinon.spy(iterator, '_read');
       captureEvents(iterator, 'readable', 'end');
     }
@@ -1045,7 +1048,11 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that synchronously pushes "a" and ends', () => {
     function createIterator(options) {
       const iterator = new BufferedIterator(options);
-      iterator._read = function (count, done) { this._push('a'); this.close(); done(); };
+      iterator._read = function (count, done) {
+        this._push('a');
+        this.close();
+        done();
+      };
       sinon.spy(iterator, '_read');
       return captureEvents(iterator, 'readable', 'end');
     }
@@ -1400,7 +1407,7 @@ describe('BufferedIterator', () => {
     let iterator, readDone;
     before(done => {
       iterator = new BufferedIterator({ autoStart: false });
-      iterator._read = function (count, callback) { readDone = callback; };
+      iterator._read = (count, callback) => { readDone = callback; };
       // `queueMicrotask` because reading directly after construction does not call `_read`;
       // this is necessary to enable attaching a `_begin` hook after construction
       queueMicrotask(() => { iterator.read(); done(); });
@@ -1602,7 +1609,7 @@ describe('BufferedIterator', () => {
       iterator = new BufferedIterator();
       // Forcibly change the status to 'reading',
       // to test if the iterator deals with such an exceptional situation
-      iterator._changeState = function () { iterator._reading = true; };
+      iterator._changeState = function () { this._reading = true; };
       sinon.spy(iterator, '_read');
     });
 
@@ -1631,8 +1638,8 @@ describe('BufferedIterator', () => {
       iterator = new BufferedIterator();
       iterator._begin = function (done) {
         queueMicrotask(() => {
-          iterator._push('x');
-          iterator._push('y');
+          this._push('x');
+          this._push('y');
           done();
         });
       };
@@ -1752,7 +1759,7 @@ describe('BufferedIterator', () => {
     let iterator, beginDone;
     before(() => {
       iterator = new BufferedIterator();
-      iterator._begin = function (done) { beginDone = done; };
+      iterator._begin = done => { beginDone = done; };
     });
 
     it('should cause an exception', () => {
@@ -1941,8 +1948,8 @@ describe('BufferedIterator', () => {
       };
       iterator._flush = function (done) {
         queueMicrotask(() => {
-          iterator._push('x');
-          iterator._push('y');
+          this._push('x');
+          this._push('y');
           done();
         });
       };
@@ -2057,7 +2064,7 @@ describe('BufferedIterator', () => {
     let iterator, flushDone;
     before(() => {
       iterator = new BufferedIterator();
-      iterator._flush = function (done) { flushDone = done; };
+      iterator._flush = done => { flushDone = done; };
       iterator.close();
       iterator.read();
     });
@@ -2200,8 +2207,8 @@ describe('BufferedIterator', () => {
       };
       iterator._flush = function (done) {
         queueMicrotask(() => {
-          iterator._push('x');
-          iterator._push('y');
+          this._push('x');
+          this._push('y');
           done();
         });
       };

@@ -485,7 +485,7 @@ describe('AsyncIterator', () => {
       const items = [1];
       iterator = new AsyncIterator();
       iterator.readable = true;
-      iterator.read = function () { return items.shift() || iterator.close() || null; };
+      iterator.read = () => items.shift() || iterator.close() || null;
     });
 
     describe('after a data listener is attached', () => {
@@ -1022,7 +1022,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = function () { return i++ < 2 ? i : null; };
+        iterator.read = () => i++ < 2 ? i : null;
         callback = sinon.stub();
         result = iterator.forEach(callback);
       });
@@ -1055,7 +1055,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = function () { return i++ < 2 ? i : null; };
+        iterator.read = () => i++ < 2 ? i : null;
         callback = sinon.stub();
         result = iterator.forEach(callback, self);
       });

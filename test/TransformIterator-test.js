@@ -54,26 +54,26 @@ describe('TransformIterator', () => {
   describe('A TransformIterator', () => {
     it('disallows setting a falsy object as source', () => {
       const iterator = new TransformIterator();
-      (function () { iterator.source = null; })
+      (() => { iterator.source = null; })
         .should.throw('Invalid source: null');
     });
 
     it('disallows setting an object without `read` function as source', () => {
       const iterator = new TransformIterator();
-      (function () { iterator.source = { read: 1, on() { /* */ } }; })
+      (() => { iterator.source = { read: 1, on() { /* */ } }; })
         .should.throw('Invalid source: [object Object]');
     });
 
     it('disallows setting an object without `on` function as source', () => {
       const iterator = new TransformIterator();
-      (function () { iterator.source = { on: 1, read() { /* */ } }; })
+      (() => { iterator.source = { on: 1, read() { /* */ } }; })
         .should.throw('Invalid source: [object Object]');
     });
 
     it('disallows setting another source after one has been set', () => {
       const iterator = new TransformIterator();
       iterator.source = new EmptyIterator();
-      (function () { iterator.source = new EmptyIterator(); })
+      (() => { iterator.source = new EmptyIterator(); })
         .should.throw('The source cannot be changed after it has been set');
     });
 
@@ -106,8 +106,10 @@ describe('TransformIterator', () => {
       const source = new EmptyIterator(),
             iteratorA = new TransformIterator(),
             iteratorB = new TransformIterator();
-      (function () { iteratorA.source = source; }).should.not.throw();
-      (function () { iteratorB.source = source; }).should.throw('The source already has a destination');
+      (() => { iteratorA.source = source; })
+        .should.not.throw();
+      (() => { iteratorB.source = source; })
+        .should.throw('The source already has a destination');
     });
   });
 
