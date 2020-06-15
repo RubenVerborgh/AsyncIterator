@@ -360,6 +360,8 @@
             
                 <li data-name="module:asynciterator.ClonedIterator#_init"><a href="module-asynciterator.ClonedIterator.html#_init">_init</a></li>
             
+                <li data-name="module:asynciterator.ClonedIterator#_loadSourceAsync"><a href="module-asynciterator.ClonedIterator.html#_loadSourceAsync">_loadSourceAsync</a></li>
+            
                 <li data-name="module:asynciterator.ClonedIterator#_optionalTransform"><a href="module-asynciterator.ClonedIterator.html#_optionalTransform">_optionalTransform</a></li>
             
                 <li data-name="module:asynciterator.ClonedIterator#_push"><a href="module-asynciterator.ClonedIterator.html#_push">_push</a></li>
@@ -644,6 +646,8 @@
             
                 <li data-name="module:asynciterator.MultiTransformIterator#_init"><a href="module-asynciterator.MultiTransformIterator.html#_init">_init</a></li>
             
+                <li data-name="module:asynciterator.MultiTransformIterator#_loadSourceAsync"><a href="module-asynciterator.MultiTransformIterator.html#_loadSourceAsync">_loadSourceAsync</a></li>
+            
                 <li data-name="module:asynciterator.MultiTransformIterator#_optionalTransform"><a href="module-asynciterator.MultiTransformIterator.html#_optionalTransform">_optionalTransform</a></li>
             
                 <li data-name="module:asynciterator.MultiTransformIterator#_push"><a href="module-asynciterator.MultiTransformIterator.html#_push">_push</a></li>
@@ -757,6 +761,8 @@
                 <li data-name="module:asynciterator.SimpleTransformIterator#_flush"><a href="module-asynciterator.SimpleTransformIterator.html#_flush">_flush</a></li>
             
                 <li data-name="module:asynciterator.SimpleTransformIterator#_init"><a href="module-asynciterator.SimpleTransformIterator.html#_init">_init</a></li>
+            
+                <li data-name="module:asynciterator.SimpleTransformIterator#_loadSourceAsync"><a href="module-asynciterator.SimpleTransformIterator.html#_loadSourceAsync">_loadSourceAsync</a></li>
             
                 <li data-name="module:asynciterator.SimpleTransformIterator#_optionalTransform"><a href="module-asynciterator.SimpleTransformIterator.html#_optionalTransform">_optionalTransform</a></li>
             
@@ -956,6 +962,8 @@
             
                 <li data-name="module:asynciterator.TransformIterator#_init"><a href="module-asynciterator.TransformIterator.html#_init">_init</a></li>
             
+                <li data-name="module:asynciterator.TransformIterator#_loadSourceAsync"><a href="module-asynciterator.TransformIterator.html#_loadSourceAsync">_loadSourceAsync</a></li>
+            
                 <li data-name="module:asynciterator.TransformIterator#_optionalTransform"><a href="module-asynciterator.TransformIterator.html#_optionalTransform">_optionalTransform</a></li>
             
                 <li data-name="module:asynciterator.TransformIterator#_push"><a href="module-asynciterator.TransformIterator.html#_push">_push</a></li>
@@ -1051,7 +1059,7 @@ with a different iterator.</p></div>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1144
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1165
         </div>
         
     </div>
@@ -1788,7 +1796,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 982
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1003
         </div>
         
     </div>
@@ -1938,7 +1946,7 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1203
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1225
         </div>
         
     </div>
@@ -2834,6 +2842,79 @@ and changing state from INIT to OPEN.</p>
             
 <dt>
     <div class="nameContainer inherited">
+        <h4 class="name" id="_loadSourceAsync">
+            
+                <span class="inherited"><a href="module-asynciterator.TransformIterator.html#_loadSourceAsync">inherited</a></span>
+            
+            <span class="type-signature ">protected</span>_loadSourceAsync<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 923
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Initializes a source that was set through a promise</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer inherited">
         <h4 class="name" id="_optionalTransform">
             
                 <span class="inherited"><a href="module-asynciterator.TransformIterator.html#_optionalTransform">inherited</a></span>
@@ -2843,7 +2924,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 958
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 979
         </div>
         
     </div>
@@ -3040,7 +3121,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 926
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 950
         </div>
         
     </div>
@@ -3113,7 +3194,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 939
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 963
         </div>
         
     </div>
@@ -3259,7 +3340,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 974
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 995
         </div>
         
     </div>
@@ -3402,7 +3483,7 @@ The default implementation pushes the source item as-is.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 914
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 938
         </div>
         
     </div>
@@ -6690,7 +6771,7 @@ After this operation, only read the returned iterator instead of the current one
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Fri Jun 12 2020 20:28:16 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Jun 15 2020 21:25:09 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
