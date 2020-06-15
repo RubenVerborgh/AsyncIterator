@@ -290,7 +290,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A default TransformIterator with a one-item source', () => {
+  describe('A TransformIterator with a one-item source', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a']));
@@ -613,7 +613,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A default TransformIterator with a promise to a source', () => {
+  describe('A TransformIterator with a promise to a source', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);
@@ -702,7 +702,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A default TransformIterator with a promise and without autoStart', () => {
+  describe('A TransformIterator with a promise and without autoStart', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);
@@ -825,7 +825,22 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A default TransformIterator with a promise that resolves after closing', () => {
+  describe('A TransformIterator with a promise that is rejected', () => {
+    let iterator, error, errorHandler;
+    before(() => {
+      error = new Error('source creation error');
+      const rejected = Promise.resolve().then(() => { throw error; });
+      iterator = new TransformIterator(rejected);
+      iterator.on('error', errorHandler = sinon.stub());
+    });
+
+    it('should emit the error', () => {
+      errorHandler.should.have.been.calledOnce;
+      errorHandler.should.have.been.calledWith(error);
+    });
+  });
+
+  describe('A TransformIterator with a promise that resolves after closing', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);

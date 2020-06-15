@@ -1040,7 +1040,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
       this._sourcePromise.then(source => {
         this.source = source;
         this._fillBuffer();
-      });
+      }, error => this.emit('error', error));
       delete this._sourcePromise;
     }
   }
