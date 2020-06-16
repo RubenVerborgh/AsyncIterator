@@ -1,6 +1,7 @@
 import {
   AsyncIterator,
   IntegerIterator,
+  range,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
@@ -10,6 +11,23 @@ describe('IntegerIterator', () => {
     describe('the result when called with `new`', () => {
       let instance;
       before(() => { instance = new IntegerIterator(); });
+
+      it('should be an IntegerIterator object', () => {
+        instance.should.be.an.instanceof(IntegerIterator);
+      });
+
+      it('should be an AsyncIterator object', () => {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', () => {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `range', () => {
+      let instance;
+      before(() => { instance = range(); });
 
       it('should be an IntegerIterator object', () => {
         instance.should.be.an.instanceof(IntegerIterator);

@@ -1631,6 +1631,14 @@ export function fromArray<T>(items: T[]) {
   return new ArrayIterator<T>(items);
 }
 
+/**
+  Creates an iterator of integers for the given numeric range.
+  @param {Array} items the items
+ */
+export function range(start: number, end: number, step?: number) {
+  return new IntegerIterator({ start, end, step });
+}
+
 // Determines whether the given object is a function
 function isFunction(object: any): object is Function {
   return typeof object === 'function';
