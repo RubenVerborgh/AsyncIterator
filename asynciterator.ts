@@ -1020,7 +1020,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     source._destination = this;
 
     // Close this iterator if the source has already ended
-    if (source.ended) {
+    if (source.done) {
       this.close();
     }
     // Otherwise, react to source events
@@ -1083,7 +1083,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // try to read and transform the next item.
     let item;
     const source = this.source as Source<S>;
-    if (!source || source.ended || (item = source.read()) === null)
+    if (!source || source.done || (item = source.read()) === null)
       done();
     else if (!this._optional)
       this._transform(item, next);
@@ -1226,7 +1226,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
     // Verify we have a readable source
     let item;
     const { source } = this;
-    if (!source || source.ended) {
+    if (!source || source.done) {
       done();
       return;
     }
@@ -1282,7 +1282,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
   // Inserts items in the iterator
   protected _insert(inserter: AsyncIterator<D> | undefined, done: () => void) {
     const push = (item: D) => this._push(item);
-    if (!inserter || inserter.ended) {
+    if (!inserter || inserter.done) {
       done();
     }
     else {
@@ -1311,7 +1311,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
     // Remove transformers that have ended
     const transformerQueue = this._transformerQueue, optional = this._optional;
     let head, item;
-    while ((head = transformerQueue[0]) && head.transformer.ended) {
+    while ((head = transformerQueue[0]) && head.transformer.done) {
       // If transforming is optional, push the original item if none was pushed
       if (optional && head.item !== null) {
         count--;
@@ -1327,7 +1327,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 
     // Create new transformers if there are less than the maximum buffer size
     const { source } = this;
-    while (source && !source.ended && transformerQueue.length < this.maxBufferSize) {
+    while (source && !source.done && transformerQueue.length < this.maxBufferSize) {
       // Read an item to create the next transformer
       item = source.read();
       if (item === null)
@@ -1354,7 +1354,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
       }
     }
     // End the iterator if the source has ended
-    else if (source && source.ended) {
+    else if (source && source.done) {
       this.close();
     }
     done();
@@ -1529,7 +1529,7 @@ class HistoryReader<T> {
   constructor(source: AsyncIterator<T>) {
     // If the source can still emit items, set up cloning
     this._source = source;
-    if (!source.ended) {
+    if (!source.done) {
       // When the source becomes readable, makes all clones readable
       const setReadable = () => {
         for (const clone of this._clones as ClonedIterator<T>[])
@@ -1584,14 +1584,14 @@ class HistoryReader<T> {
     if (pos < this._history.length)
       item = this._history[pos];
     // Read a new item from the source when possible
-    else if (!this._source.ended && (item = this._source.read()) !== null)
+    else if (!this._source.done && (item = this._source.read()) !== null)
       this._history[pos] = item;
     return item;
   }
 
   // Determines whether the given position is the end of the source
   endsAt(pos: number) {
-    return this._source.ended && this._history.length === pos;
+    return this._source.done && this._history.length === pos;
   }
 }
 
