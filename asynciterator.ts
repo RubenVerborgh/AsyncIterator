@@ -418,7 +418,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {object?} self The `this` pointer for the filter function
     @returns {module:asynciterator.AsyncIterator} A new iterator that filters items from this iterator
   */
-  filter(filter: (item: T) => boolean, self: any): AsyncIterator<T> {
+  filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
     return this.transform({ filter: self ? filter.bind(self) : filter });
   }
 
