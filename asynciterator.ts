@@ -1694,8 +1694,8 @@ class HistoryReader<T> {
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(source: EventEmitter, options?: TransformIteratorOptions<T>) {
-  return new TransformIterator<T>(source as AsyncIterator<T>, options);
+export function wrap<T>(source: EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
+  return new TransformIterator<T>(source as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
 }
 
 /**
