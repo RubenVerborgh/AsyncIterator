@@ -491,7 +491,7 @@ export class AsyncIterator<T> extends EventEmitter {
     After this operation, only read the returned copies instead of the original iterator.
     @returns {module:asynciterator.AsyncIterator} A new iterator that contains all future items of this iterator
   */
-  clone(): AsyncIterator<T> {
+  clone(): ClonedIterator<T> {
     return new ClonedIterator<T>(this);
   }
 }
