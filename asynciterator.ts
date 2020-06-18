@@ -1305,6 +1305,36 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
 export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   private _transformerQueue: { item: S | null, transformer: Source<D> }[] = [];
 
+  /**
+   Creates a new `MultiTransformIterator`.
+   @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
+   @param {object|Function} [options] Settings of the iterator, or the transformation function
+   @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
+   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+   @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
+   @param {integer} [options.offset] The number of items to skip
+   @param {integer} [options.limit] The maximum number of items
+   @param {Function} [options.filter] A function to synchronously filter items from the source
+   @param {Function} [options.map] A function to synchronously transform items from the source
+   @param {Function} [options.transform] A function to asynchronously transform items from the source
+   @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
+   @param {Function} [options.multiTransform] A function to asynchronously transform items to iterators from the source
+   @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
+   @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
+   */
+  constructor(source: AsyncIterator<S>,
+              options?: MultiTransformOptions<S, D> |
+                        MultiTransformOptions<S, D> & ((item: S) => AsyncIterator<D>)) {
+    super(source, options as TransformIteratorOptions<S>);
+
+    // Set transformation steps from the options
+    if (options) {
+      const multiTransform = isFunction(options) ? options : options.multiTransform;
+      if (multiTransform)
+        this._createTransformer = multiTransform;
+    }
+  }
+
   /* Tries to read and transform items */
   protected _read(count: number, done: () => void) {
     // Remove transformers that have ended
@@ -1773,6 +1803,10 @@ export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
   filter?: (item: S) => boolean;
   map?: (item: S) => D;
   transform?: (item: S, done: () => void, push: (item: D) => void) => void;
+}
+
+export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {
+  multiTransform?: (item: S) => AsyncIterator<D>;
 }
 
 type AsyncIteratorOrArray<T> = AsyncIterator<T> | T[];

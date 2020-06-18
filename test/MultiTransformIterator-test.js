@@ -312,4 +312,78 @@ describe('MultiTransformIterator', () => {
       iterator._eventCounts.error.should.equal(4);
     });
   });
+
+  describe('A MultiTransformIterator with a multiTransform option', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      const multiTransform = sinon.spy(item => {
+        const transformer = new BufferedIterator();
+        queueMicrotask(() => {
+          transformer._push(`${item}1`);
+          transformer._push(`${item}2`);
+          transformer._push(`${item}3`);
+          transformer.close();
+        });
+        return transformer;
+      });
+      iterator = new MultiTransformIterator(source, { multiTransform });
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items', () => {
+        items.should.deep.equal([
+          'a1', 'a2', 'a3',
+          'b1', 'b2', 'b3',
+          'c1', 'c2', 'c3',
+          'd1', 'd2', 'd3',
+          'e1', 'e2', 'e3',
+          'f1', 'f2', 'f3',
+        ]);
+      });
+    });
+  });
+
+  describe('A MultiTransformIterator with a direct multiTransform argument', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      const multiTransform = sinon.spy(item => {
+        const transformer = new BufferedIterator();
+        queueMicrotask(() => {
+          transformer._push(`${item}1`);
+          transformer._push(`${item}2`);
+          transformer._push(`${item}3`);
+          transformer.close();
+        });
+        return transformer;
+      });
+      iterator = new MultiTransformIterator(source, multiTransform);
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items', () => {
+        items.should.deep.equal([
+          'a1', 'a2', 'a3',
+          'b1', 'b2', 'b3',
+          'c1', 'c2', 'c3',
+          'd1', 'd2', 'd3',
+          'e1', 'e2', 'e3',
+          'f1', 'f2', 'f3',
+        ]);
+      });
+    });
+  });
 });
