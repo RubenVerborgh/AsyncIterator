@@ -1084,7 +1084,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     if (!source || source.done || (item = source.read()) === null)
       done();
     else if (!this._optional)
-      this._transform(item, next);
+      this._transform(item, next, this._push.bind(this));
     else
       this._optionalTransform(item, next);
   }
@@ -1099,7 +1099,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
       if (pushedCount === this._pushedCount)
         this._push(item as any as D);
       done();
-    });
+    }, this._push.bind(this));
   }
 
   /**
@@ -1109,8 +1109,9 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @protected
     @param {object} item The last read item from the source
     @param {function} done To be called when reading is complete
+    @param {function} push A callback to push zero or more transformation results.
   */
-  protected _transform(item: S, done: () => void) {
+  protected _transform(item: S, done: () => void, push: (item: D) => void) {
     this._push(item as any as D);
     done();
   }
@@ -1252,7 +1253,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
       // Asynchronously transform the item, and wait for `next` to call back
       else {
         if (!this._optional)
-          this._transform(mappedItem as S, next);
+          this._transform(mappedItem as S, next, this._push.bind(this));
         else
           this._optionalTransform(mappedItem as S, next);
         return;
@@ -1771,7 +1772,7 @@ export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
 
   filter?: (item: S) => boolean;
   map?: (item: S) => D;
-  transform?: (item: S, done: () => void) => void;
+  transform?: (item: S, done: () => void, push: (item: D) => void) => void;
 }
 
 type AsyncIteratorOrArray<T> = AsyncIterator<T> | T[];
