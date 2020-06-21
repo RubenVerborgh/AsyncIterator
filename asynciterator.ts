@@ -968,6 +968,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _sourcePromise?: Promise<Source<S>>;
   protected _destroySource: boolean;
   protected _optional: boolean;
+  protected _boundPush = (item: D) => this._push(item);
 
   /**
     Creates a new `TransformIterator`.
@@ -982,11 +983,11 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   constructor(source?: AsyncIterator<S> | Promise<AsyncIterator<S>>,
               options: TransformIteratorOptions<S> =
                 source as TransformIteratorOptions<S> || {}) {
+    super(options);
+
     // Shift parameters if needed
     if (!source || !(isEventEmitter(source) || isPromise(source)))
       source = options.source;
-    super(options);
-
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
       this.source = source;
@@ -1084,7 +1085,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     if (!source || source.done || (item = source.read()) === null)
       done();
     else if (!this._optional)
-      this._transform(item, next, this._push.bind(this));
+      this._transform(item, next, this._boundPush);
     else
       this._optionalTransform(item, next);
   }
@@ -1099,7 +1100,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
       if (pushedCount === this._pushedCount)
         this._push(item as any as D);
       done();
-    }, this._push.bind(this));
+    }, this._boundPush);
   }
 
   /**
@@ -1112,7 +1113,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {function} push A callback to push zero or more transformation results.
   */
   protected _transform(item: S, done: () => void, push: (item: D) => void) {
-    this._push(item as any as D);
+    push(item as any as D);
     done();
   }
 
@@ -1253,7 +1254,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
       // Asynchronously transform the item, and wait for `next` to call back
       else {
         if (!this._optional)
-          this._transform(mappedItem as S, next, this._push.bind(this));
+          this._transform(mappedItem as S, next, this._boundPush);
         else
           this._optionalTransform(mappedItem as S, next);
         return;
