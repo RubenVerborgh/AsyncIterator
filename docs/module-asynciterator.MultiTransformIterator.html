@@ -1156,12 +1156,12 @@ with a different iterator.</p></div>
     <div class="nameContainer">
         <h4 class="name" id="MultiTransformIterator">
             
-            new module:asynciterator.MultiTransformIterator<span class="signature">()</span>
+            new module:asynciterator.MultiTransformIterator<span class="signature">(<span class="optional">source</span>, <span class="optional">options</span>)</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1165
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1184
         </div>
         
     </div>
@@ -1171,11 +1171,547 @@ with a different iterator.</p></div>
 <dd>
     
     
+    <div class="description">
+        <p>Creates a new <code>MultiTransformIterator</code>.</p>
+    </div>
+    
 
     
     
     
     
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
+|
+
+<span class="param-type">Readable</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The source this iterator generates items from</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Settings of the iterator, or the transformation function</p>
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>maxbufferSize</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    4
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The maximum number of items to keep in the buffer</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>autoStart</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Whether buffering starts directly after construction</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The source this iterator generates items from</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>offset</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The number of items to skip</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The maximum number of items</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>A function to synchronously filter items from the source</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>map</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>A function to synchronously transform items from the source</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>transform</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>A function to asynchronously transform items from the source</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>optional</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If transforming is optional, the original item is pushed when its mapping yields <code>null</code> or its transformation yields no items</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>multiTransform</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>A function to asynchronously transform items to iterators from the source</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>prepend</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+|
+
+<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Items to insert before the source items</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>append</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+|
+
+<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Items to insert after the source items</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
     
     
     
@@ -1898,7 +2434,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1003
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1005
         </div>
         
     </div>
@@ -2048,7 +2584,7 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1225
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 1250
         </div>
         
     </div>
@@ -2953,7 +3489,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 923
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 924
         </div>
         
     </div>
@@ -3026,7 +3562,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 979
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 980
         </div>
         
     </div>
@@ -3223,7 +3759,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 950
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 951
         </div>
         
     </div>
@@ -3296,7 +3832,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 963
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 964
         </div>
         
     </div>
@@ -3437,12 +3973,12 @@ if the transformation yields no items, pushes the original item.</p>
             
                 <span class="inherited"><a href="module-asynciterator.TransformIterator.html#_transform">inherited</a></span>
             
-            <span class="type-signature ">protected</span>_transform<span class="signature">(item, done)</span>
+            <span class="type-signature ">protected</span>_transform<span class="signature">(item, done, push)</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 995
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 997
         </div>
         
     </div>
@@ -3529,6 +4065,29 @@ The default implementation pushes the source item as-is.</p>
         </tr>
 	
 	
+	
+        <tr>
+            
+                <td class="name"><code>push</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>A callback to push zero or more transformation results.</p></td>
+        </tr>
+	
+	
 	</tbody>
 </table>
     
@@ -3585,7 +4144,7 @@ The default implementation pushes the source item as-is.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 938
+            /home/travis/build/RubenVerborgh/AsyncIterator/asynciterator.mjs, line 939
         </div>
         
     </div>
@@ -6873,7 +7432,7 @@ After this operation, only read the returned iterator instead of the current one
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Tue Jun 16 2020 15:49:22 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Sun Jun 21 2020 19:36:05 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
