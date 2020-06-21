@@ -127,6 +127,91 @@ describe('ArrayIterator', () => {
     });
   });
 
+  describe('An ArrayIterator with an empty array without autoStart', () => {
+    let iterator;
+    before(() => {
+      iterator = new ArrayIterator([], { autoStart: false });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[ArrayIterator (0)]');
+    });
+
+    describe('before calling read', () => {
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should no have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should not have been destroyed', () => {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should not be done', () => {
+        iterator.done.should.be.false;
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('should return null when read is called', () => {
+        expect(iterator.read()).to.be.null;
+      });
+
+      it('should return null when read is called', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+
+    describe('after calling read', () => {
+      let result;
+      before(() => {
+        result = iterator.read();
+      });
+
+      it('should not have emitted the `readable` event anymore', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', () => {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', () => {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+
+      it('should have returned null', () => {
+        expect(result).to.be.null;
+      });
+
+      it('should return null when read is called', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+  });
+
   describe('An ArrayIterator with a one-item array', () => {
     let iterator, item;
     before(() => {

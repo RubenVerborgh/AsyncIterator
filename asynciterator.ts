@@ -585,13 +585,16 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items?: Iterable<T>) {
+  constructor(items?: Iterable<T>, { autoStart = true } = {}) {
     super();
-    this._buffer = items ? [...items] : [];
-    if (this._buffer.length === 0)
+    const buffer = items ? [...items] : [];
+    if (autoStart !== false && buffer.length === 0) {
       this.close();
-    else
+    }
+    else {
       this.readable = true;
+      this._buffer = buffer;
+    }
   }
 
   /* Reads an item from the iterator. */
