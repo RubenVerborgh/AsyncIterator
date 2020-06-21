@@ -83,50 +83,6 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with a non-array', () => {
-    let iterator;
-    before(() => {
-      iterator = new ArrayIterator({ foo: 1, bar: 2 });
-      captureEvents(iterator, 'readable', 'end');
-    });
-
-    it('should provide a readable `toString` representation', () => {
-      iterator.toString().should.equal('[ArrayIterator (0)]');
-    });
-
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
-    });
-
-    it('should have emitted the `end` event', () => {
-      iterator._eventCounts.end.should.equal(1);
-    });
-
-    it('should have ended', () => {
-      iterator.ended.should.be.true;
-    });
-
-    it('should not have been destroyed', () => {
-      iterator.destroyed.should.be.false;
-    });
-
-    it('should be done', () => {
-      iterator.done.should.be.true;
-    });
-
-    it('should not be readable', () => {
-      iterator.readable.should.be.false;
-    });
-
-    it('should return null when read is called', () => {
-      expect(iterator.read()).to.be.null;
-    });
-
-    it('should return null when read is called', () => {
-      expect(iterator.read()).to.be.null;
-    });
-  });
-
   describe('An ArrayIterator with an empty array', () => {
     let iterator;
     before(() => {
@@ -383,10 +339,15 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with a three-item array-like object', () => {
+  describe('An ArrayIterator with an iterable object', () => {
     let iterator, item;
     before(() => {
-      iterator = new ArrayIterator({ length: '3', 0: 1, 1: 2, 2: 3 });
+      const items = [1, 2, 3];
+      const iterable = {
+        next: () => ({ done: items.length === 0, value: items.shift() }),
+        [Symbol.iterator]: () => iterable,
+      };
+      iterator = new ArrayIterator(iterable);
       captureEvents(iterator, 'readable', 'end');
     });
 

@@ -373,7 +373,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {module:asynciterator.AsyncIterator} source The iterator to copy from
     @param {Array} propertyNames List of property names to copy
   */
-  copyProperties(source: AsyncIterator<any>, propertyNames: [string]) {
+  copyProperties(source: AsyncIterator<any>, propertyNames: string[]) {
     for (const propertyName of propertyNames) {
       source.getProperty(propertyName, value =>
         this.setProperty(propertyName, value));
@@ -585,24 +585,23 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items?: T[]) {
+  constructor(items?: Iterable<T>) {
     super();
-    if (!items?.length) {
+    this._buffer = items ? [...items] : [];
+    if (this._buffer.length === 0)
       this.close();
-    }
-    else {
-      this._buffer = Array.prototype.slice.call(items);
+    else
       this.readable = true;
-    }
   }
 
   /* Reads an item from the iterator. */
   read() {
-    const buffer = this._buffer;
     let item = null;
+    const buffer = this._buffer;
     if (buffer) {
-      item = buffer.shift() as T;
-      if (!buffer.length) {
+      if (buffer.length !== 0)
+        item = buffer.shift() as T;
+      if (buffer.length === 0) {
         delete this._buffer;
         this.close();
       }
@@ -1752,7 +1751,7 @@ export function single<T>(item: T) {
   Creates an iterator for the given array.
   @param {Array} items the items
  */
-export function fromArray<T>(items: T[]) {
+export function fromArray<T>(items: Iterable<T>) {
   return new ArrayIterator<T>(items);
 }
 
