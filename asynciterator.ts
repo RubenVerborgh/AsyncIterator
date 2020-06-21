@@ -964,8 +964,8 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   @extends module:asynciterator.BufferedIterator
 */
 export class TransformIterator<S, D = S> extends BufferedIterator<D> {
-  protected _source?: Source<S>;
-  protected _sourcePromise?: Promise<Source<S>>;
+  protected _source?: InternalSource<S>;
+  protected _createSource?: (() => AsyncIteratorOrPromise<S>) | null;
   protected _destroySource: boolean;
   protected _optional: boolean;
   protected _boundPush = (item: D) => this._push(item);
@@ -980,21 +980,21 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
   */
-  constructor(source?: AsyncIterator<S> | Promise<AsyncIterator<S>>,
+  constructor(source?: SourceExpression<S>,
               options: TransformIteratorOptions<S> =
                 source as TransformIteratorOptions<S> || {}) {
     super(options);
 
     // Shift parameters if needed
-    if (!source || !(isEventEmitter(source) || isPromise(source)))
+    if (!source || !(isEventEmitter(source) || isPromise(source) || isFunction(source)))
       source = options.source;
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
       this.source = source;
     }
-    // The passed value is a promise to a source
-    else if (isPromise(source)) {
-      this._sourcePromise = source as Promise<Source<S>>;
+    // The passed value is a promise or source creation function
+    else if (source) {
+      this._createSource = isPromise(source) ? () => source as any : source;
       if (options.autoStart !== false)
         this._loadSourceAsync();
     }
@@ -1008,7 +1008,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @type module:asynciterator.AsyncIterator
   */
   get source() : AsyncIterator<S> | undefined {
-    if (this._sourcePromise)
+    if (isFunction(this._createSource))
       this._loadSourceAsync();
     return this._source;
   }
@@ -1035,12 +1035,15 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @protected
   */
   protected _loadSourceAsync() {
-    if (this._sourcePromise) {
-      this._sourcePromise.then(source => {
+    if (isFunction(this._createSource)) {
+      // Assign the source after resolving
+      Promise.resolve(this._createSource()).then(source => {
+        delete this._createSource;
         this.source = source;
         this._fillBuffer();
       }, error => this.emit('error', error));
-      delete this._sourcePromise;
+      // Signal that source creation is pending
+      this._createSource = null;
     }
   }
 
@@ -1051,13 +1054,13 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {boolean} allowDestination Whether the source can already have a destination
   */
   protected _validateSource(source?: AsyncIterator<S>, allowDestination = false) {
-    if (this._source || this._sourcePromise)
+    if (this._source || typeof this._createSource !== 'undefined')
       throw new Error('The source cannot be changed after it has been set');
     if (!source || !isFunction(source.read) || !isFunction(source.on))
       throw new Error(`Invalid source: ${source}`);
     if (!allowDestination && (source as any)._destination)
       throw new Error('The source already has a destination');
-    return source as Source<S>;
+    return source as InternalSource<S>;
   }
 
   /**
@@ -1081,7 +1084,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // If the source exists and still can read items,
     // try to read and transform the next item.
     let item;
-    const source = this.source as Source<S>;
+    const source = this.source as InternalSource<S>;
     if (!source || source.done || (item = source.read()) === null)
       done();
     else if (!this._optional)
@@ -1140,13 +1143,13 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   }
 }
 
-function destinationEmitError<S>(this: Source<S>, error: Error) {
+function destinationEmitError<S>(this: InternalSource<S>, error: Error) {
   this._destination.emit('error', error);
 }
-function destinationCloseWhenDone<S>(this: Source<S>) {
+function destinationCloseWhenDone<S>(this: InternalSource<S>) {
   (this._destination as any)._closeWhenDone();
 }
-function destinationFillBuffer<S>(this: Source<S>) {
+function destinationFillBuffer<S>(this: InternalSource<S>) {
   (this._destination as any)._fillBuffer();
 }
 
@@ -1180,13 +1183,13 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
     @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
     @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
   */
-  constructor(source: AsyncIterator<S>,
+  constructor(source: SourceExpression<S>,
               options: TransformOptions<S, D> |
                        TransformOptions<S, D> & ((item: S, done: () => void) => void)) {
     super(source, options as TransformIteratorOptions<S>);
 
     // Set transformation steps from the options
-    options = options || !isFunction(source && source.read) && source;
+    options = options || !isFunction((source as any)?.read) && source;
     if (options) {
       const transform = isFunction(options) ? options : options.transform;
       const { limit, offset, filter, map, prepend, append } = options;
@@ -1304,7 +1307,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
   @extends module:asynciterator.TransformIterator
 */
 export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
-  private _transformerQueue: { item: S | null, transformer: Source<D> }[] = [];
+  private _transformerQueue: { item: S | null, transformer: InternalSource<D> }[] = [];
 
   /**
    Creates a new `MultiTransformIterator`.
@@ -1364,7 +1367,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
         break;
       // Create the transformer and listen to its events
       const transformer = (this._createTransformer(item) ||
-        new EmptyIterator()) as Source<D>;
+        new EmptyIterator()) as InternalSource<D>;
       transformer._destination = this;
       transformer.on('end', destinationFillBuffer);
       transformer.on('readable', destinationFillBuffer);
@@ -1412,7 +1415,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   @extends module:asynciterator.BufferedIterator
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
-  private _sources : Source<T>[] = [];
+  private _sources : InternalSource<T>[] = [];
   private _sourcesComplete = true;
   private _currentSource = -1;
 
@@ -1428,13 +1431,13 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     // Sources have been passed as a non-empty array
     if (Array.isArray(sources) && sources.length > 0) {
       for (const source of sources)
-        this._addSource(source as Source<T>);
+        this._addSource(source as InternalSource<T>);
     }
     // Sources have been passed as an open iterator
     else if (isEventEmitter(sources) && !sources.done) {
       this._sourcesComplete = false;
       sources.on('data', source => {
-        this._addSource(source as Source<T>);
+        this._addSource(source as InternalSource<T>);
         this._fillBufferAsync();
       });
       sources.on('end', () => {
@@ -1450,7 +1453,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   }
 
   // Adds the given source to the internal sources array
-  protected _addSource(source: Source<T>) {
+  protected _addSource(source: InternalSource<T>) {
     if (!source.done) {
       this._sources.push(source);
       source._destination = this;
@@ -1495,7 +1498,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   }
 }
 
-function destinationRemoveEmptySources<T>(this: Source<T>) {
+function destinationRemoveEmptySources<T>(this: InternalSource<T>) {
   (this._destination as any)._removeEmptySources();
 }
 
@@ -1611,7 +1614,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   /* Tries to read an item */
   read() {
-    const source = this.source as Source<T>;
+    const source = this.source as InternalSource<T>;
     let item = null;
     if (!this.done && source) {
       // Try to read an item at the current point in history
@@ -1630,7 +1633,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   /* End the iterator and cleans up. */
   protected _end(destroy: boolean) {
     // Unregister from a possible history reader
-    const source = this.source as Source<T>;
+    const source = this.source as InternalSource<T>;
     const history = source?._destination as any as HistoryReader<T>;
     if (history)
       history.unregister(this);
@@ -1776,12 +1779,12 @@ function isFunction(object: any): object is Function {
 
 // Determines whether the given object is an EventEmitter
 function isEventEmitter(object: any): object is EventEmitter {
-  return typeof object?.on === 'function';
+  return object && typeof object.on === 'function';
 }
 
 // Determines whether the given object is a promise
 function isPromise<T>(object: any): object is Promise<T> {
-  return typeof object?.then === 'function';
+  return object && typeof object.then === 'function';
 }
 
 export interface BufferedIteratorOptions {
@@ -1790,7 +1793,7 @@ export interface BufferedIteratorOptions {
 }
 
 export interface TransformIteratorOptions<S> extends BufferedIteratorOptions {
-  source?: AsyncIterator<S> | Promise<AsyncIterator<S>>;
+  source?: SourceExpression<S>;
   optional?: boolean;
   destroySource?: boolean;
 }
@@ -1810,5 +1813,17 @@ export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {
   multiTransform?: (item: S) => AsyncIterator<D>;
 }
 
-type AsyncIteratorOrArray<T> = AsyncIterator<T> | T[];
-type Source<T> = AsyncIterator<T> & { _destination: AsyncIterator<any> };
+type AsyncIteratorOrArray<T> =
+  T[] |
+  AsyncIterator<T>;
+
+type AsyncIteratorOrPromise<T> =
+  AsyncIterator<T> |
+  Promise<AsyncIterator<T>>;
+
+type SourceExpression<T> =
+  AsyncIteratorOrPromise<T> |
+  (() => AsyncIteratorOrPromise<T>);
+
+type InternalSource<T> =
+  AsyncIterator<T> & { _destination: AsyncIterator<any> };
