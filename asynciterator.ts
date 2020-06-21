@@ -418,7 +418,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {object?} self The `this` pointer for the filter function
     @returns {module:asynciterator.AsyncIterator} A new iterator that filters items from this iterator
   */
-  filter(filter: (item: T) => boolean, self: any): AsyncIterator<T> {
+  filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
     return this.transform({ filter: self ? filter.bind(self) : filter });
   }
 
@@ -491,7 +491,7 @@ export class AsyncIterator<T> extends EventEmitter {
     After this operation, only read the returned copies instead of the original iterator.
     @returns {module:asynciterator.AsyncIterator} A new iterator that contains all future items of this iterator
   */
-  clone(): AsyncIterator<T> {
+  clone(): ClonedIterator<T> {
     return new ClonedIterator<T>(this);
   }
 }
@@ -968,6 +968,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _sourcePromise?: Promise<Source<S>>;
   protected _destroySource: boolean;
   protected _optional: boolean;
+  protected _boundPush = (item: D) => this._push(item);
 
   /**
     Creates a new `TransformIterator`.
@@ -982,11 +983,11 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   constructor(source?: AsyncIterator<S> | Promise<AsyncIterator<S>>,
               options: TransformIteratorOptions<S> =
                 source as TransformIteratorOptions<S> || {}) {
+    super(options);
+
     // Shift parameters if needed
     if (!source || !(isEventEmitter(source) || isPromise(source)))
       source = options.source;
-    super(options);
-
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
       this.source = source;
@@ -1084,7 +1085,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     if (!source || source.done || (item = source.read()) === null)
       done();
     else if (!this._optional)
-      this._transform(item, next);
+      this._transform(item, next, this._boundPush);
     else
       this._optionalTransform(item, next);
   }
@@ -1099,7 +1100,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
       if (pushedCount === this._pushedCount)
         this._push(item as any as D);
       done();
-    });
+    }, this._boundPush);
   }
 
   /**
@@ -1109,9 +1110,10 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @protected
     @param {object} item The last read item from the source
     @param {function} done To be called when reading is complete
+    @param {function} push A callback to push zero or more transformation results.
   */
-  protected _transform(item: S, done: () => void) {
-    this._push(item as any as D);
+  protected _transform(item: S, done: () => void, push: (item: D) => void) {
+    push(item as any as D);
     done();
   }
 
@@ -1252,7 +1254,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
       // Asynchronously transform the item, and wait for `next` to call back
       else {
         if (!this._optional)
-          this._transform(mappedItem as S, next);
+          this._transform(mappedItem as S, next, this._boundPush);
         else
           this._optionalTransform(mappedItem as S, next);
         return;
@@ -1303,6 +1305,36 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
 */
 export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   private _transformerQueue: { item: S | null, transformer: Source<D> }[] = [];
+
+  /**
+   Creates a new `MultiTransformIterator`.
+   @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
+   @param {object|Function} [options] Settings of the iterator, or the transformation function
+   @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
+   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+   @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
+   @param {integer} [options.offset] The number of items to skip
+   @param {integer} [options.limit] The maximum number of items
+   @param {Function} [options.filter] A function to synchronously filter items from the source
+   @param {Function} [options.map] A function to synchronously transform items from the source
+   @param {Function} [options.transform] A function to asynchronously transform items from the source
+   @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its mapping yields `null` or its transformation yields no items
+   @param {Function} [options.multiTransform] A function to asynchronously transform items to iterators from the source
+   @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
+   @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
+   */
+  constructor(source: AsyncIterator<S>,
+              options?: MultiTransformOptions<S, D> |
+                        MultiTransformOptions<S, D> & ((item: S) => AsyncIterator<D>)) {
+    super(source, options as TransformIteratorOptions<S>);
+
+    // Set transformation steps from the options
+    if (options) {
+      const multiTransform = isFunction(options) ? options : options.multiTransform;
+      if (multiTransform)
+        this._createTransformer = multiTransform;
+    }
+  }
 
   /* Tries to read and transform items */
   protected _read(count: number, done: () => void) {
@@ -1694,8 +1726,8 @@ class HistoryReader<T> {
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(source: EventEmitter, options?: TransformIteratorOptions<T>) {
-  return new TransformIterator<T>(source as AsyncIterator<T>, options);
+export function wrap<T>(source: EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
+  return new TransformIterator<T>(source as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
 }
 
 /**
@@ -1771,7 +1803,11 @@ export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
 
   filter?: (item: S) => boolean;
   map?: (item: S) => D;
-  transform?: (item: S, done: () => void) => void;
+  transform?: (item: S, done: () => void, push: (item: D) => void) => void;
+}
+
+export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {
+  multiTransform?: (item: S) => AsyncIterator<D>;
 }
 
 type AsyncIteratorOrArray<T> = AsyncIterator<T> | T[];
