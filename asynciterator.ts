@@ -986,7 +986,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     super(options);
 
     // Shift parameters if needed
-    if (!source || !(isEventEmitter(source) || isPromise(source) || isFunction(source)))
+    if (!isSourceExpression(source))
       source = options.source;
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
@@ -1183,13 +1183,13 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
     @param {Array|module:asynciterator.AsyncIterator} [options.prepend] Items to insert before the source items
     @param {Array|module:asynciterator.AsyncIterator} [options.append]  Items to insert after the source items
   */
-  constructor(source: SourceExpression<S>,
-              options: TransformOptions<S, D> |
+  constructor(source?: SourceExpression<S>,
+              options?: TransformOptions<S, D> |
                        TransformOptions<S, D> & ((item: S, done: () => void) => void)) {
     super(source, options as TransformIteratorOptions<S>);
 
     // Set transformation steps from the options
-    options = options || !isFunction((source as any)?.read) && source;
+    options = options || (!isSourceExpression(source) ? source : null as any);
     if (options) {
       const transform = isFunction(options) ? options : options.transform;
       const { limit, offset, filter, map, prepend, append } = options;
@@ -1785,6 +1785,11 @@ function isEventEmitter(object: any): object is EventEmitter {
 // Determines whether the given object is a promise
 function isPromise<T>(object: any): object is Promise<T> {
   return object && typeof object.then === 'function';
+}
+
+// Determines whether the given object is a source expression
+function isSourceExpression<T>(object: any): object is SourceExpression<T> {
+  return object && (isEventEmitter(object) || isPromise(object) || isFunction(object));
 }
 
 export interface BufferedIteratorOptions {
