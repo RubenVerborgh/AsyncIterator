@@ -1418,7 +1418,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
   private _sources : InternalSource<T>[] = [];
-  private _sourcesComplete = true;
+  private _pending? : { sources?: AsyncIterator<AsyncIterator<T>> };
   private _currentSource = -1;
 
   /**
@@ -1427,30 +1427,49 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     @param {object} [options] Settings of the iterator
   */
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>>,
-              options?: BufferedIteratorOptions) {
+              options: BufferedIteratorOptions = {}) {
     super(options);
+    const autoStart = options.autoStart !== false;
 
+    // Sources have been passed as an iterator
+    if (isEventEmitter(sources)) {
+      sources.on('error', error => this.emit('error', error));
+      this._pending = { sources };
+      if (autoStart)
+        this._loadSources();
+    }
     // Sources have been passed as a non-empty array
-    if (Array.isArray(sources) && sources.length > 0) {
+    else if (Array.isArray(sources) && sources.length > 0) {
       for (const source of sources)
         this._addSource(source as InternalSource<T>);
     }
-    // Sources have been passed as an open iterator
-    else if (isEventEmitter(sources) && !sources.done) {
-      this._sourcesComplete = false;
+    // Sources are an empty list
+    else if (autoStart) {
+      this.close();
+    }
+  }
+
+  // Loads sources passed as an iterator
+  protected _loadSources() {
+    // Obtain sources iterator
+    const sources = this._pending!.sources!;
+    delete this._pending!.sources;
+
+    // Close immediately if done
+    if (sources.done) {
+      delete this._pending;
+      this.close();
+    }
+    // Otherwise, set up source reading
+    else {
       sources.on('data', source => {
         this._addSource(source as InternalSource<T>);
         this._fillBufferAsync();
       });
       sources.on('end', () => {
-        this._sourcesComplete = true;
+        delete this._pending;
         this._fillBuffer();
       });
-      sources.on('error', error => this.emit('error', error));
-    }
-    // Sources are an empty list
-    else {
-      this.close();
     }
   }
 
@@ -1478,6 +1497,10 @@ export class UnionIterator<T> extends BufferedIterator<T> {
 
   // Reads items from the next sources
   protected _read(count: number, done: () => void): void {
+    // Start source loading if needed
+    if (this._pending?.sources)
+      this._loadSources();
+
     // Try to read `count` items
     let lastCount = 0, item : T | null;
     while (lastCount !== (lastCount = count)) {
@@ -1493,8 +1516,9 @@ export class UnionIterator<T> extends BufferedIterator<T> {
         }
       }
     }
+
     // Close this iterator if all of its sources have been read
-    if (this._sourcesComplete && this._sources.length === 0)
+    if (!this._pending && this._sources.length === 0)
       this.close();
     done();
   }

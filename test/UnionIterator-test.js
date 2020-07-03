@@ -80,6 +80,31 @@ describe('UnionIterator', () => {
     });
   });
 
+  describe('when constructed with an array of 0 sources without autoStart', () => {
+    let iterator;
+    before(() => {
+      const sources = [];
+      iterator = new UnionIterator(sources, { autoStart: false });
+    });
+
+    describe('before reading', () => {
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading', () => {
+      before(done => {
+        iterator.read();
+        queueMicrotask(done);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
+  });
+
   describe('when constructed with an array of 1 source', () => {
     let iterator;
     before(() => {
@@ -127,6 +152,31 @@ describe('UnionIterator', () => {
     });
   });
 
+  describe('when constructed with an iterator of 0 sources without autoStart', () => {
+    let iterator;
+    before(() => {
+      const sources = [];
+      iterator = new UnionIterator(new ArrayIterator(sources), { autoStart: false });
+    });
+
+    describe('before reading', () => {
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+    });
+
+    describe('after reading', () => {
+      before(done => {
+        iterator.read();
+        queueMicrotask(done);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
+  });
+
   describe('when constructed with an iterator of 1 source', () => {
     let iterator;
     before(() => {
@@ -163,6 +213,98 @@ describe('UnionIterator', () => {
     it('should emit the error', () => {
       callback.should.have.been.calledOnce;
       callback.should.have.been.calledWith(error);
+    });
+  });
+
+  describe('when constructed with an iterator and with autoStart', () => {
+    let iterator, sourceIterator;
+    before(() => {
+      const sources = [range(0, 2), range(3, 6)];
+      sourceIterator = new ArrayIterator(sources);
+      sinon.spy(sourceIterator, 'read');
+      iterator = new UnionIterator(sourceIterator, { autoStart: true });
+    });
+
+    describe('before reading', () => {
+      it('should have read the sources', () => {
+        sourceIterator.read.should.have.been.called;
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should pass errors', () => {
+        const callback = sinon.spy();
+        const error = new Error('error');
+        iterator.once('error', callback);
+        sourceIterator.emit('error', error);
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWith(error);
+      });
+    });
+
+    describe('after reading', () => {
+      let items;
+      before(async () => {
+        items = (await toArray(iterator)).sort();
+      });
+
+      it('should have emitted all items', () => {
+        items.should.eql([0, 1, 2, 3, 4, 5, 6]);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
+  });
+
+  describe('when constructed with an iterator and without autoStart', () => {
+    let iterator, sourceIterator;
+    before(() => {
+      const sources = [range(0, 2), range(3, 6)];
+      sourceIterator = new ArrayIterator(sources);
+      sinon.spy(sourceIterator, 'read');
+      iterator = new UnionIterator(sourceIterator, { autoStart: false });
+    });
+
+    describe('before reading', () => {
+      it('should not have read the sources', () => {
+        sourceIterator.read.should.not.have.been.called;
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should pass errors', () => {
+        const callback = sinon.spy();
+        const error = new Error('error');
+        iterator.once('error', callback);
+        sourceIterator.emit('error', error);
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWith(error);
+      });
+    });
+
+    describe('after reading', () => {
+      let items;
+      before(async () => {
+        items = (await toArray(iterator)).sort();
+      });
+
+      it('should have read the sources', () => {
+        sourceIterator.read.should.have.been.called;
+      });
+
+      it('should have emitted all items', () => {
+        items.should.eql([0, 1, 2, 3, 4, 5, 6]);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
     });
   });
 
