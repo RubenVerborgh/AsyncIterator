@@ -6,6 +6,23 @@
 import { EventEmitter } from 'events';
 import queueMicrotask from 'queue-microtask';
 
+let taskScheduler: TaskScheduler = queueMicrotask;
+
+/** Schedules the given ask for asynchronous execution. */
+export function scheduleTask(task: () => void): void {
+  taskScheduler(task);
+}
+
+/** Returns the asynchronous task scheduler. */
+export function getTaskScheduler(): TaskScheduler {
+  return taskScheduler;
+}
+
+/** Sets the asynchronous task scheduler. */
+export function setTaskScheduler(scheduler: TaskScheduler): void {
+  taskScheduler = scheduler;
+}
+
 /**
   ID of the INIT state.
   An iterator is initializing if it is preparing main item generation.
@@ -90,7 +107,7 @@ export class AsyncIterator<T> extends EventEmitter {
         if (!eventAsync)
           this.emit('end');
         else
-          queueMicrotask(() => this.emit('end'));
+          taskScheduler(() => this.emit('end'));
       }
     }
     return valid;
@@ -210,7 +227,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @protected
   */
   protected _endAsync() {
-    queueMicrotask(() => this._end());
+    taskScheduler(() => this._end());
   }
 
   /**
@@ -236,7 +253,7 @@ export class AsyncIterator<T> extends EventEmitter {
       this._readable = readable;
       // If the iterator became readable, emit the `readable` event
       if (readable)
-        queueMicrotask(() => this.emit('readable'));
+        taskScheduler(() => this.emit('readable'));
     }
   }
 
@@ -308,7 +325,7 @@ export class AsyncIterator<T> extends EventEmitter {
       return properties && properties[propertyName];
     // If the value has been set, send it through the callback
     if (properties && (propertyName in properties)) {
-      queueMicrotask(() => callback(properties[propertyName]));
+      taskScheduler(() => callback(properties[propertyName]));
     }
     // If the value was not set, store the callback for when the value will be set
     else {
@@ -336,7 +353,7 @@ export class AsyncIterator<T> extends EventEmitter {
     const callbacks = propertyCallbacks[propertyName];
     if (callbacks) {
       delete propertyCallbacks[propertyName];
-      queueMicrotask(() => {
+      taskScheduler(() => {
         for (const callback of callbacks)
           callback(value);
       });
@@ -502,7 +519,7 @@ function waitForDataListener(this: AsyncIterator<any>, eventName: string) {
     this.removeListener('newListener', waitForDataListener);
     addSingleListener(this, 'readable', emitData);
     if (this.readable)
-      queueMicrotask(() => emitData.call(this));
+      taskScheduler(() => emitData.call(this));
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
@@ -710,7 +727,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   constructor({ maxBufferSize = 4, autoStart = true } = {}) {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
-    queueMicrotask(() => this._init(autoStart));
+    taskScheduler(() => this._init(autoStart));
   }
 
   /**
@@ -886,7 +903,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     // Acquire reading lock to avoid recursive reads
     if (!this._reading) {
       this._reading = true;
-      queueMicrotask(() => {
+      taskScheduler(() => {
         // Release reading lock so _fillBuffer` can take it
         this._reading = false;
         this._fillBuffer();
@@ -1072,7 +1089,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     const next = () => {
       // Continue transforming until at least `count` items have been pushed
       if (this._pushedCount < count && !this.closed)
-        queueMicrotask(() => this._readAndTransform(next, done));
+        taskScheduler(() => this._readAndTransform(next, done));
       else
         done();
     };
@@ -1220,10 +1237,10 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
   /* Tries to read and transform items */
   protected _read(count: number, done: () => void) {
     const next = () => this._readAndTransformSimple(count, nextAsync, done);
-    function nextAsync() {
-      queueMicrotask(next);
-    }
     this._readAndTransformSimple(count, nextAsync, done);
+    function nextAsync() {
+      taskScheduler(next);
+    }
   }
 
   /* Reads and transform items */
@@ -1858,3 +1875,5 @@ type SourceExpression<T> =
 
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
+
+type TaskScheduler = (task: () => void) => void;

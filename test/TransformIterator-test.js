@@ -5,10 +5,10 @@ import {
   ArrayIterator,
   TransformIterator,
   wrap,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('TransformIterator', () => {
   describe('The TransformIterator function', () => {
@@ -476,7 +476,7 @@ describe('TransformIterator', () => {
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
       iterator._transform = function (item, done) {
-        queueMicrotask(() => {
+        scheduleTask(() => {
           iterator._push(`${item}1`);
           iterator._push(`${item}2`);
           done();
@@ -588,7 +588,7 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source);
       iterator._transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        queueMicrotask(done);
+        scheduleTask(done);
       });
     });
 

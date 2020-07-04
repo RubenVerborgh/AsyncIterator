@@ -6,10 +6,10 @@ import {
   EmptyIterator,
   ArrayIterator,
   IntegerIterator,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('SimpleTransformIterator', () => {
   describe('The SimpleTransformIterator function', () => {
@@ -163,7 +163,7 @@ describe('SimpleTransformIterator', () => {
       source = new ArrayIterator(['a', 'b', 'c']);
       transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
-        queueMicrotask(done);
+        scheduleTask(done);
       });
       iterator = new SimpleTransformIterator(source, transform);
     });

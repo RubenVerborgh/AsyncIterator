@@ -6,10 +6,10 @@ import {
   EmptyIterator,
   union,
   range,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('UnionIterator', () => {
   describe('The UnionIterator function', () => {
@@ -96,7 +96,7 @@ describe('UnionIterator', () => {
     describe('after reading', () => {
       before(done => {
         iterator.read();
-        queueMicrotask(done);
+        scheduleTask(done);
       });
 
       it('should have ended', () => {
@@ -168,7 +168,7 @@ describe('UnionIterator', () => {
     describe('after reading', () => {
       before(done => {
         iterator.read();
-        queueMicrotask(done);
+        scheduleTask(done);
       });
 
       it('should have ended', () => {
@@ -405,7 +405,7 @@ describe('UnionIterator', () => {
         expect(iterator.read()).to.equal(7);
 
         // Buffer
-        await new Promise(resolve => queueMicrotask(resolve));
+        await new Promise(resolve => scheduleTask(resolve));
 
         // Read remaining items
         expect(iterator.read()).to.equal(5);
@@ -436,7 +436,7 @@ describe('UnionIterator', () => {
     const delayed = new AsyncIterator();
     const iterator = new UnionIterator(delayed);
     delayed.readable = true;
-    queueMicrotask(() => delayed.close());
+    scheduleTask(() => delayed.close());
     (await toArray(iterator)).should.eql([]);
   });
 });

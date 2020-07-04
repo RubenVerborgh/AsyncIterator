@@ -4,10 +4,10 @@ import {
   CLOSED,
   ENDED,
   DESTROYED,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('AsyncIterator', () => {
   describe('The AsyncIterator module', () => {
@@ -408,7 +408,7 @@ describe('AsyncIterator', () => {
     before(() => {
       iterator = new AsyncIterator();
       captureEvents(iterator, 'data', 'readable', 'end');
-      iterator._destroy = (error, callback) => queueMicrotask(callback);
+      iterator._destroy = (error, callback) => scheduleTask(callback);
       iterator.destroy();
     });
 

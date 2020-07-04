@@ -6,10 +6,10 @@ import {
   EmptyIterator,
   SingletonIterator,
   ArrayIterator,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('MultiTransformIterator', () => {
   describe('The MultiTransformIterator function', () => {
@@ -146,7 +146,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(() => {
         const transformer = new BufferedIterator();
-        setImmediate(() => transformer.close());
+        setTimeout(() => transformer.close(), 0);
         return transformer;
       });
     });
@@ -181,7 +181,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        queueMicrotask(() => {
+        scheduleTask(() => {
           transformer._push(`${item}1`);
           transformer.close();
         });
@@ -209,7 +209,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        queueMicrotask(() => {
+        scheduleTask(() => {
           transformer._push(`${item}1`);
           transformer._push(`${item}2`);
           transformer._push(`${item}3`);
@@ -300,7 +300,7 @@ describe('MultiTransformIterator', () => {
       iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        queueMicrotask(() => {
+        scheduleTask(() => {
           transformer.emit('error', new Error(`Error ${item}`));
         });
         return transformer;
@@ -319,7 +319,7 @@ describe('MultiTransformIterator', () => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       const multiTransform = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        queueMicrotask(() => {
+        scheduleTask(() => {
           transformer._push(`${item}1`);
           transformer._push(`${item}2`);
           transformer._push(`${item}3`);
@@ -356,7 +356,7 @@ describe('MultiTransformIterator', () => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       const multiTransform = sinon.spy(item => {
         const transformer = new BufferedIterator();
-        queueMicrotask(() => {
+        scheduleTask(() => {
           transformer._push(`${item}1`);
           transformer._push(`${item}2`);
           transformer._push(`${item}3`);

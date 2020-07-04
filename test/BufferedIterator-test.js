@@ -2,10 +2,10 @@ import {
   AsyncIterator,
   BufferedIterator,
   CLOSED,
+  scheduleTask,
 } from '../asynciterator.mjs';
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
 
 describe('BufferedIterator', () => {
   describe('The BufferedIterator function', () => {
@@ -301,7 +301,7 @@ describe('BufferedIterator', () => {
     function createIterator(options) {
       const iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
-        queueMicrotask(() => {
+        scheduleTask(() => {
           this.close();
           done();
         });
@@ -660,8 +660,8 @@ describe('BufferedIterator', () => {
       describe('after `read` is called and the iterator has been closed', () => {
         before(() => {
           iterator.read();
-          queueMicrotask(() => { _readDone(); });
-          queueMicrotask(() => { iterator.close(); });
+          scheduleTask(() => { _readDone(); });
+          scheduleTask(() => { iterator.close(); });
         });
 
         it('should have emitted the `end` event', () => {
@@ -1292,7 +1292,7 @@ describe('BufferedIterator', () => {
       const iterator = new BufferedIterator(options);
       iterator._read = function (count, done) {
         this._push('a');
-        queueMicrotask(() => {
+        scheduleTask(() => {
           this._push('b');
           this._push('c');
           done();
@@ -1408,9 +1408,7 @@ describe('BufferedIterator', () => {
     before(done => {
       iterator = new BufferedIterator({ autoStart: false });
       iterator._read = (count, callback) => { readDone = callback; };
-      // `queueMicrotask` because reading directly after construction does not call `_read`;
-      // this is necessary to enable attaching a `_begin` hook after construction
-      queueMicrotask(() => { iterator.read(); done(); });
+      scheduleTask(() => { iterator.read(); done(); });
     });
 
     it('should cause an exception', () => {
@@ -1637,7 +1635,7 @@ describe('BufferedIterator', () => {
     before(() => {
       iterator = new BufferedIterator();
       iterator._begin = function (done) {
-        queueMicrotask(() => {
+        scheduleTask(() => {
           this._push('x');
           this._push('y');
           done();
@@ -1947,7 +1945,7 @@ describe('BufferedIterator', () => {
         done();
       };
       iterator._flush = function (done) {
-        queueMicrotask(() => {
+        scheduleTask(() => {
           this._push('x');
           this._push('y');
           done();
@@ -2206,7 +2204,7 @@ describe('BufferedIterator', () => {
         done();
       };
       iterator._flush = function (done) {
-        queueMicrotask(() => {
+        scheduleTask(() => {
           this._push('x');
           this._push('y');
           done();
