@@ -13,15 +13,18 @@
   "module": "./asynciterator.mjs",
   "sideEffects": false,
   "files": [
-    "asynciterator.mjs",
-    "asynciterator.cjs",
-    "asynciterator.d.ts"
+    "*.mjs",
+    "*.cjs",
+    "*.d.ts"
   ],
   "scripts": {
-    "build": "npm run build:module && npm run build:commonjs && npm run build:types",
-    "build:module": "tsc --module es2015 && mv asynciterator.js asynciterator.mjs",
-    "build:commonjs": "tsc --module commonjs && mv asynciterator.js asynciterator.cjs",
-    "build:types": "tsc -d && rm asynciterator.js",
+    "build": "npm run build:clean && npm run build:module && npm run build:commonjs && npm run build:types",
+    "build:clean": "rm -f *.js *.mjs *.cjs *.d.ts",
+    "build:module": "  tsc --module es2015   && ./.change-extension mjs *.js && npm run build:fix:mjs",
+    "build:commonjs": "tsc --module commonjs && ./.change-extension cjs *.js && npm run build:fix:cjs",
+    "build:fix:mjs": "sed -i'.bak' -e 's/\\.\\/taskscheduler/.\\/taskscheduler.mjs/' asynciterator.mjs",
+    "build:fix:cjs": "sed -i'.bak' -e 's/\\.\\/taskscheduler/.\\/taskscheduler.cjs/' asynciterator.cjs",
+    "build:types": "tsc -d && rm *.js",
     "prepare": "npm run build",
     "test": "npm run build:module && npm run test:microtask",
     "test:microtask": "npm run mocha",
@@ -33,9 +36,6 @@
   },
   "license": "MIT",
   "repository": "RubenVerborgh/AsyncIterator",
-  "dependencies": {
-    "queue-microtask": "^1.1.2"
-  },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",

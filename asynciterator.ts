@@ -4,12 +4,13 @@
  */
 
 import { EventEmitter } from 'events';
-import queueMicrotask from 'queue-microtask';
+import createTaskScheduler from './taskscheduler';
+import type { Task, TaskScheduler } from './taskscheduler';
 
-let taskScheduler: TaskScheduler = queueMicrotask;
+let taskScheduler: TaskScheduler = createTaskScheduler();
 
 /** Schedules the given ask for asynchronous execution. */
-export function scheduleTask(task: () => void): void {
+export function scheduleTask(task: Task): void {
   taskScheduler(task);
 }
 
@@ -1875,5 +1876,3 @@ type SourceExpression<T> =
 
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
-
-type TaskScheduler = (task: () => void) => void;

@@ -4,6 +4,8 @@ import {
   setTaskScheduler,
 } from '../asynciterator.mjs';
 
+import createTaskScheduler from '../taskscheduler.mjs';
+
 describe('TaskScheduler', () => {
   describe('scheduleTask', () => {
     it('is a function', () => {
@@ -46,6 +48,53 @@ describe('TaskScheduler', () => {
       expect(newScheduler).to.have.been.calledWith(task);
 
       setTaskScheduler(scheduler);
+    });
+  });
+
+  describe('a task scheduler for the browser', () => {
+    const backups = {};
+
+    before(() => {
+      backups.setTimeout = global.setTimeout;
+      backups.queueMicrotask = global.queueMicrotask;
+      global.window = {};
+      global.setTimeout = sinon.spy();
+      global.queueMicrotask = sinon.spy();
+    });
+
+    after(() => {
+      global.setTimeout = backups.setTimeout;
+      global.queueMicrotask = backups.queueMicrotask;
+      delete global.window;
+    });
+
+    it('alternates between setTimeout and queueMicrotask', () => {
+      const taskScheduler = createTaskScheduler();
+      const task = sinon.spy();
+      for (let i = 0; i < 100; i++)
+        taskScheduler(task);
+      expect(global.setTimeout).to.have.callCount(1);
+      expect(global.queueMicrotask).to.have.callCount(99);
+      expect(global.setTimeout).to.have.been.calledWith(task, 0);
+      expect(global.queueMicrotask).to.have.been.calledWith(task);
+    });
+  });
+
+  describe('a task scheduler when queueMicrotask is unavailable', () => {
+    const backups = {};
+
+    before(() => {
+      backups.queueMicrotask = global.queueMicrotask;
+      delete global.queueMicrotask;
+    });
+
+    after(() => {
+      global.queueMicrotask = backups.queueMicrotask;
+    });
+
+    it('can schedule a task', done => {
+      const taskScheduler = createTaskScheduler();
+      taskScheduler(done);
     });
   });
 });

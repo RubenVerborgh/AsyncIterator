@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# The first parameter is the desired extension
+extension=$1
+shift
+
+# The other parameters are the files to be renamed with the extension
+for file in "$@"; do
+  mv "$file" "${file%.*}.$extension"
+done

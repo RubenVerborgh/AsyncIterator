@@ -106,6 +106,7 @@
     no-undef-init: error,
     no-undefined: off,
     no-unused-vars: [ error, { args: none } ],
+    "@typescript-eslint/no-unused-vars": [ error, { args: none } ],
     no-use-before-define: [ error, { functions: false, classes: false } ],
 
     // Node.js
@@ -229,7 +230,7 @@
     no-confusing-arrow: off,
     no-const-assign: error,
     no-dupe-class-members: error,
-    no-duplicate-imports: error,
+    no-duplicate-imports: off,
     no-new-symbol: error,
     no-restricted-imports: error,
     no-this-before-super: error,
