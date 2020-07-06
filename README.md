@@ -57,36 +57,37 @@ The `AsyncIterator` interface additionally exposes
 ## Example: fetching Wikipedia links related to natural numbers
 In the example below, we create an iterator of links found on Wikipedia pages for natural numbers.
 ```JavaScript
-var AsyncIterator = require('asynciterator');
+import https from 'https';
+import { resolve } from 'url';
+import { IntegerIterator } from 'asynciterator';
 
 // Iterate over the natural numbers
-var numbers = new AsyncIterator.IntegerIterator({ start: 0, end: Infinity });
+const numbers = new IntegerIterator({ start: 0, end: Infinity });
 // Transform these numbers into Wikipedia URLs
-var urls = numbers.map(function (number) {
-  return 'https://en.wikipedia.org/wiki/' + number;
-});
+const urls = numbers.map(n => `https://en.wikipedia.org/wiki/${n}`);
 // Fetch each corresponding Wikipedia page
-var pages = urls.transform(function (url, done) {
-  require('https').get(url, function (response) {
-    var page = '';
-    response.on('data', function (data) { page += data; });
-    response.on('end',  function () { pages._push(page); done(); });
+const pages = urls.transform((url, done, push) => {
+  https.get(url, response => {
+    let page = '';
+    response.on('data', data => { page += data; });
+    response.on('end',  () => { push(page); done(); });
   });
 });
 // Extract the links from each page
-var links = pages.transform(function (page, done) {
-  var search = /href="([^"]+)"/g, match, resolve = require('url').resolve;
+const links = pages.transform((page, done, push) => {
+  let search = /href="([^"]+)"/g, match;
   while (match = search.exec(page))
-    this._push(resolve('https://en.wikipedia.org/', match[1]));
+    push(resolve('https://en.wikipedia.org/', match[1]));
   done();
 });
 ```
 
 We could display a link every 0.1 seconds:
 ```JavaScript
-setInterval(function () {
-  var link = links.read();
-  if (link) console.log(link);
+setInterval(() => {
+  const link = links.read();
+  if (link)
+    console.log(link);
 }, 100);
 ```
 
@@ -114,7 +115,7 @@ The [`read` method](http://rubenverborgh.github.io/AsyncIterator/docs/AsyncItera
 or `null` when no item is available.
 
 ```JavaScript
-var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 2 });
+const numbers = new IntegerIterator({ start: 1, end: 2 });
 console.log(numbers.read()); // 1
 console.log(numbers.read()); // 2
 console.log(numbers.read()); // null
@@ -125,8 +126,8 @@ you should wait until the next [`readable` event](http://rubenverborgh.github.io
 This event is not a guarantee that an item _will_ be available.
 
 ```JavaScript
-links.on('readable', function () {
-  var link;
+links.on('readable', () => {
+  let link;
   while (link = links.read())
     console.log(link);
 });
@@ -139,9 +140,9 @@ An AsyncIterator can be switched to _flow_ mode by listening to the [`data` even
 In flow mode, iterators generate items as fast as possible.
 
 ```JavaScript
-var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 100 });
-numbers.on('data', function (number) { console.log('number', number); });
-numbers.on('end',  function () { console.log('all done!'); });
+const numbers = new IntegerIterator({ start: 1, end: 100 });
+numbers.on('data', number => console.log('number', number));
+numbers.on('end',  () => console.log('all done!'));
 ```
 
 To switch back to on-demand mode, simply remove all `data` listeners.
@@ -152,11 +153,11 @@ which are preserved when the iterator is cloned.
 This is useful to pass around metadata about the iterator.
 
 ```JavaScript
-var numbers = new AsyncIterator.IntegerIterator();
+const numbers = new IntegerIterator();
 numbers.setProperty('rate', 1234);
 console.log(numbers.getProperty('rate')); // 1234
 
-var clone = numbers.clone();
+const clone = numbers.clone();
 console.log(clone.getProperty('rate'));   // 1234
 
 numbers.setProperty('rate', 4567);
@@ -167,7 +168,7 @@ You can also attach a callback
 that will be called as soon as the property is set:
 
 ```JavaScript
-var numbers = new AsyncIterator.IntegerIterator();
+const numbers = new IntegerIterator();
 numbers.getProperty('later', console.log);
 numbers.setProperty('later', 'value');
 // 'value'
