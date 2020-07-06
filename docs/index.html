@@ -1201,34 +1201,35 @@ The <code>AsyncIterator</code> interface additionally exposes
 <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html">several other methods and properties</a>.</p>
 <h2>Example: fetching Wikipedia links related to natural numbers</h2>
 <p>In the example below, we create an iterator of links found on Wikipedia pages for natural numbers.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var AsyncIterator = require('asynciterator');
+<pre class="prettyprint source lang-JavaScript"><code>import https from 'https';
+import { resolve } from 'url';
+import { IntegerIterator } from 'asynciterator';
 
 // Iterate over the natural numbers
-var numbers = new AsyncIterator.IntegerIterator({ start: 0, end: Infinity });
+const numbers = new IntegerIterator({ start: 0, end: Infinity });
 // Transform these numbers into Wikipedia URLs
-var urls = numbers.map(function (number) {
-  return 'https://en.wikipedia.org/wiki/' + number;
-});
+const urls = numbers.map(n => `https://en.wikipedia.org/wiki/${n}`);
 // Fetch each corresponding Wikipedia page
-var pages = urls.transform(function (url, done) {
-  require('https').get(url, function (response) {
-    var page = '';
-    response.on('data', function (data) { page += data; });
-    response.on('end',  function () { pages._push(page); done(); });
+const pages = urls.transform((url, done, push) => {
+  https.get(url, response => {
+    let page = '';
+    response.on('data', data => { page += data; });
+    response.on('end',  () => { push(page); done(); });
   });
 });
 // Extract the links from each page
-var links = pages.transform(function (page, done) {
-  var search = /href=&quot;([^&quot;]+)&quot;/g, match, resolve = require('url').resolve;
+const links = pages.transform((page, done, push) => {
+  let search = /href=&quot;([^&quot;]+)&quot;/g, match;
   while (match = search.exec(page))
-    this._push(resolve('https://en.wikipedia.org/', match[1]));
+    push(resolve('https://en.wikipedia.org/', match[1]));
   done();
 });
 </code></pre>
 <p>We could display a link every 0.1 seconds:</p>
-<pre class="prettyprint source lang-JavaScript"><code>setInterval(function () {
-  var link = links.read();
-  if (link) console.log(link);
+<pre class="prettyprint source lang-JavaScript"><code>setInterval(() => {
+  const link = links.read();
+  if (link)
+    console.log(link);
 }, 100);
 </code></pre>
 <p>Or we can get the first 30 links and display them:</p>
@@ -1247,7 +1248,7 @@ and a superset of the <a target="_blank" href="https://nodejs.org/api/stream.ht
 meaning it only generates items when asked to.</p>
 <p>The <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#read"><code>read</code> method</a> returns the next item,
 or <code>null</code> when no item is available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 2 });
+<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator({ start: 1, end: 2 });
 console.log(numbers.read()); // 1
 console.log(numbers.read()); // 2
 console.log(numbers.read()); // null
@@ -1255,8 +1256,8 @@ console.log(numbers.read()); // null
 <p>If you receive <code>null</code>,
 you should wait until the next <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:readable"><code>readable</code> event</a> before reading again.
 This event is not a guarantee that an item <em>will</em> be available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>links.on('readable', function () {
-  var link;
+<pre class="prettyprint source lang-JavaScript"><code>links.on('readable', () => {
+  let link;
   while (link = links.read())
     console.log(link);
 });
@@ -1265,20 +1266,20 @@ This event is not a guarantee that an item <em>will</em> be available.</p>
 <h3>Consuming an AsyncIterator in flow mode</h3>
 <p>An AsyncIterator can be switched to <em>flow</em> mode by listening to the <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:data"><code>data</code> event</a>.
 In flow mode, iterators generate items as fast as possible.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator({ start: 1, end: 100 });
-numbers.on('data', function (number) { console.log('number', number); });
-numbers.on('end',  function () { console.log('all done!'); });
+<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator({ start: 1, end: 100 });
+numbers.on('data', number => console.log('number', number));
+numbers.on('end',  () => console.log('all done!'));
 </code></pre>
 <p>To switch back to on-demand mode, simply remove all <code>data</code> listeners.</p>
 <h3>Setting and reading properties</h3>
 <p>An AsyncIterator can have custom properties assigned to it,
 which are preserved when the iterator is cloned.
 This is useful to pass around metadata about the iterator.</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator();
+<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator();
 numbers.setProperty('rate', 1234);
 console.log(numbers.getProperty('rate')); // 1234
 
-var clone = numbers.clone();
+const clone = numbers.clone();
 console.log(clone.getProperty('rate'));   // 1234
 
 numbers.setProperty('rate', 4567);
@@ -1286,7 +1287,7 @@ console.log(clone.getProperty('rate'));   // 4567
 </code></pre>
 <p>You can also attach a callback
 that will be called as soon as the property is set:</p>
-<pre class="prettyprint source lang-JavaScript"><code>var numbers = new AsyncIterator.IntegerIterator();
+<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator();
 numbers.getProperty('later', console.log);
 numbers.setProperty('later', 'value');
 // 'value'
@@ -1304,7 +1305,7 @@ and released under the <a target="_blank" href="http://opensource.org/licenses/M
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Sat Jul 04 2020 16:27:10 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.4</a> on Mon Jul 06 2020 11:54:00 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
