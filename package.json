@@ -28,7 +28,7 @@
     "prepare": "npm run build",
     "test": "npm run build:module && npm run test:microtask",
     "test:microtask": "npm run mocha",
-    "test:immediate": "npm run mocha -- --require test/useSetImmediate.js",
+    "test:immediate": "npm run mocha -- --require test/config/useSetImmediate.js",
     "mocha": "c8 mocha",
     "lint": "eslint asynciterator.ts test",
     "docs": "npm run build:module && npm run jsdoc",
