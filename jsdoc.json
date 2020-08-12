@@ -13,8 +13,7 @@
   "source": {
     "include": [
       "README.md",
-      "asynciterator.mjs"
-    ],
-    "includePattern": ".+\\.mjs"
+      "dist/asynciterator.js"
+    ]
   }
 }

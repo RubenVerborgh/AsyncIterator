@@ -3,9 +3,7 @@ coverage
 docs
 node_modules
 package
-*.bak
-*.cjs
+dist
 *.d.ts
 *.log
-*.mjs
 *.tgz

@@ -1,2 +1,2 @@
-import { setTaskScheduler } from '../../asynciterator.mjs';
+import { setTaskScheduler } from '../../dist/asynciterator.js';
 setTaskScheduler(setImmediate);

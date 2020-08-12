@@ -2,9 +2,9 @@ import {
   scheduleTask,
   getTaskScheduler,
   setTaskScheduler,
-} from '../asynciterator.mjs';
+} from '../dist/asynciterator.js';
 
-import createTaskScheduler from '../taskscheduler.mjs';
+import createTaskScheduler from '../dist/taskscheduler.js';
 
 describe('TaskScheduler', () => {
   describe('scheduleTask', () => {

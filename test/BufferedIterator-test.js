@@ -3,7 +3,7 @@ import {
   BufferedIterator,
   CLOSED,
   scheduleTask,
-} from '../asynciterator.mjs';
+} from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
 

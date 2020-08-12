@@ -2,7 +2,7 @@ import {
   AsyncIterator,
   IntegerIterator,
   range,
-} from '../asynciterator.mjs';
+} from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
 
