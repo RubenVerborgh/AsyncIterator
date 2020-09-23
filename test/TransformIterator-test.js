@@ -1504,4 +1504,48 @@ describe('TransformIterator', () => {
       });
     });
   });
+
+  describe('Two transformers in sequence with autostart', () => {
+    let source, transform1, transform2, callback;
+    before(() => {
+      source = new ArrayIterator([]);
+      transform1 = new TransformIterator(source);
+      transform2 = new TransformIterator(transform1);
+      callback = sinon.spy();
+      transform2.on('end', callback);
+    });
+
+    describe('before attaching a data listener', () => {
+      it('should have emitted the end event', () => {
+        callback.should.have.been.called;
+      });
+    });
+  });
+
+  describe('Two transformers in sequence without autostart', () => {
+    let source, transform1, transform2, callback;
+    before(() => {
+      source = new ArrayIterator([]);
+      transform1 = new TransformIterator(source, { autoStart: false });
+      transform2 = new TransformIterator(transform1, { autoStart: false });
+      callback = sinon.spy();
+      transform2.on('end', callback);
+    });
+
+    describe('before attaching a data listener', () => {
+      it('should not have emitted the end event', () => {
+        callback.should.not.have.been.called;
+      });
+    });
+
+    describe('after attaching a data listener', () => {
+      before(() => {
+        transform2.on('data', sinon.spy());
+      });
+
+      it('should have emitted the end event', () => {
+        callback.should.have.been.called;
+      });
+    });
+  });
 });

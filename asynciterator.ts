@@ -986,6 +986,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
 export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _source?: InternalSource<S>;
   protected _createSource?: (() => AsyncIteratorOrPromise<S>) | null;
+  protected _sourceStarted: boolean;
   protected _destroySource: boolean;
   protected _optional: boolean;
   protected _boundPush = (item: D) => this._push(item);
@@ -1008,6 +1009,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // Shift parameters if needed
     if (!isSourceExpression(source))
       source = options.source;
+    this._sourceStarted = options.autoStart !== false;
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
       this.source = source;
@@ -1015,7 +1017,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // The passed value is a promise or source creation function
     else if (source) {
       this._createSource = isPromise(source) ? () => source as any : source;
-      if (options.autoStart !== false)
+      if (this._sourceStarted)
         this._loadSourceAsync();
     }
     // Set other options
@@ -1085,6 +1087,16 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
 
   /**
     Tries to read a transformed item.
+  */
+  public read() {
+    // An explicit read kickstarts the source
+    if (!this._sourceStarted)
+      this._sourceStarted = true;
+    return super.read();
+  }
+
+  /**
+    Tries to read transformed items.
   */
   protected _read(count: number, done: () => void) {
     const next = () => {
@@ -1170,7 +1182,8 @@ function destinationCloseWhenDone<S>(this: InternalSource<S>) {
   (this._destination as any)._closeWhenDone();
 }
 function destinationFillBuffer<S>(this: InternalSource<S>) {
-  (this._destination as any)._fillBuffer();
+  if ((this._destination as any)._sourceStarted)
+    (this._destination as any)._fillBuffer();
 }
 
 
