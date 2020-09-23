@@ -1161,7 +1161,7 @@ with a different iterator.</p></div>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1202
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1213
         </div>
         
     </div>
@@ -2434,7 +2434,7 @@ possibly emitting events to signal that change.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1023
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1033
         </div>
         
     </div>
@@ -2584,7 +2584,7 @@ switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1268
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1279
         </div>
         
     </div>
@@ -3489,7 +3489,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 939
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 940
         </div>
         
     </div>
@@ -3562,7 +3562,7 @@ and changing state from INIT to OPEN.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 998
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1008
         </div>
         
     </div>
@@ -3759,7 +3759,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 969
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 979
         </div>
         
     </div>
@@ -3770,7 +3770,7 @@ if the transformation yields no items, pushes the original item.</p>
     
     
     <div class="description">
-        <p>Tries to read a transformed item.</p>
+        <p>Tries to read transformed items.</p>
     </div>
     
 
@@ -3832,7 +3832,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 982
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 992
         </div>
         
     </div>
@@ -3978,7 +3978,7 @@ if the transformation yields no items, pushes the original item.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1015
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 1025
         </div>
         
     </div>
@@ -4144,7 +4144,7 @@ The default implementation pushes the source item as-is.</p>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 957
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 958
         </div>
         
     </div>
@@ -6037,14 +6037,14 @@ The current iterator may not be read anymore until the returned iterator ends.</
     <div class="nameContainer inherited">
         <h4 class="name" id="read">
             
-                <span class="inherited"><a href="module-asynciterator.BufferedIterator.html#read">inherited</a></span>
+                <span class="inherited"><a href="module-asynciterator.TransformIterator.html#read">inherited</a></span>
             
-            read<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{object}</span>
+            read<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 709
+            /home/travis/build/RubenVerborgh/AsyncIterator/dist/asynciterator.js, line 970
         </div>
         
     </div>
@@ -6055,9 +6055,7 @@ The current iterator may not be read anymore until the returned iterator ends.</
     
     
     <div class="description">
-        <p>Tries to read the next item from the iterator.
-If the buffer is empty,
-this method calls BufferedIterator#_read to fetch items.</p>
+        <p>Tries to read a transformed item.</p>
     </div>
     
 
@@ -6101,35 +6099,6 @@ this method calls BufferedIterator#_read to fetch items.</p>
     
     
     
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        object
-                        
-                    
-            </td>
-            <td class="description last">The next item, or <code>null</code> if none is available</td>
-        </tr>
-    
-    </tbody>
-</table>
-
     
     
     
@@ -7432,7 +7401,7 @@ After this operation, only read the returned iterator instead of the current one
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Aug 12 2020 08:57:33 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Sep 23 2020 08:46:59 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
