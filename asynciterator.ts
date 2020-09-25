@@ -1182,7 +1182,7 @@ function destinationCloseWhenDone<S>(this: InternalSource<S>) {
   (this._destination as any)._closeWhenDone();
 }
 function destinationFillBuffer<S>(this: InternalSource<S>) {
-  if ((this._destination as any)._sourceStarted)
+  if ((this._destination as any)._sourceStarted !== false)
     (this._destination as any)._fillBuffer();
 }
 
