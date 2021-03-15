@@ -24,109 +24,191 @@ describe('Integration tests', () => {
     });
   });
 
-  describe('A clone of an empty ArrayIterator without autoStart', () => {
-    let arrayIterator, clonedIterator;
+  describe('Cloning iterators', () => {
+    describe('A clone of an empty ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
 
-    before(() => {
-      arrayIterator = new ArrayIterator([], { autoStart: false });
-      clonedIterator = arrayIterator.clone();
+      before(() => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
+        clonedIterator = arrayIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
     });
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
+    describe('An async clone of an empty ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
 
-  describe('A double clone of an empty ArrayIterator without autoStart', () => {
-    let arrayIterator, clonedIterator;
+      before(async () => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
 
-    before(() => {
-      arrayIterator = new ArrayIterator([], { autoStart: false });
-      clonedIterator = arrayIterator.clone().clone();
-    });
+        // Wait a tick
+        await new Promise(resolve => setImmediate(resolve));
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
+        clonedIterator = arrayIterator.clone();
+      });
 
-  describe('A clone of a sequence of an empty ArrayIterator, and TransformIterator without autoStart', () => {
-    let arrayIterator, transformIterator, clonedIterator;
-
-    before(() => {
-      arrayIterator = new ArrayIterator([], { autoStart: false });
-      transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
-      clonedIterator = transformIterator.clone();
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
     });
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
+    describe('A multi-clone of an empty ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator1, clonedIterator2;
 
-  describe('A clone of a sequence of an empty ArrayIterator, TransformIterator, and Unioniterator without autoStart', () => {
-    let arrayIterator, transformIterator, unionIterator, clonedIterator;
+      before(() => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
+        clonedIterator1 = arrayIterator.clone();
+        clonedIterator2 = arrayIterator.clone();
+      });
 
-    before(() => {
-      arrayIterator = new ArrayIterator([], { autoStart: false });
-      transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
-      unionIterator = new UnionIterator([transformIterator], { autoStart: false });
-      clonedIterator = unionIterator.clone();
-    });
+      it('emits an end event on clone 1 after attaching a data listener', done => {
+        clonedIterator1.on('data', () => { /* drain */ });
+        clonedIterator1.on('end', done);
+      });
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
-
-  describe('A clone of an ArrayIterator without autoStart', () => {
-    let arrayIterator, clonedIterator;
-
-    before(() => {
-      arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
-      clonedIterator = arrayIterator.clone();
+      it('emits an end event on clone 2 after attaching a data listener', done => {
+        clonedIterator2.on('data', () => { /* drain */ });
+        clonedIterator2.on('end', done);
+      });
     });
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
+    describe('An async multi-clone of an empty ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator1, clonedIterator2;
 
-  describe('A double clone of an ArrayIterator without autoStart', () => {
-    let arrayIterator, clonedIterator;
+      before(async () => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
 
-    before(() => {
-      arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
-      clonedIterator = arrayIterator.clone().clone();
-    });
+        // Wait a tick
+        await new Promise(resolve => setImmediate(resolve));
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
-    });
-  });
+        clonedIterator1 = arrayIterator.clone();
+        clonedIterator2 = arrayIterator.clone();
+      });
 
-  describe('A double async clone of an ArrayIterator without autoStart', () => {
-    let arrayIterator, clonedIterator;
+      it('emits an end event on clone 1 after attaching a data listener', done => {
+        clonedIterator1.on('data', () => { /* drain */ });
+        clonedIterator1.on('end', done);
+      });
 
-    before(async () => {
-      arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
-      clonedIterator = arrayIterator.clone();
-
-      // Wait a tick
-      await new Promise(resolve => setImmediate(resolve));
-
-      clonedIterator = clonedIterator.clone();
+      it('emits an end event on clone 2 after attaching a data listener', done => {
+        clonedIterator2.on('data', () => { /* drain */ });
+        clonedIterator2.on('end', done);
+      });
     });
 
-    it('emits an end event after attaching a data listener', done => {
-      clonedIterator.on('data', () => { /* drain */ });
-      clonedIterator.on('end', done);
+    describe('A double clone of an empty ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
+
+      before(() => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
+        clonedIterator = arrayIterator.clone().clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('A clone of a sequence of an empty ArrayIterator, and TransformIterator without autoStart', () => {
+      let arrayIterator, transformIterator, clonedIterator;
+
+      before(() => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
+        transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
+        clonedIterator = transformIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('A clone of a sequence of an empty ArrayIterator, TransformIterator, and Unioniterator without autoStart', () => {
+      let arrayIterator, transformIterator, unionIterator, clonedIterator;
+
+      before(() => {
+        arrayIterator = new ArrayIterator([], { autoStart: false });
+        transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
+        unionIterator = new UnionIterator([transformIterator], { autoStart: false });
+        clonedIterator = unionIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('A clone of an ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
+
+      before(() => {
+        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        clonedIterator = arrayIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('An async clone of an ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
+
+      before(async () => {
+        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+
+        // Wait a tick
+        await new Promise(resolve => setImmediate(resolve));
+
+        clonedIterator = arrayIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('A double clone of an ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
+
+      before(() => {
+        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        clonedIterator = arrayIterator.clone().clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
+    });
+
+    describe('A double async clone of an ArrayIterator without autoStart', () => {
+      let arrayIterator, clonedIterator;
+
+      before(async () => {
+        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        clonedIterator = arrayIterator.clone();
+
+        // Wait a tick
+        await new Promise(resolve => setImmediate(resolve));
+
+        clonedIterator = clonedIterator.clone();
+      });
+
+      it('emits an end event after attaching a data listener', done => {
+        clonedIterator.on('data', () => { /* drain */ });
+        clonedIterator.on('end', done);
+      });
     });
   });
 });

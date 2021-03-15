@@ -608,13 +608,11 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     super();
     const buffer = items ? [...items] : [];
     this._sourceStarted = autoStart !== false;
-    if (this._sourceStarted && buffer.length === 0) {
+    if (this._sourceStarted && buffer.length === 0)
       this.close();
-    }
-    else {
-      this.readable = true;
+    else
       this._buffer = buffer;
-    }
+    this.readable = true;
   }
 
   /* Reads an item from the iterator. */
@@ -1604,7 +1602,8 @@ export class ClonedIterator<T> extends TransformIterator<T> {
       // Subscribe to history events
       history.register(this);
       // If there are already items in history, this clone is readable
-      if ((source as any)._sourceStarted !== false && history.readAt(0) !== null)
+      // If the source has a lazy start, always mark this iterator as readable without eagerly triggering a read.
+      if ((source as any)._sourceStarted === false || history.readAt(0) !== null)
         this.readable = true;
     }
 
@@ -1731,7 +1730,8 @@ class HistoryReader<T> {
       const end = () => {
         // Close the clone if all items had been emitted
         for (const clone of this._clones as ClonedIterator<T>[]) {
-          if ((clone as any)._readPosition === this._history.length)
+          if ((clone as any)._sourceStarted !== false &&
+            (clone as any)._readPosition === this._history.length)
             clone.close();
         }
         this._clones = null;
