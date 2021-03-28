@@ -598,6 +598,7 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
 */
 export class ArrayIterator<T> extends AsyncIterator<T> {
   private _buffer?: T[];
+  protected _sourceStarted: boolean;
 
   /**
     Creates a new `ArrayIterator`.
@@ -606,17 +607,19 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
   constructor(items?: Iterable<T>, { autoStart = true } = {}) {
     super();
     const buffer = items ? [...items] : [];
-    if (autoStart !== false && buffer.length === 0) {
+    this._sourceStarted = autoStart !== false;
+    if (this._sourceStarted && buffer.length === 0)
       this.close();
-    }
-    else {
-      this.readable = true;
+    else
       this._buffer = buffer;
-    }
+    this.readable = true;
   }
 
   /* Reads an item from the iterator. */
   read() {
+    if (!this._sourceStarted)
+      this._sourceStarted = true;
+
     let item = null;
     const buffer = this._buffer;
     if (buffer) {
@@ -718,6 +721,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   private _maxBufferSize = 4;
   protected _reading = true;
   protected _pushedCount = 0;
+  protected _sourceStarted: boolean;
 
   /**
     Creates a new `BufferedIterator`.
@@ -729,6 +733,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
     taskScheduler(() => this._init(autoStart));
+    this._sourceStarted = autoStart !== false;
   }
 
   /**
@@ -802,6 +807,10 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   read() {
     if (this.done)
       return null;
+
+    // An explicit read kickstarts the source
+    if (!this._sourceStarted)
+      this._sourceStarted = true;
 
     // Try to retrieve an item from the buffer
     const buffer = this._buffer;
@@ -986,7 +995,6 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
 export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _source?: InternalSource<S>;
   protected _createSource?: (() => AsyncIteratorOrPromise<S>) | null;
-  protected _sourceStarted: boolean;
   protected _destroySource: boolean;
   protected _optional: boolean;
   protected _boundPush = (item: D) => this._push(item);
@@ -1009,7 +1017,6 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // Shift parameters if needed
     if (!isSourceExpression(source))
       source = options.source;
-    this._sourceStarted = options.autoStart !== false;
     // The passed source is an AsyncIterator or readable stream
     if (isEventEmitter(source)) {
       this.source = source;
@@ -1083,16 +1090,6 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     if (!allowDestination && (source as any)._destination)
       throw new Error('The source already has a destination');
     return source as InternalSource<S>;
-  }
-
-  /**
-    Tries to read a transformed item.
-  */
-  public read() {
-    // An explicit read kickstarts the source
-    if (!this._sourceStarted)
-      this._sourceStarted = true;
-    return super.read();
   }
 
   /**
@@ -1605,7 +1602,8 @@ export class ClonedIterator<T> extends TransformIterator<T> {
       // Subscribe to history events
       history.register(this);
       // If there are already items in history, this clone is readable
-      if (history.readAt(0) !== null)
+      // If the source has a lazy start, always mark this iterator as readable without eagerly triggering a read.
+      if ((source as any)._sourceStarted === false || history.readAt(0) !== null)
         this.readable = true;
     }
 
@@ -1671,6 +1669,10 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 
   /* Tries to read an item */
   read() {
+    // An explicit read kickstarts the source
+    if (!this._sourceStarted)
+      this._sourceStarted = true;
+
     const source = this.source as InternalSource<T>;
     let item = null;
     if (!this.done && source) {
@@ -1728,7 +1730,8 @@ class HistoryReader<T> {
       const end = () => {
         // Close the clone if all items had been emitted
         for (const clone of this._clones as ClonedIterator<T>[]) {
-          if ((clone as any)._readPosition === this._history.length)
+          if ((clone as any)._sourceStarted !== false &&
+            (clone as any)._readPosition === this._history.length)
             clone.close();
         }
         this._clones = null;
