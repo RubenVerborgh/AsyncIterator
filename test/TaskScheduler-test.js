@@ -51,13 +51,14 @@ describe('TaskScheduler', () => {
     });
   });
 
-  describe('a task scheduler for the browser', () => {
+  describe('a task scheduler when setImmediate exists', () => {
     const backups = {};
 
     before(() => {
       backups.setTimeout = global.setTimeout;
       backups.queueMicrotask = global.queueMicrotask;
-      global.window = {};
+      backups.setImmediate = global.setImmediate;
+      global.setImmediate = sinon.spy();
       global.setTimeout = sinon.spy();
       global.queueMicrotask = sinon.spy();
     });
@@ -65,6 +66,39 @@ describe('TaskScheduler', () => {
     after(() => {
       global.setTimeout = backups.setTimeout;
       global.queueMicrotask = backups.queueMicrotask;
+      global.setImmediate = backups.setImmediate;
+      delete global.window;
+    });
+
+    it('alternates between setTimeout and queueMicrotask', () => {
+      const taskScheduler = createTaskScheduler();
+      const task = sinon.spy();
+      for (let i = 0; i < 100; i++)
+        taskScheduler(task);
+      expect(global.setImmediate).to.have.callCount(1);
+      expect(global.queueMicrotask).to.have.callCount(99);
+      expect(global.setImmediate).to.have.been.calledWith(task);
+      expect(global.queueMicrotask).to.have.been.calledWith(task);
+      expect(global.setTimeout).to.have.callCount(0);
+    });
+  });
+
+  describe('a task scheduler when setImmediate does not exist', () => {
+    const backups = {};
+
+    before(() => {
+      backups.setTimeout = global.setTimeout;
+      backups.queueMicrotask = global.queueMicrotask;
+      backups.setImmediate = global.setImmediate;
+      global.setImmediate = undefined;
+      global.setTimeout = sinon.spy();
+      global.queueMicrotask = sinon.spy();
+    });
+
+    after(() => {
+      global.setTimeout = backups.setTimeout;
+      global.queueMicrotask = backups.queueMicrotask;
+      global.setImmediate = backups.setImmediate;
       delete global.window;
     });
 
