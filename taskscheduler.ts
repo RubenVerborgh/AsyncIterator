@@ -6,17 +6,19 @@ export default function createTaskScheduler() : TaskScheduler {
   const scheduleMicrotask = typeof queueMicrotask === 'function' ?
     queueMicrotask : (task: Task) => resolved.then(task);
 
-  // If not in the browser, always use the microtask scheduler
-  if (typeof window === 'undefined')
-    return scheduleMicrotask;
+  // Use or create a macrotask scheduler
+  const scheduleMacrotask = typeof setImmediate === 'function' ?
+    setImmediate : (task: Task) => setTimeout(task, 0);
 
-  // In the browser, alternate with setTimeout to avoid freezing
+  // Alternate with macrotask scheduler to avoid freezing
   let i = 0;
   return (task: Task) => {
     if (++i < 100)
       scheduleMicrotask(task);
-    else
-      setTimeout(task, i = 0);
+    else {
+      i = 0;
+      scheduleMacrotask(task);
+    }
   }
 }
 
