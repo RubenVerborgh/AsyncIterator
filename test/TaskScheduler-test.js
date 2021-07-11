@@ -54,7 +54,7 @@ describe('TaskScheduler', () => {
   describe('a task scheduler when setImmediate exists', () => {
     const backups = {};
 
-    before(() => {
+    beforeEach(() => {
       backups.setTimeout = global.setTimeout;
       backups.queueMicrotask = global.queueMicrotask;
       backups.setImmediate = global.setImmediate;
@@ -70,16 +70,54 @@ describe('TaskScheduler', () => {
       delete global.window;
     });
 
-    it('alternates between setTimeout and queueMicrotask', () => {
+    it('alternates between setImmediate and queueMicrotask', () => {
+      // Perform 100 calls
       const taskScheduler = createTaskScheduler();
-      const task = sinon.spy();
-      for (let i = 0; i < 100; i++)
-        taskScheduler(task);
+      const tasks = [];
+      for (let i = 0; i < 100; i++) {
+        tasks[i] = sinon.spy();
+        taskScheduler(tasks[i]);
+      }
+
+      // Ensure that setTimeout was not used
+      expect(global.setTimeout).to.have.callCount(0);
+
+      // 99 calls should have gone to queueMicrotask, 1 to setImmediate
       expect(global.setImmediate).to.have.callCount(1);
       expect(global.queueMicrotask).to.have.callCount(99);
-      expect(global.setImmediate).to.have.been.calledWith(task);
-      expect(global.queueMicrotask).to.have.been.calledWith(task);
+
+      // When the setImmediate callback is invoked, the final call should to through
+      global.setImmediate.getCall(0).callback();
+      expect(global.queueMicrotask).to.have.callCount(100);
+
+      // Verify all microtasks were scheduled
+      for (let i = 0; i < 100; i++)
+        expect(global.queueMicrotask).to.have.been.calledWith(tasks[i]);
+    });
+
+    it('waits for setImmediate to finish before calling queueMicrotask', () => {
+      // Perform 150 calls
+      const taskScheduler = createTaskScheduler();
+      const tasks = [];
+      for (let i = 0; i < 150; i++) {
+        tasks[i] = sinon.spy();
+        taskScheduler(tasks[i]);
+      }
+
+      // Ensure that setTimeout was not used
       expect(global.setTimeout).to.have.callCount(0);
+
+      // 99 calls should have gone to queueMicrotask, 1 to setImmediate
+      expect(global.setImmediate).to.have.callCount(1);
+      expect(global.queueMicrotask).to.have.callCount(99);
+
+      // When the setImmediate callback is invoked, the final call should to through
+      global.setImmediate.getCall(0).callback();
+      expect(global.queueMicrotask).to.have.callCount(150);
+
+      // Verify all microtasks were scheduled
+      for (let i = 0; i < 150; i++)
+        expect(global.queueMicrotask).to.have.been.calledWith(tasks[i]);
     });
   });
 
@@ -103,14 +141,25 @@ describe('TaskScheduler', () => {
     });
 
     it('alternates between setTimeout and queueMicrotask', () => {
+      // Perform 100 calls
       const taskScheduler = createTaskScheduler();
-      const task = sinon.spy();
-      for (let i = 0; i < 100; i++)
-        taskScheduler(task);
+      const tasks = [];
+      for (let i = 0; i < 100; i++) {
+        tasks[i] = sinon.spy();
+        taskScheduler(tasks[i]);
+      }
+
+      // 99 calls should have gone to queueMicrotask, 1 to setTimeout
       expect(global.setTimeout).to.have.callCount(1);
       expect(global.queueMicrotask).to.have.callCount(99);
-      expect(global.setTimeout).to.have.been.calledWith(task, 0);
-      expect(global.queueMicrotask).to.have.been.calledWith(task);
+
+      // When the setTimeout callback is invoked, the final call should to through
+      global.setTimeout.getCall(0).args[0]();
+      expect(global.queueMicrotask).to.have.callCount(100);
+
+      // Verify all microtasks were scheduled
+      for (let i = 0; i < 100; i++)
+        expect(global.queueMicrotask).to.have.been.calledWith(tasks[i]);
     });
   });
 

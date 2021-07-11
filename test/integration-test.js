@@ -2,6 +2,7 @@ import {
   ArrayIterator,
   TransformIterator,
   UnionIterator,
+  scheduleTask,
 } from '../dist/asynciterator.js';
 
 describe('Integration tests', () => {
@@ -44,9 +45,7 @@ describe('Integration tests', () => {
 
       before(async () => {
         arrayIterator = new ArrayIterator([], { autoStart: false });
-
-        // Wait a tick
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise(scheduleTask);
 
         clonedIterator = arrayIterator.clone();
       });
@@ -82,9 +81,7 @@ describe('Integration tests', () => {
 
       before(async () => {
         arrayIterator = new ArrayIterator([], { autoStart: false });
-
-        // Wait a tick
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise(resolve => scheduleTask(resolve));
 
         clonedIterator1 = arrayIterator.clone();
         clonedIterator2 = arrayIterator.clone();
@@ -165,9 +162,7 @@ describe('Integration tests', () => {
 
       before(async () => {
         arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
-
-        // Wait a tick
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise(scheduleTask);
 
         clonedIterator = arrayIterator.clone();
       });
@@ -198,9 +193,7 @@ describe('Integration tests', () => {
       before(async () => {
         arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
         clonedIterator = arrayIterator.clone();
-
-        // Wait a tick
-        await new Promise(resolve => setImmediate(resolve));
+        await new Promise(scheduleTask);
 
         clonedIterator = clonedIterator.clone();
       });
