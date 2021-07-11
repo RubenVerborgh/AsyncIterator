@@ -10,14 +10,28 @@ export default function createTaskScheduler() : TaskScheduler {
   const scheduleMacrotask = typeof setImmediate === 'function' ?
     setImmediate : (task: Task) => setTimeout(task, 0);
 
-  // Alternate with macrotask scheduler to avoid freezing
+  // Interrupt with a macrotask every once in a while to avoid freezing
   let i = 0;
+  let queue: Task[] | null = null;
   return (task: Task) => {
-    if (++i < 100)
+    // Tasks are currently being queued to avoid freezing
+    if (queue !== null)
+      queue.push(task);
+    // Tasks are being scheduled normally as microtasks
+    else if (++i < 100)
       scheduleMicrotask(task);
+    // A macrotask interruption is needed
     else {
-      i = 0;
-      scheduleMacrotask(task);
+      // Hold all tasks in a queue, and reschedule them after a macrotask
+      queue = [ task ];
+      scheduleMacrotask(() => {
+        // Work through the queue
+        for (const queued of queue!)
+          scheduleMicrotask(queued);
+        queue = null;
+        // Reset the interruption schedule
+        i = 0;
+      });
     }
   }
 }
