@@ -229,7 +229,7 @@
     no-class-assign: error,
     no-confusing-arrow: off,
     no-const-assign: error,
-    no-dupe-class-members: error,
+    no-dupe-class-members: off,
     no-duplicate-imports: off,
     no-new-symbol: error,
     no-restricted-imports: error,
