@@ -1,6 +1,6 @@
 # Asynchronous iterators for JavaScript
-[![Build Status](https://travis-ci.org/RubenVerborgh/AsyncIterator.svg?branch=master)](https://travis-ci.org/RubenVerborgh/AsyncIterator)
-[![Coverage Status](https://coveralls.io/repos/github/RubenVerborgh/AsyncIterator/badge.svg)](https://coveralls.io/github/RubenVerborgh/AsyncIterator)
+[![Build Status](https://github.com/rdfjs/RubenVerborgh/AsyncIterator/CI/badge.svg)](https://github.com/RubenVerborgh/AsyncIterator/actions)
+[![Coverage Status](https://coveralls.io/repos/github/RubenVerborgh/AsyncIterator/badge.svg)](https://coveralls.io/github/rdfjs/N3.js)
 [![npm version](https://badge.fury.io/js/asynciterator.svg)](https://www.npmjs.com/package/asynciterator)
 
 **AsyncIterator is a lightweight JavaScript implementation of demand-driven object streams,**
