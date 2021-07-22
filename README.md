@@ -1,5 +1,5 @@
 # Asynchronous iterators for JavaScript
-[![Build Status](https://travis-ci.org/RubenVerborgh/AsyncIterator.svg?branch=master)](https://travis-ci.org/RubenVerborgh/AsyncIterator)
+[![Build Status](https://github.com/RubenVerborgh/AsyncIterator/actions/workflows/ci.yml/badge.svg)](https://github.com/RubenVerborgh/AsyncIterator/actions)
 [![Coverage Status](https://coveralls.io/repos/github/RubenVerborgh/AsyncIterator/badge.svg)](https://coveralls.io/github/RubenVerborgh/AsyncIterator)
 [![npm version](https://badge.fury.io/js/asynciterator.svg)](https://www.npmjs.com/package/asynciterator)
 
