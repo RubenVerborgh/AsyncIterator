@@ -6,8 +6,11 @@
   "type": "module",
   "main": "dist/asynciterator.cjs",
   "exports": {
-    "import": "./dist/asynciterator.js",
-    "require": "./dist/asynciterator.cjs"
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/asynciterator.js",
+      "require": "./dist/asynciterator.cjs"
+    }
   },
   "module": "./dist/asynciterator.js",
   "types": "./dist/asynciterator.d.ts",
