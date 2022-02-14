@@ -43,10 +43,10 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator without arguments', () => {
+  describe('An ArrayIterator undefined iterator and autostart', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator();
+      iterator = new ArrayIterator(undefined, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -83,10 +83,10 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with an empty array', () => {
+  describe('An ArrayIterator with an empty array and autoStart', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator([]);
+      iterator = new ArrayIterator([], { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -130,7 +130,7 @@ describe('ArrayIterator', () => {
   describe('An ArrayIterator with an empty array without autoStart', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator([], { autoStart: false });
+      iterator = new ArrayIterator([]);
       captureEvents(iterator, 'readable', 'end');
     });
 

@@ -10,9 +10,9 @@ describe('Integration tests', () => {
     let arrayIterator, transformIterator, unionIterator;
 
     before(() => {
-      arrayIterator = new ArrayIterator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], { autoStart: false });
-      transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
-      unionIterator = new UnionIterator([transformIterator], { autoStart: false });
+      arrayIterator = new ArrayIterator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      transformIterator = new TransformIterator(arrayIterator);
+      unionIterator = new UnionIterator([transformIterator]);
     });
 
     it('emits a data event', done => {
@@ -30,7 +30,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
         clonedIterator = arrayIterator.clone();
       });
 
@@ -44,7 +44,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
         await new Promise(scheduleTask);
 
         clonedIterator = arrayIterator.clone();
@@ -60,7 +60,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator1, clonedIterator2;
 
       before(() => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
         clonedIterator1 = arrayIterator.clone();
         clonedIterator2 = arrayIterator.clone();
       });
@@ -80,7 +80,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator1, clonedIterator2;
 
       before(async () => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
         await new Promise(resolve => scheduleTask(resolve));
 
         clonedIterator1 = arrayIterator.clone();
@@ -102,7 +102,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
         clonedIterator = arrayIterator.clone().clone();
       });
 
@@ -116,8 +116,8 @@ describe('Integration tests', () => {
       let arrayIterator, transformIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
-        transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
+        transformIterator = new TransformIterator(arrayIterator);
         clonedIterator = transformIterator.clone();
       });
 
@@ -131,9 +131,9 @@ describe('Integration tests', () => {
       let arrayIterator, transformIterator, unionIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([], { autoStart: false });
-        transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
-        unionIterator = new UnionIterator([transformIterator], { autoStart: false });
+        arrayIterator = new ArrayIterator([]);
+        transformIterator = new TransformIterator(arrayIterator);
+        unionIterator = new UnionIterator([transformIterator]);
         clonedIterator = unionIterator.clone();
       });
 
@@ -147,7 +147,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        arrayIterator = new ArrayIterator([1, 2, 3]);
         clonedIterator = arrayIterator.clone();
       });
 
@@ -161,7 +161,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {
-        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        arrayIterator = new ArrayIterator([1, 2, 3]);
         await new Promise(scheduleTask);
 
         clonedIterator = arrayIterator.clone();
@@ -177,7 +177,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
-        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        arrayIterator = new ArrayIterator([1, 2, 3]);
         clonedIterator = arrayIterator.clone().clone();
       });
 
@@ -191,7 +191,7 @@ describe('Integration tests', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {
-        arrayIterator = new ArrayIterator([1, 2, 3], { autoStart: false });
+        arrayIterator = new ArrayIterator([1, 2, 3]);
         clonedIterator = arrayIterator.clone();
         await new Promise(scheduleTask);
 

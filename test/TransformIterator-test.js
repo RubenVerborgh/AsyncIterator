@@ -116,7 +116,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator without source', () => {
     let iterator;
     before(() => {
-      iterator = new TransformIterator();
+      iterator = new TransformIterator({ autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -180,7 +180,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator initialized with an empty source', () => {
     let iterator, source;
     before(() => {
-      iterator = new TransformIterator(source = new EmptyIterator());
+      iterator = new TransformIterator(source = new EmptyIterator(), { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
       expect(source._events).to.not.contain.key('data');
       expect(source._events).to.not.contain.key('readable');
@@ -215,7 +215,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator initialized with a source that ends asynchronously', () => {
     let iterator, source;
     before(() => {
-      iterator = new TransformIterator(source = new AsyncIterator());
+      iterator = new TransformIterator(source = new AsyncIterator(), { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -293,7 +293,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a one-item source', () => {
     let iterator, source;
     before(() => {
-      iterator = new TransformIterator(source = new ArrayIterator(['a']));
+      iterator = new TransformIterator(source = new ArrayIterator(['a'], { autoStart: true }), { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
       sinon.spy(source, 'read');
       // intentionally break source cleanup to verify whether destination does it
@@ -367,7 +367,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator that synchronously transforms a two-item source', () => {
     let iterator, source;
     before(() => {
-      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c'], { autoStart: true }), { autoStart: true });
       iterator._transform = function (item, done) {
         this._push(`${item}1`);
         this._push(`${item}2`);
@@ -474,7 +474,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator that asynchronously transforms a two-item source', () => {
     let iterator, source;
     before(() => {
-      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c']));
+      iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c'], { autoStart: true }), { autoStart: true });
       iterator._transform = function (item, done) {
         scheduleTask(() => {
           iterator._push(`${item}1`);
@@ -584,8 +584,8 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       let i = 0;
-      source = new ArrayIterator(['a', 'b', 'c']);
-      iterator = new TransformIterator(source);
+      source = new ArrayIterator(['a', 'b', 'c'], { autoStart: true });
+      iterator = new TransformIterator(source, { autoStart: true });
       iterator._transform = sinon.spy(function (item, done) {
         this._push(item + (++i));
         scheduleTask(done);
@@ -616,13 +616,13 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a promise to a source', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
-      source = new ArrayIterator(['a']);
+      source = new ArrayIterator(['a'], { autoStart: true });
       sourcePromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
       sinon.spy(source, 'read');
       sinon.spy(sourcePromise, 'then');
-      iterator = new TransformIterator(sourcePromise);
+      iterator = new TransformIterator(sourcePromise, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -705,13 +705,13 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a promise and without autoStart', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
-      source = new ArrayIterator(['a']);
+      source = new ArrayIterator(['a'], { autoStart: true });
       sourcePromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
       sinon.spy(source, 'read');
       sinon.spy(sourcePromise, 'then');
-      iterator = new TransformIterator(sourcePromise, { autoStart: false });
+      iterator = new TransformIterator(sourcePromise);
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -830,7 +830,7 @@ describe('TransformIterator', () => {
     before(() => {
       error = new Error('source creation error');
       const rejected = Promise.resolve().then(() => { throw error; });
-      iterator = new TransformIterator(rejected);
+      iterator = new TransformIterator(rejected, { autoStart: true });
       iterator.on('error', errorHandler = sinon.stub());
     });
 
@@ -843,13 +843,13 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a promise that resolves after closing', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
-      source = new ArrayIterator(['a']);
+      source = new ArrayIterator(['a'], { autoStart: true });
       sourcePromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
       sinon.spy(source, 'read');
       sinon.spy(sourcePromise, 'then');
-      iterator = new TransformIterator(sourcePromise);
+      iterator = new TransformIterator(sourcePromise, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -876,10 +876,10 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a source creation function', () => {
     let iterator, source, createSource;
     before(() => {
-      source = new ArrayIterator(['a']);
+      source = new ArrayIterator(['a'], { autoStart: true });
       sinon.spy(source, 'read');
       createSource = sinon.spy(() => source);
-      iterator = new TransformIterator(createSource);
+      iterator = new TransformIterator(createSource, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -947,13 +947,13 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a source creation function returning a promise', () => {
     let iterator, source, createSource, sourcePromise, resolvePromise;
     before(() => {
-      source = new ArrayIterator(['a']);
+      source = new ArrayIterator(['a'], { autoStart: true });
       sinon.spy(source, 'read');
       sourcePromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
       createSource = sinon.spy(() => sourcePromise);
-      iterator = new TransformIterator(createSource);
+      iterator = new TransformIterator(createSource, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -1047,7 +1047,7 @@ describe('TransformIterator', () => {
         resolvePromise = resolve;
       });
       createSource = sinon.spy(() => sourcePromise);
-      iterator = new TransformIterator({ autoStart: false, source: createSource });
+      iterator = new TransformIterator({ source: createSource });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -1165,7 +1165,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source, { autoStart: false });
+      iterator = new TransformIterator(source);
     });
 
     describe('after being closed', () => {
@@ -1185,7 +1185,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source, { autoStart: false, destroySource: false });
+      iterator = new TransformIterator(source, { destroySource: false });
     });
 
     describe('after being closed', () => {
@@ -1269,7 +1269,7 @@ describe('TransformIterator', () => {
     before(() => {
       source = new AsyncIterator();
       source.read = sinon.spy(() => i++);
-      iterator = new TransformIterator(source);
+      iterator = new TransformIterator(source, { autoStart: true });
       iterator._transform = function (item, done) {
         if (item % 10 === 0)
           this._push(item);
@@ -1360,7 +1360,7 @@ describe('TransformIterator', () => {
     before(() => {
       source = new AsyncIterator();
       source.read = sinon.spy(() => 1);
-      iterator = new TransformIterator(source);
+      iterator = new TransformIterator(source, { autoStart: true });
       iterator._transform = function (item, done) {
         this._push(item);
         this.close();
@@ -1508,9 +1508,9 @@ describe('TransformIterator', () => {
   describe('Two transformers in sequence with autostart', () => {
     let source, transform1, transform2, callback;
     before(() => {
-      source = new ArrayIterator([]);
-      transform1 = new TransformIterator(source);
-      transform2 = new TransformIterator(transform1);
+      source = new ArrayIterator([], { autoStart: true });
+      transform1 = new TransformIterator(source, { autoStart: true });
+      transform2 = new TransformIterator(transform1, { autoStart: true });
       callback = sinon.spy();
       transform2.on('end', callback);
     });
@@ -1526,8 +1526,8 @@ describe('TransformIterator', () => {
     let source, transform1, transform2, callback;
     before(() => {
       source = new ArrayIterator([]);
-      transform1 = new TransformIterator(source, { autoStart: false });
-      transform2 = new TransformIterator(transform1, { autoStart: false });
+      transform1 = new TransformIterator(source);
+      transform2 = new TransformIterator(transform1);
       callback = sinon.spy();
       transform2.on('end', callback);
     });

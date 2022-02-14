@@ -115,7 +115,7 @@ describe('ClonedIterator', () => {
 
   describe('Cloning an iterator that already has a destination', () => {
     it('should throw an exception', () => {
-      const source = new AsyncIterator(), destination = new TransformIterator(source);
+      const source = new AsyncIterator(), destination = new TransformIterator(source, { autoStart: true });
       source.should.have.property('_destination', destination);
       (() => source.clone()).should.throw('The source already has a destination');
     });
@@ -156,7 +156,7 @@ describe('ClonedIterator', () => {
   });
 
   describe('Cloning an iterator that asynchronously closes', () => {
-    function createIterator() { return new BufferedIterator(); }
+    function createIterator() { return new BufferedIterator({ autoStart: true }); }
 
     function beforeClosing(getClone, getIterator, index) {
       describe('before closing', () => {

@@ -403,7 +403,7 @@ export class AsyncIterator<T> extends EventEmitter {
     After this operation, only read the returned iterator instead of the current one.
     @param {object|Function} [options] Settings of the iterator, or the transformation function
     @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.autoStart=false] Whether buffering starts directly after construction
     @param {integer} [options.offset] The number of items to skip
     @param {integer} [options.limit] The maximum number of items
     @param {Function} [options.filter] A function to synchronously filter items from the source
@@ -606,7 +606,7 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items?: Iterable<T>, { autoStart = true } = {}) {
+  constructor(items?: Iterable<T>, { autoStart = false } = {}) {
     super();
     const buffer = items ? [...items] : [];
     this._sourceStarted = autoStart !== false;
@@ -729,9 +729,9 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     Creates a new `BufferedIterator`.
     @param {object} [options] Settings of the iterator
     @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.autoStart=false] Whether buffering starts directly after construction
   */
-  constructor({ maxBufferSize = 4, autoStart = true } = {}) {
+  constructor({ maxBufferSize = 4, autoStart = false } = {}) {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
     taskScheduler(() => this._init(autoStart));
@@ -1220,6 +1220,18 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
                        TransformOptions<S, D> & ((item: S, done: () => void) => void)) {
     super(source, options as TransformIteratorOptions<S>);
 
+    if (typeof options === 'object') {
+      let removeOptions = true;
+      for (const key in options) {
+        if (key !== 'autoStart') {
+          removeOptions = false;
+          break;
+        }
+      }
+      if (removeOptions)
+        options = undefined;
+    }
+
     // Set transformation steps from the options
     options = options || (!isSourceExpression(source) ? source : null as any);
     if (options) {
@@ -1346,7 +1358,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
    @param {object|Function} [options] Settings of the iterator, or the transformation function
    @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+   @param {boolean} [options.autoStart=false] Whether buffering starts directly after construction
    @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
    @param {integer} [options.offset] The number of items to skip
    @param {integer} [options.limit] The maximum number of items
@@ -1571,7 +1583,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator copies items from
   */
   constructor(source: AsyncIterator<T>) {
-    super(source, { autoStart: false });
+    super(source);
     this._reading = false;
   }
 

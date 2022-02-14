@@ -63,7 +63,7 @@ describe('MultiTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source, { autoStart: false });
+      iterator = new MultiTransformIterator(source);
       iterator._createTransformer = sinon.spy(() => new EmptyIterator());
     });
 
@@ -297,7 +297,7 @@ describe('MultiTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source);
+      iterator = new MultiTransformIterator(source, { autoStart: true });
       iterator._createTransformer = sinon.spy(item => {
         const transformer = new BufferedIterator();
         scheduleTask(() => {

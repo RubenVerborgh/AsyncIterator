@@ -30,7 +30,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator without arguments', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -115,7 +115,7 @@ describe('BufferedIterator', () => {
 
     describe('without autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator(); });
 
       describe('before `read` has been called', () => {
         it('should have emitted the `readable` event', () => {
@@ -225,7 +225,7 @@ describe('BufferedIterator', () => {
 
     describe('with autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator(); });
+      before(() => { iterator = createIterator({ autoStart: true }); });
 
       describe('before `read` has been called', () => {
         it('should not have emitted the `readable` event', () => {
@@ -312,7 +312,7 @@ describe('BufferedIterator', () => {
 
     describe('without autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator(); });
 
       describe('before `read` has been called', () => {
         it('should have emitted the `readable` event', () => {
@@ -422,7 +422,7 @@ describe('BufferedIterator', () => {
 
     describe('with autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator(); });
+      before(() => { iterator = createIterator({ autoStart: true }); });
 
       describe('before `read` has been called', () => {
         it('should not have emitted the `readable` event', () => {
@@ -497,7 +497,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that is being closed', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -563,7 +563,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that is being closed while reading is in progress', () => {
     let iterator, _readDone;
     function createIterator() {
-      iterator = new BufferedIterator({ autoStart: false, maxBufferSize: 1 });
+      iterator = new BufferedIterator({ maxBufferSize: 1 });
       iterator._read = (count, done) => { _readDone = done; };
       sinon.spy(iterator, '_read');
       captureEvents(iterator, 'readable', 'end');
@@ -1059,7 +1059,7 @@ describe('BufferedIterator', () => {
 
     describe('without autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator(); });
 
       it('should provide a readable `toString` representation', () => {
         iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
@@ -1211,7 +1211,7 @@ describe('BufferedIterator', () => {
 
     describe('with autoStart', () => {
       let iterator;
-      before(() => { iterator = createIterator(); });
+      before(() => { iterator = createIterator({ autoStart: true }); });
 
       it('should provide a readable `toString` representation', () => {
         iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 1}]');
@@ -1304,7 +1304,7 @@ describe('BufferedIterator', () => {
 
     describe('with autoStart enabled', () => {
       let iterator;
-      before(() => { iterator = createIterator(); });
+      before(() => { iterator = createIterator({ autoStart: true }); });
 
       it('should provide a readable `toString` representation', () => {
         iterator.toString().should.equal('[BufferedIterator {next: a, buffer: 3}]');
@@ -1406,7 +1406,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_read` that calls `done` multiple times', () => {
     let iterator, readDone;
     before(done => {
-      iterator = new BufferedIterator({ autoStart: false });
+      iterator = new BufferedIterator();
       iterator._read = (count, callback) => { readDone = callback; };
       scheduleTask(() => { iterator.read(); done(); });
     });
@@ -1421,7 +1421,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_read` that does not call `done`', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._read = function () { this._push('a'); };
     });
 
@@ -1438,7 +1438,7 @@ describe('BufferedIterator', () => {
     let iterator;
     before(() => {
       let counter = 0;
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._read = function () { this.read(); this._push(counter++); };
     });
 
@@ -1454,7 +1454,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with a synchronous beginning', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._begin = function (done) {
         this._push('x');
         this._push('y');
@@ -1575,7 +1575,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that pushes less than `maxBufferSize` items before _read', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       for (let i = 0; i < 3; i++)
         iterator._push(i);
       sinon.spy(iterator, '_read');
@@ -1590,7 +1590,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that pushes `maxBufferSize` items before _read', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       for (let i = 0; i < 4; i++)
         iterator._push(i);
       sinon.spy(iterator, '_read');
@@ -1604,7 +1604,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that starts reading before _read is called', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       // Forcibly change the status to 'reading',
       // to test if the iterator deals with such an exceptional situation
       iterator._changeState = function () { this._reading = true; };
@@ -1619,7 +1619,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that closes before _completeClose is called', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator.close();
       iterator._changeState(CLOSED);
       sinon.spy(iterator, '_flush');
@@ -1633,7 +1633,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with an asynchronous beginning', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._begin = function (done) {
         scheduleTask(() => {
           this._push('x');
@@ -1756,7 +1756,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_begin` that calls `done` multiple times', () => {
     let iterator, beginDone;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._begin = done => { beginDone = done; };
     });
 
@@ -1770,7 +1770,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_begin` that does not call `done`', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._begin = function () { this._push('a'); };
       iterator.close();
       sinon.spy(iterator, '_read');
@@ -1817,7 +1817,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with a synchronous flush', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._read = function (item, done) {
         this._push('a');
         this.close();
@@ -1938,7 +1938,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with an asynchronous flush', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._read = function (item, done) {
         this._push('a');
         this.close();
@@ -2061,7 +2061,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_flush` that calls `done` multiple times', () => {
     let iterator, flushDone;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._flush = done => { flushDone = done; };
       iterator.close();
       iterator.read();
@@ -2077,7 +2077,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_flush` that does not call `done`', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator();
+      iterator = new BufferedIterator({ autoStart: true });
       iterator._flush = function () { this._push('a'); };
       iterator.close();
       captureEvents(iterator, 'end');
@@ -2111,7 +2111,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with a synchronous flush that is destroyed', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator({ maxBufferSize: 1 });
+      iterator = new BufferedIterator({ maxBufferSize: 1, autoStart: true });
       iterator._read = function (item, done) {
         this._push('a');
         done();
@@ -2198,7 +2198,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with an asynchronous flush that is destroyed', () => {
     let iterator;
     before(() => {
-      iterator = new BufferedIterator({ maxBufferSize: 1 });
+      iterator = new BufferedIterator({ maxBufferSize: 1, autoStart: true });
       iterator._read = function (item, done) {
         this._push('a');
         done();
@@ -2312,7 +2312,7 @@ describe('BufferedIterator', () => {
     describe('when changing the buffer size', () => {
       let iterator;
       before(() => {
-        iterator = new BufferedIterator({ maxBufferSize: 6 });
+        iterator = new BufferedIterator({ maxBufferSize: 6, autoStart: true });
         iterator._read = sinon.spy(function (count, done) {
           for (let i = 0; i < 4; i++)
             this._push(i);
@@ -2359,7 +2359,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator created with an infinite maximum buffer size', () => {
     let iterator, i = 0;
     before(done => {
-      iterator = new BufferedIterator({ maxBufferSize: Infinity });
+      iterator = new BufferedIterator({ maxBufferSize: Infinity, autoStart: true });
       iterator._read = sinon.spy(function (count, next) {
         this._push(++i);
         if (i === 10) {
@@ -2382,7 +2382,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator create with a finite maximum buffer size', () => {
     let iterator, i = 0, beforeDone;
     before(() => {
-      iterator = new BufferedIterator({ maxBufferSize: 4 });
+      iterator = new BufferedIterator({ maxBufferSize: 4, autoStart: true });
       iterator._read = sinon.spy(function (count, next) {
         this._push(++i);
         if (i === 10) {

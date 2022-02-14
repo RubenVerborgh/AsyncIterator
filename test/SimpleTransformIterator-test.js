@@ -199,6 +199,7 @@ describe('SimpleTransformIterator', () => {
           this._push(item);
         done();
       };
+      transform.autoStart = true;
       iterator = new SimpleTransformIterator(source, transform);
       captureEvents(iterator, 'readable', 'end');
     });
@@ -290,6 +291,7 @@ describe('SimpleTransformIterator', () => {
         this.close();
         done();
       };
+      transform.autoStart = true;
       iterator = new SimpleTransformIterator(source, transform);
       captureEvents(iterator, 'readable', 'end');
     });
@@ -556,7 +558,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { offset: Infinity });
     });
 
     describe('when reading items', () => {
@@ -631,7 +633,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: 0, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: 0 });
     });
 
     describe('when reading items', () => {
@@ -706,7 +708,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -1, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -1 });
     });
 
     describe('when reading items', () => {
@@ -731,7 +733,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -Infinity });
     });
 
     describe('when reading items', () => {
@@ -756,7 +758,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: 2, limit: 3 });
+      iterator = new SimpleTransformIterator(source, { offset: 2, limit: 3 }, { autoStart: true });
     });
 
     describe('when reading items', () => {
@@ -781,7 +783,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new BufferedIterator();
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator({ offset: 2, limit: 3 });
+      iterator = new SimpleTransformIterator({ offset: 2, limit: 3 }, { autoStart: true });
       captureEvents(iterator, 'readable', 'end');
     });
 

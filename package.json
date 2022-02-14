@@ -32,6 +32,7 @@
     "test:immediate": "npm run mocha -- --require test/config/useSetImmediate.js",
     "mocha": "c8 mocha",
     "lint": "eslint asynciterator.ts test",
+    "lint:fix": "eslint asynciterator.ts test --fix",
     "docs": "npm run build:module && npm run jsdoc",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
