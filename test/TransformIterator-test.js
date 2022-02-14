@@ -1525,7 +1525,7 @@ describe('TransformIterator', () => {
   describe('Two transformers in sequence without autostart', () => {
     let source, transform1, transform2, callback;
     before(() => {
-      source = new ArrayIterator([]);
+      source = new ArrayIterator([], { autoStart: true });
       transform1 = new TransformIterator(source);
       transform2 = new TransformIterator(transform1);
       callback = sinon.spy();
