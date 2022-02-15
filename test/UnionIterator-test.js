@@ -144,7 +144,7 @@ describe('UnionIterator', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(new ArrayIterator(sources));
+      iterator = new UnionIterator(new ArrayIterator(sources), { autoStart: true });
     });
 
     it('should have ended', () => {
@@ -264,15 +264,15 @@ describe('UnionIterator', () => {
     let iterator, sourceIterator;
     before(() => {
       const sources = [range(0, 2), range(3, 6)];
-      sourceIterator = new ArrayIterator(sources, { autoStart: true });
+      sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
       iterator = new UnionIterator(sourceIterator);
     });
 
     describe('before reading', () => {
-      // it('should not have read the sources', () => {
-      //   sourceIterator.read.should.not.have.been.called;
-      // });
+      it('should not have read the sources', () => {
+        sourceIterator.read.should.not.have.been.called;
+      });
 
       it('should not have ended', () => {
         iterator.ended.should.be.false;

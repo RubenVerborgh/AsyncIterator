@@ -1013,7 +1013,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   */
   constructor(source?: SourceExpression<S>,
               options: TransformIteratorOptions<S> =
-                source as TransformIteratorOptions<S> || {}) {
+                source as TransformIteratorOptions<S> || { }) {
     super(options);
 
     // Shift parameters if needed
@@ -1469,9 +1469,8 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     @param {object} [options] Settings of the iterator
   */
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>>,
-              options: BufferedIteratorOptions = {}) {
-    super(options);
-    const autoStart = options.autoStart !== false;
+              { autoStart = false, ...options }: BufferedIteratorOptions = {}) {
+    super({ autoStart, ...options });
 
     // Sources have been passed as an iterator
     if (isEventEmitter(sources)) {
