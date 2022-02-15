@@ -115,7 +115,7 @@ describe('ClonedIterator', () => {
 
   describe('Cloning an iterator that already has a destination', () => {
     it('should throw an exception', () => {
-      const source = new AsyncIterator(), destination = new TransformIterator(source, { autoStart: true });
+      const source = new AsyncIterator(), destination = new TransformIterator(source);
       source.should.have.property('_destination', destination);
       (() => source.clone()).should.throw('The source already has a destination');
     });

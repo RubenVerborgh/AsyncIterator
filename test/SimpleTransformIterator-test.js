@@ -753,7 +753,7 @@ describe('SimpleTransformIterator', () => {
     });
   });
 
-  describe('A SimpleTransformIterator with an offset of 2 and a limit of 3', () => {
+  describe('A SimpleTransformIterator with an offset of 2 and a limit of 3 and autoStart enabled', () => {
     let iterator, source;
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
@@ -778,7 +778,7 @@ describe('SimpleTransformIterator', () => {
     });
   });
 
-  describe('A SimpleTransformIterator with offset/limit and a slow source', () => {
+  describe('A SimpleTransformIterator with offset/limit and a slow source and autoStart enabled', () => {
     let iterator, source;
     before(() => {
       source = new BufferedIterator();

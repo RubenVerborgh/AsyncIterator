@@ -6,7 +6,7 @@ import {
 } from '../dist/asynciterator.js';
 
 describe('Integration tests', () => {
-  describe('A sequence of ArrayIterator, TransformIterator, and Unioniterator without autoStart', () => {
+  describe('A sequence of ArrayIterator, TransformIterator, and Unioniterator with default options', () => {
     let arrayIterator, transformIterator, unionIterator;
 
     before(() => {
@@ -26,7 +26,7 @@ describe('Integration tests', () => {
   });
 
   describe('Cloning iterators', () => {
-    describe('A clone of an empty ArrayIterator without autoStart', () => {
+    describe('A clone of an empty ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
@@ -40,7 +40,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('An async clone of an empty ArrayIterator without autoStart', () => {
+    describe('An async clone of an empty ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {
@@ -56,7 +56,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A multi-clone of an empty ArrayIterator without autoStart', () => {
+    describe('A multi-clone of an empty ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator1, clonedIterator2;
 
       before(() => {
@@ -76,7 +76,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('An async multi-clone of an empty ArrayIterator without autoStart', () => {
+    describe('An async multi-clone of an empty ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator1, clonedIterator2;
 
       before(async () => {
@@ -98,7 +98,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A double clone of an empty ArrayIterator without autoStart', () => {
+    describe('A double clone of an empty ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
@@ -112,7 +112,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A clone of a sequence of an empty ArrayIterator, and TransformIterator without autoStart', () => {
+    describe('A clone of a sequence of an empty ArrayIterator, and TransformIterator with default options', () => {
       let arrayIterator, transformIterator, clonedIterator;
 
       before(() => {
@@ -127,7 +127,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A clone of a sequence of an empty ArrayIterator, TransformIterator, and Unioniterator without autoStart', () => {
+    describe('A clone of a sequence of an empty ArrayIterator, TransformIterator, and Unioniterator with default options', () => {
       let arrayIterator, transformIterator, unionIterator, clonedIterator;
 
       before(() => {
@@ -143,7 +143,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A clone of an ArrayIterator without autoStart', () => {
+    describe('A clone of an ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
@@ -157,7 +157,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('An async clone of an ArrayIterator without autoStart', () => {
+    describe('An async clone of an ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {
@@ -173,7 +173,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A double clone of an ArrayIterator without autoStart', () => {
+    describe('A double clone of an ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(() => {
@@ -187,7 +187,7 @@ describe('Integration tests', () => {
       });
     });
 
-    describe('A double async clone of an ArrayIterator without autoStart', () => {
+    describe('A double async clone of an ArrayIterator with default options', () => {
       let arrayIterator, clonedIterator;
 
       before(async () => {

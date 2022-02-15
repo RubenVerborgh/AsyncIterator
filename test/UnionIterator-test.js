@@ -68,7 +68,7 @@ describe('UnionIterator', () => {
     (await toArray(iterator)).sort().should.eql([0, 1, 2]);
   });
 
-  describe('when constructed with an array of 0 sources', () => {
+  describe('when constructed with an array of 0 sources and autoStart enabled', () => {
     let iterator;
     before(() => {
       const sources = [];
@@ -80,7 +80,7 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an array of 0 sources without autoStart', () => {
+  describe('when constructed with an array of 0 sources with default parameters', () => {
     let iterator;
     before(() => {
       const sources = [];
@@ -140,7 +140,7 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an iterator of 0 sources', () => {
+  describe('when constructed with an iterator of 0 sources with autoStart', () => {
     let iterator;
     before(() => {
       const sources = [];
@@ -152,11 +152,11 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an iterator of 0 sources without autoStart', () => {
+  describe('when constructed with an iterator of 0 sources with default parameters', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(new ArrayIterator(sources, { autoStart: true }));
+      iterator = new UnionIterator(new ArrayIterator(sources));
     });
 
     describe('before reading', () => {
@@ -260,7 +260,7 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an iterator and without autoStart', () => {
+  describe('when constructed with an iterator and with default parameters', () => {
     let iterator, sourceIterator;
     before(() => {
       const sources = [range(0, 2), range(3, 6)];

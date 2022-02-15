@@ -293,26 +293,6 @@ describe('MultiTransformIterator', () => {
     });
   });
 
-  describe('A MultiTransformIterator with transformers that error', () => {
-    let iterator, source;
-    before(() => {
-      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source, { autoStart: true });
-      iterator._createTransformer = sinon.spy(item => {
-        const transformer = new BufferedIterator();
-        scheduleTask(() => {
-          transformer.emit('error', new Error(`Error ${item}`));
-        });
-        return transformer;
-      });
-      captureEvents(iterator, 'error');
-    });
-
-    it('should emit `bufferSize` errors', () => {
-      iterator._eventCounts.error.should.equal(4);
-    });
-  });
-
   describe('A MultiTransformIterator with a multiTransform option', () => {
     let iterator, source;
     before(() => {
@@ -347,6 +327,26 @@ describe('MultiTransformIterator', () => {
           'f1', 'f2', 'f3',
         ]);
       });
+    });
+  });
+
+  describe('A MultiTransformIterator with transformers that error with autoStart enabled', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      iterator = new MultiTransformIterator(source, { autoStart: true });
+      iterator._createTransformer = sinon.spy(item => {
+        const transformer = new BufferedIterator();
+        scheduleTask(() => {
+          transformer.emit('error', new Error(`Error ${item}`));
+        });
+        return transformer;
+      });
+      captureEvents(iterator, 'error');
+    });
+
+    it('should emit `bufferSize` errors', () => {
+      iterator._eventCounts.error.should.equal(4);
     });
   });
 

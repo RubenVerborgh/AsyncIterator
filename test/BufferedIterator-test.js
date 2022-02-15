@@ -27,80 +27,6 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator without arguments', () => {
-    let iterator;
-    before(() => {
-      iterator = new BufferedIterator({ autoStart: true });
-      captureEvents(iterator, 'readable', 'end');
-    });
-
-    it('should have maxBufferSize 4', () => {
-      iterator.maxBufferSize.should.equal(4);
-    });
-
-    it('should provide a readable `toString` representation', () => {
-      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
-    });
-
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
-    });
-
-    it('should not have emitted the `end` event', () => {
-      iterator._eventCounts.end.should.equal(0);
-    });
-
-    it('should not have ended', () => {
-      iterator.ended.should.be.false;
-    });
-
-    it('should not have been destroyed', () => {
-      iterator.destroyed.should.be.false;
-    });
-
-    it('should not be done', () => {
-      iterator.done.should.be.false;
-    });
-
-    it('should not be readable', () => {
-      iterator.readable.should.be.false;
-    });
-
-    it('should return null when `read` is called', () => {
-      expect(iterator.read()).to.be.null;
-    });
-
-    describe('after `close` is called', () => {
-      before(() => {
-        iterator.close();
-      });
-
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
-      });
-
-      it('should have ended', () => {
-        iterator.ended.should.be.true;
-      });
-
-      it('should not have been destroyed', () => {
-        iterator.destroyed.should.be.false;
-      });
-
-      it('should be done', () => {
-        iterator.done.should.be.true;
-      });
-
-      it('should not be readable', () => {
-        iterator.readable.should.be.false;
-      });
-
-      it('should allow pushing but have no effect', () => {
-        iterator._push(1);
-        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
-      });
-    });
-  });
 
   describe('A BufferedIterator that closes itself synchronously on read', () => {
     function createIterator(options) {
@@ -296,6 +222,7 @@ describe('BufferedIterator', () => {
       });
     });
   });
+
 
   describe('A BufferedIterator that closes itself asynchronously on read', () => {
     function createIterator(options) {
@@ -494,7 +421,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator that is being closed', () => {
+  describe('A BufferedIterator (with autoStart) that is being closed', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1287,6 +1214,82 @@ describe('BufferedIterator', () => {
     });
   });
 
+
+  describe('A BufferedIterator with autoStart enabled', () => {
+    let iterator;
+    before(() => {
+      iterator = new BufferedIterator({ autoStart: true });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should have maxBufferSize 4', () => {
+      iterator.maxBufferSize.should.equal(4);
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+    });
+
+    it('should not have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(0);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', () => {
+      iterator.ended.should.be.false;
+    });
+
+    it('should not have been destroyed', () => {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should not be done', () => {
+      iterator.done.should.be.false;
+    });
+
+    it('should not be readable', () => {
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when `read` is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    describe('after `close` is called', () => {
+      before(() => {
+        iterator.close();
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not have been destroyed', () => {
+        iterator.destroyed.should.be.false;
+      });
+
+      it('should be done', () => {
+        iterator.done.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+
+      it('should allow pushing but have no effect', () => {
+        iterator._push(1);
+        iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
+      });
+    });
+  });
+
   describe('A BufferedIterator that pushes "a" (sync) and "b" and "c" (async) on every read', () => {
     function createIterator(options) {
       const iterator = new BufferedIterator(options);
@@ -1418,7 +1421,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_read` that does not call `done`', () => {
+  describe('A BufferedIterator (with autoStart) with `_read` that does not call `done`', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1434,7 +1437,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_read` that calls `read`', () => {
+  describe('A BufferedIterator (with autoStart) with `_read` that calls `read`', () => {
     let iterator;
     before(() => {
       let counter = 0;
@@ -1451,7 +1454,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with a synchronous beginning', () => {
+  describe('A BufferedIterator (with autoStart) with a synchronous beginning', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1572,7 +1575,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator that pushes less than `maxBufferSize` items before _read', () => {
+  describe('A BufferedIterator (with autoStart) that pushes less than `maxBufferSize` items before _read', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1587,7 +1590,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator that pushes `maxBufferSize` items before _read', () => {
+  describe('A BufferedIterator (with autoStart) that pushes `maxBufferSize` items before _read', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1601,7 +1604,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator that starts reading before _read is called', () => {
+  describe('A BufferedIterator (with autoStart) that starts reading before _read is called', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1616,7 +1619,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator that closes before _completeClose is called', () => {
+  describe('A BufferedIterator (with autoStart) that closes before _completeClose is called', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1630,7 +1633,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with an asynchronous beginning', () => {
+  describe('A BufferedIterator (with autoStart) with an asynchronous beginning', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1753,7 +1756,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_begin` that calls `done` multiple times', () => {
+  describe('A BufferedIterator (with autoStart) with `_begin` that calls `done` multiple times', () => {
     let iterator, beginDone;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1767,7 +1770,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_begin` that does not call `done`', () => {
+  describe('A BufferedIterator (with autoStart) with `_begin` that does not call `done`', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1814,7 +1817,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with a synchronous flush', () => {
+  describe('A BufferedIterator (with autoStart) with a synchronous flush', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -1935,7 +1938,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with an asynchronous flush', () => {
+  describe('A BufferedIterator (with autoStart) with an asynchronous flush', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -2058,7 +2061,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_flush` that calls `done` multiple times', () => {
+  describe('A BufferedIterator (with autoStart) with `_flush` that calls `done` multiple times', () => {
     let iterator, flushDone;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -2074,7 +2077,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with `_flush` that does not call `done`', () => {
+  describe('A BufferedIterator (with autoStart) with `_flush` that does not call `done`', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ autoStart: true });
@@ -2108,7 +2111,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with a synchronous flush that is destroyed', () => {
+  describe('A BufferedIterator (with autoStart) with a synchronous flush that is destroyed', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ maxBufferSize: 1, autoStart: true });
@@ -2195,7 +2198,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator with an asynchronous flush that is destroyed', () => {
+  describe('A BufferedIterator (with autoStart) with an asynchronous flush that is destroyed', () => {
     let iterator;
     before(() => {
       iterator = new BufferedIterator({ maxBufferSize: 1, autoStart: true });
@@ -2309,7 +2312,7 @@ describe('BufferedIterator', () => {
       (new BufferedIterator({ maxBufferSize: Infinity })).maxBufferSize.should.equal(Infinity);
     });
 
-    describe('when changing the buffer size', () => {
+    describe('when changing the buffer size (with autoStart)', () => {
       let iterator;
       before(() => {
         iterator = new BufferedIterator({ maxBufferSize: 6, autoStart: true });
@@ -2356,7 +2359,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator created with an infinite maximum buffer size', () => {
+  describe('A BufferedIterator (with autoStart) created with an infinite maximum buffer size', () => {
     let iterator, i = 0;
     before(done => {
       iterator = new BufferedIterator({ maxBufferSize: Infinity, autoStart: true });
@@ -2379,7 +2382,7 @@ describe('BufferedIterator', () => {
     });
   });
 
-  describe('A BufferedIterator create with a finite maximum buffer size', () => {
+  describe('A BufferedIterator (with autoStart) create with a finite maximum buffer size', () => {
     let iterator, i = 0, beforeDone;
     before(() => {
       iterator = new BufferedIterator({ maxBufferSize: 4, autoStart: true });

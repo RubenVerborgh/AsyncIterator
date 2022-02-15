@@ -113,7 +113,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator without source', () => {
+  describe('A TransformIterator without source and autoStart enabled', () => {
     let iterator;
     before(() => {
       iterator = new TransformIterator({ autoStart: true });
@@ -177,7 +177,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator initialized with an empty source', () => {
+  describe('A TransformIterator initialized with an empty source and autoStart enabled', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new EmptyIterator(), { autoStart: true });
@@ -212,7 +212,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator initialized with a source that ends asynchronously', () => {
+  describe('A TransformIterator initialized with a source that ends asynchronously and autoStart enabled', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new AsyncIterator(), { autoStart: true });
@@ -290,7 +290,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a one-item source', () => {
+  describe('A TransformIterator with a one-item source with autoStart enabled', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a'], { autoStart: true }), { autoStart: true });
@@ -364,7 +364,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator that synchronously transforms a two-item source', () => {
+  describe('A TransformIterator that synchronously transforms a two-item source and autoStart enabled', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c'], { autoStart: true }), { autoStart: true });
@@ -471,7 +471,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator that asynchronously transforms a two-item source', () => {
+  describe('A TransformIterator that asynchronously transforms a two-item source with autoStart enabled', () => {
     let iterator, source;
     before(() => {
       iterator = new TransformIterator(source = new ArrayIterator(['a', 'b', 'c'], { autoStart: true }), { autoStart: true });
@@ -580,7 +580,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator that synchronously transforms a three-item source but asynchronously completes', () => {
+  describe('A TransformIterator that synchronously transforms a three-item source but asynchronously completes with autoStart enabled', () => {
     let iterator, source;
     before(() => {
       let i = 0;
@@ -613,7 +613,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a promise to a source', () => {
+  describe('A TransformIterator with a promise to a source with autoStart enabled', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a'], { autoStart: true });
@@ -705,7 +705,7 @@ describe('TransformIterator', () => {
   describe('A TransformIterator with a promise and without autoStart', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
-      source = new ArrayIterator(['a'], { autoStart: true });
+      source = new ArrayIterator(['a']);
       sourcePromise = new Promise(resolve => {
         resolvePromise = resolve;
       });
@@ -825,7 +825,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a promise that is rejected', () => {
+  describe('A TransformIterator with autoStart enabled with a promise that is rejected', () => {
     let iterator, error, errorHandler;
     before(() => {
       error = new Error('source creation error');
@@ -840,7 +840,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a promise that resolves after closing', () => {
+  describe('A TransformIterator with autoStart enabled with a promise that resolves after closing', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a'], { autoStart: true });
@@ -873,7 +873,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a source creation function', () => {
+  describe('A TransformIterator with autoStart enabled with a source creation function', () => {
     let iterator, source, createSource;
     before(() => {
       source = new ArrayIterator(['a'], { autoStart: true });
@@ -944,7 +944,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a source creation function returning a promise', () => {
+  describe('A TransformIterator with autoStart enabled with a source creation function returning a promise', () => {
     let iterator, source, createSource, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a'], { autoStart: true });
@@ -1038,7 +1038,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a source creation function and without autoStart', () => {
+  describe('A TransformIterator with a source creation function and with default arguments', () => {
     let iterator, source, createSource, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);
@@ -1264,7 +1264,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator that skips many items', () => {
+  describe('A TransformIterator with autoStart enabled that skips many items', () => {
     let iterator, source, i = 1;
     before(() => {
       source = new AsyncIterator();
@@ -1355,7 +1355,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator that closes during the tranformation', () => {
+  describe('A TransformIterator with autoStart enabled that closes during the tranformation', () => {
     let iterator, source;
     before(() => {
       source = new AsyncIterator();
@@ -1522,10 +1522,10 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('Two transformers in sequence without autostart', () => {
+  describe('Two transformers in sequence with default parameters', () => {
     let source, transform1, transform2, callback;
     before(() => {
-      source = new ArrayIterator([], { autoStart: true });
+      source = new ArrayIterator([]);
       transform1 = new TransformIterator(source);
       transform2 = new TransformIterator(transform1);
       callback = sinon.spy();
