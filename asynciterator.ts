@@ -609,8 +609,8 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
   constructor(items?: Iterable<T>, { autoStart = false } = {}) {
     super();
     const buffer = items ? [...items] : [];
-    this._sourceStarted = autoStart !== false;
-    if (this._sourceStarted && buffer.length === 0)
+    this._sourceStarted = autoStart;
+    if (autoStart && buffer.length === 0)
       this.close();
     else
       this._buffer = buffer;
@@ -734,8 +734,8 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   constructor({ maxBufferSize = 4, autoStart = false } = {}) {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
+    this._sourceStarted = autoStart;
     taskScheduler(() => this._init(autoStart));
-    this._sourceStarted = autoStart !== false;
   }
 
   /**
