@@ -310,6 +310,35 @@ export class AsyncIterator<T> extends EventEmitter {
   }
 
   /**
+    Consume all remaining items of the iterator into an array that will be returned asynchronously.
+    @param {object} [options] Settings for array creation
+    @param {integer} [options.limit] The maximum number of items to place in the array.
+   */
+  toArray(options?: { limit?: number }): Promise<T[]> {
+    return new Promise<T[]>((resolve, reject) => {
+      // Collect items in an array
+      const items: T[] = [];
+      let resolved = false;
+
+      this.on('error', reject);
+      this.on('data', item => {
+        if (!resolved)
+          items.push(item);
+
+        // Resolve earlier if a limit was set and we have reached that limit
+        if (options?.limit && items.length === options.limit) {
+          resolved = true;
+          resolve(items);
+        }
+      });
+      this.on('end', () => {
+        if (!resolved)
+          resolve(items);
+      });
+    });
+  }
+
+  /**
     Retrieves the property with the given name from the iterator.
     If no callback is passed, it returns the value of the property
     or `undefined` if the property is not set.

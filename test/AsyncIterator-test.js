@@ -1081,4 +1081,154 @@ describe('AsyncIterator', () => {
       });
     });
   });
+
+  describe('The AsyncIterator#toArray function', () => {
+    it('should be a function', () => {
+      expect(AsyncIterator.prototype.toArray).to.be.a('function');
+    });
+
+    describe('called on an empty iterator', () => {
+      let iterator, result;
+      before(done => {
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => iterator.close() || null;
+        iterator.toArray().then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an empty array', () => {
+        expect(result).deep.to.equal([]);
+      });
+    });
+
+    describe('called on an iterator with two items', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 2 ? i : (iterator.close() || null);
+        iterator.toArray().then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with two elements', () => {
+        expect(result).deep.to.equal([1, 2]);
+      });
+    });
+
+    describe('called on an iterator that emits an error', () => {
+      let iterator, err;
+      before(() => {
+        err = new Error('My error');
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => {
+          iterator.destroy(err);
+        };
+      });
+
+      it('should reject the promise', done => {
+        iterator.toArray().catch(caughtError => {
+          expect(caughtError).to.equal(err);
+          done();
+        });
+      });
+    });
+
+    describe('called on an iterator with five items with empty options', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.toArray({}).then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with five elements', () => {
+        expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+
+    describe('called on an iterator with five items with null options', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.toArray(null).then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with five elements', () => {
+        expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+
+    describe('called on an iterator with five items with limit 0', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.toArray({ limit: 0 }).then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with five elements', () => {
+        expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+
+    describe('called on an iterator with five items with limit 3', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.toArray({ limit: 3 }).then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with three elements', () => {
+        expect(result).deep.to.equal([1, 2, 3]);
+      });
+    });
+
+    describe('called on an iterator with five items with limit 10', () => {
+      let iterator, result;
+      before(done => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.toArray({ limit: 10 }).then(array => {
+          result = array;
+          done();
+        }).catch(done);
+      });
+
+      it('should return an array with five elements', () => {
+        expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+  });
 });
