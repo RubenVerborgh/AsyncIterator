@@ -9,7 +9,7 @@ import type { Task, TaskScheduler } from './taskscheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
 
-/** Schedules the given ask for asynchronous execution. */
+/** Schedules the given task for asynchronous execution. */
 export function scheduleTask(task: Task): void {
   taskScheduler(task);
 }
