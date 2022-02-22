@@ -316,12 +316,14 @@ export class AsyncIterator<T> extends EventEmitter {
    */
   toArray(options?: { limit?: number }): Promise<T[]> {
     return new Promise<T[]>((resolve, reject) => {
+      const limit = typeof options?.limit === 'number' ? options.limit : Infinity;
+
       // Collect items in an array
       const items: T[] = [];
 
       // Early return if the limit is invalid
       // @ts-ignore
-      if (options?.limit === 0)
+      if (limit <= 0)
         return resolve(items);
 
       // Create a named listener so we can easily remove it later
@@ -330,7 +332,7 @@ export class AsyncIterator<T> extends EventEmitter {
 
         // Resolve earlier if a limit was set and we have reached that limit
         // @ts-ignore
-        if (items.length >= options?.limit) {
+        if (items.length >= limit) {
           this.removeListener('data', dataListener);
           resolve(items);
         }
