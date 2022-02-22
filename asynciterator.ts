@@ -315,32 +315,26 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {integer} [options.limit] The maximum number of items to place in the array.
    */
   toArray(options?: { limit?: number }): Promise<T[]> {
-    return new Promise<T[]>((resolve, reject) => {
-      const limit = typeof options?.limit === 'number' ? options.limit : Infinity;
+    const items: T[] = [];
+    const limit = typeof options?.limit === 'number' ? options.limit : Infinity;
 
-      // Collect items in an array
-      const items: T[] = [];
-
-      // Early return if the limit is invalid
-      // @ts-ignore
-      if (limit <= 0)
-        return resolve(items);
-
-      // Create a named listener so we can easily remove it later
-      const dataListener = (item: T) => {
+    return limit <= 0 ? Promise.resolve(items) : new Promise<T[]>((resolve, reject) => {
+      // Collect and return all items up to the limit
+      const resolveItems = () => resolve(items);
+      const pushItem = (item: T) => {
         items.push(item);
-
-        // Resolve earlier if a limit was set and we have reached that limit
-        // @ts-ignore
         if (items.length >= limit) {
-          this.removeListener('data', dataListener);
+          this.removeListener('error', reject);
+          this.removeListener('data', pushItem);
+          this.removeListener('end', resolveItems);
           resolve(items);
         }
       };
 
+      // Start item collection
       this.on('error', reject);
-      this.on('data', dataListener);
-      this.on('end', () => resolve(items));
+      this.on('data', pushItem);
+      this.on('end', resolveItems);
     });
   }
 
