@@ -318,23 +318,23 @@ export class AsyncIterator<T> extends EventEmitter {
     return new Promise<T[]>((resolve, reject) => {
       // Collect items in an array
       const items: T[] = [];
-      let resolved = false;
 
-      this.on('error', reject);
-      this.on('data', item => {
-        if (!resolved)
-          items.push(item);
-
+      // Create a named listener so we can easily remove it later
+      const dataListener = (item: T) => {
         // Resolve earlier if a limit was set and we have reached that limit
-        if (options?.limit && items.length === options.limit) {
-          resolved = true;
+        // @ts-ignore
+        if (items.length >= options?.limit) {
+          this.removeListener('data', dataListener);
           resolve(items);
         }
-      });
-      this.on('end', () => {
-        if (!resolved)
-          resolve(items);
-      });
+        else {
+          items.push(item);
+        }
+      };
+
+      this.on('error', reject);
+      this.on('data', dataListener);
+      this.on('end', () => resolve(items));
     });
   }
 
