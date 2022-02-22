@@ -319,16 +319,20 @@ export class AsyncIterator<T> extends EventEmitter {
       // Collect items in an array
       const items: T[] = [];
 
+      // Early return if the limit is invalid
+      // @ts-ignore
+      if (options?.limit === 0)
+        return resolve(items);
+
       // Create a named listener so we can easily remove it later
       const dataListener = (item: T) => {
+        items.push(item);
+
         // Resolve earlier if a limit was set and we have reached that limit
         // @ts-ignore
         if (items.length >= options?.limit) {
           this.removeListener('data', dataListener);
           resolve(items);
-        }
-        else {
-          items.push(item);
         }
       };
 

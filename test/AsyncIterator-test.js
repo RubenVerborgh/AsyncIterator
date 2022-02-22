@@ -1213,7 +1213,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have read too much items', () => {
-        expect(i).to.equal(4);
+        expect(i).to.equal(3);
       });
     });
 
