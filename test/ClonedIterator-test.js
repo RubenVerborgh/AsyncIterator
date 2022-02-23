@@ -91,6 +91,15 @@ describe('ClonedIterator', () => {
         clone._eventCounts.readable.should.equal(0);
       });
 
+      it('should not have emitted the `end` event', () => {
+        clone._eventCounts.end.should.equal(0);
+      });
+
+      it('should have emitted the `end` event after resuming the iterator', done => {
+        clone.on('end', done);
+        clone.on('data', () => { throw new Error('should not have emitted data') })
+      });
+
       it('should have emitted the `end` event', () => {
         clone._eventCounts.end.should.equal(1);
       });
@@ -135,6 +144,15 @@ describe('ClonedIterator', () => {
 
       it('should not have emitted the `readable` event', () => {
         getClone()._eventCounts.readable.should.equal(0);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        getClone()._eventCounts.end.should.equal(0);
+      });
+
+      it('should have emitted the `end` event after resuming the iterator', done => {
+        getClone().on('end', done);
+        getClone().on('data', () => { throw new Error('should not have emitted data') })
       });
 
       it('should have emitted the `end` event', () => {
@@ -196,7 +214,7 @@ describe('ClonedIterator', () => {
           before(() => { getIterator()._push('a'); });
 
         it('should have emitted the `readable` event', () => {
-          getClone()._eventCounts.readable.should.equal(1);
+          getClone()._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted the `end` event', () => {
@@ -220,10 +238,19 @@ describe('ClonedIterator', () => {
     function afterClosing(getClone, getIterator, index) {
       describe('after closing', () => {
         if (index === 0)
-          before(() => { getIterator().close(); });
+          before(() => { getIterator().close(); getIterator().resume(); }); // Close and resume the original iterator so that it can end
 
         it('should not have emitted anymore `readable` events', () => {
           getClone()._eventCounts.readable.should.equal(1);
+        });
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('should have emitted the `end` event after resuming the iterator', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not have emitted data') })
         });
 
         it('should have emitted the `end` event', () => {
@@ -299,6 +326,15 @@ describe('ClonedIterator', () => {
 
         it('should not have emitted the `readable` event anymore', () => {
           getClone()._eventCounts.readable.should.equal(1);
+        });
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('should have emitted the `end` event after resuming the iterator', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not have emitted data') })
         });
 
         it('should have emitted the `end` event', () => {
@@ -400,6 +436,15 @@ describe('ClonedIterator', () => {
 
         it('should not have emitted the `readable` event anymore', () => {
           getClone()._eventCounts.readable.should.equal(1);
+        });
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('should have emitted the `end` event after resuming the iterator', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not have emitted data') })
         });
 
         it('should have emitted the `end` event', () => {

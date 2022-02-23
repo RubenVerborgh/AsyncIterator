@@ -63,8 +63,8 @@ describe('MultiTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source, { autoStart: false });
-      iterator._createTransformer = sinon.spy(() => new EmptyIterator());
+      iterator = new MultiTransformIterator(source, { preBuffer: false });
+      iterator._createTransformer = sinon.spy(() => new ArrayIterator([]));
     });
 
     describe('when reading items', () => {

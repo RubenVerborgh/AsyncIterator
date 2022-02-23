@@ -54,8 +54,17 @@ describe('SingletonIterator', () => {
       iterator.toString().should.equal('[SingletonIterator]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should have emitted the `end` event after resuming', done => {
+      iterator.on('end', done);
+      iterator.resume();
     });
 
     it('should have emitted the `end` event', () => {
@@ -117,6 +126,15 @@ describe('SingletonIterator', () => {
 
       it('should return null when read is called again', () => {
         expect(iterator.read()).to.be.null;
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have emitted the `end` event after resuming', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have emitted the `end` event', () => {

@@ -556,7 +556,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { offset: Infinity, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -631,7 +631,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: 0, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: 0, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -706,7 +706,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -1, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -1, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -731,7 +731,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -Infinity, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -968,6 +968,15 @@ describe('SimpleTransformIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(3);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should emit the the `end` event as soon as `data` is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('Data callback should not be called'); });
       });
 
       it('should have emitted the `end` event', () => {

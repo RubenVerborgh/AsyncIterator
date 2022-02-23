@@ -87,13 +87,13 @@ We could display a link every 0.1 seconds:
 setInterval(() => {
   const link = links.read();
   if (link)
-    console.log(link);
+    // console.log(link);
 }, 100);
 ```
 
 Or we can get the first 30 links and display them:
 ```JavaScript
-links.take(30).on('data', console.log);
+links.take(30).on('data', // console.log);
 ```
 
 In both cases, pages from Wikipedia will only be fetched when needed—the data consumer is in control.
@@ -116,9 +116,9 @@ or `null` when no item is available.
 
 ```JavaScript
 const numbers = new IntegerIterator({ start: 1, end: 2 });
-console.log(numbers.read()); // 1
-console.log(numbers.read()); // 2
-console.log(numbers.read()); // null
+// console.log(numbers.read()); // 1
+// console.log(numbers.read()); // 2
+// console.log(numbers.read()); // null
 ```
 
 If you receive `null`,
@@ -129,7 +129,7 @@ This event is not a guarantee that an item _will_ be available.
 links.on('readable', () => {
   let link;
   while (link = links.read())
-    console.log(link);
+    // console.log(link);
 });
 ```
 
@@ -141,8 +141,8 @@ In flow mode, iterators generate items as fast as possible.
 
 ```JavaScript
 const numbers = new IntegerIterator({ start: 1, end: 100 });
-numbers.on('data', number => console.log('number', number));
-numbers.on('end',  () => console.log('all done!'));
+numbers.on('data', number => // console.log('number', number));
+numbers.on('end',  () => // console.log('all done!'));
 ```
 
 To switch back to on-demand mode, simply remove all `data` listeners.
@@ -155,13 +155,13 @@ This is useful to pass around metadata about the iterator.
 ```JavaScript
 const numbers = new IntegerIterator();
 numbers.setProperty('rate', 1234);
-console.log(numbers.getProperty('rate')); // 1234
+// console.log(numbers.getProperty('rate')); // 1234
 
 const clone = numbers.clone();
-console.log(clone.getProperty('rate'));   // 1234
+// console.log(clone.getProperty('rate'));   // 1234
 
 numbers.setProperty('rate', 4567);
-console.log(clone.getProperty('rate'));   // 4567
+// console.log(clone.getProperty('rate'));   // 4567
 ```
 
 You can also attach a callback
@@ -169,7 +169,7 @@ that will be called as soon as the property is set:
 
 ```JavaScript
 const numbers = new IntegerIterator();
-numbers.getProperty('later', console.log);
+numbers.getProperty('later', // console.log);
 numbers.setProperty('later', 'value');
 // 'value'
 ```

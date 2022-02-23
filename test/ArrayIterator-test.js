@@ -5,6 +5,7 @@ import {
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { expect } from 'chai';
 
 describe('ArrayIterator', () => {
   describe('The ArrayIterator function', () => {
@@ -54,12 +55,17 @@ describe('ArrayIterator', () => {
       iterator.toString().should.equal('[ArrayIterator (0)]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
     });
 
-    it('should have emitted the `end` event', () => {
-      iterator._eventCounts.end.should.equal(1);
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should have emitted the `end` event after resuming the iterator', done => {
+      iterator.on('end', done);
+      iterator.resume();
     });
 
     it('should have ended', () => {
@@ -94,12 +100,17 @@ describe('ArrayIterator', () => {
       iterator.toString().should.equal('[ArrayIterator (0)]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
     });
 
-    it('should have emitted the `end` event', () => {
-      iterator._eventCounts.end.should.equal(1);
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should have emitted the `end` event after resuming the iterator', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not have emitted data'); });
     });
 
     it('should have ended', () => {
@@ -114,7 +125,7 @@ describe('ArrayIterator', () => {
       iterator.done.should.be.true;
     });
 
-    it('should not be readable', () => {
+    it('should be readable', () => {
       iterator.readable.should.be.false;
     });
 
@@ -127,10 +138,10 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with an empty array without autoStart', () => {
+  describe('An ArrayIterator with an empty array', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator([], { autoStart: false });
+      iterator = new ArrayIterator([]);
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -183,7 +194,12 @@ describe('ArrayIterator', () => {
       });
 
       it('should not have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have emitted the `end` event after resuming', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have ended', () => {
@@ -264,7 +280,15 @@ describe('ArrayIterator', () => {
         expect(iterator.read()).to.be.null;
       });
 
-      it('should have emitted the `end` event', () => {
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should emitted the `end` event after resume', async () => {
+        iterator.resume();
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
         iterator._eventCounts.end.should.equal(1);
       });
 
@@ -402,8 +426,13 @@ describe('ArrayIterator', () => {
         expect(iterator.read()).to.be.null;
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have emitted the `end` event after resume', done => {
+        iterator.resume();
+        iterator.on('end', done);
       });
 
       it('should have ended', () => {
@@ -545,24 +574,36 @@ describe('ArrayIterator', () => {
         expect(iterator.read()).to.be.null;
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
       });
 
-      it('should have ended', () => {
-        iterator.ended.should.be.true;
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
       });
 
       it('should not have been destroyed', () => {
         iterator.destroyed.should.be.false;
       });
 
-      it('should be done', () => {
-        iterator.done.should.be.true;
+      it('should not be done', () => {
+        iterator.done.should.be.false;
       });
 
-      it('should not be readable', () => {
-        iterator.readable.should.be.false;
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      describe('resuming', () => {
+        before(() => { iterator.resume(); });
+
+        it('should have ended', () => {
+          iterator.ended.should.be.true;
+        });
+
+        it('should be done', () => {
+          iterator.done.should.be.true;
+        });
       });
     });
   });
@@ -679,4 +720,34 @@ describe('ArrayIterator', () => {
       });
     });
   });
+
+  describe('Reconstructing arrays', () => {
+    it('Should reconstruct the empty array', async () => {
+      return expect(await toArray(new ArrayIterator([]))).to.deep.equal([]);
+    });
+
+    it('Should reconstruct the array with one element ', async () => {
+      return expect(await toArray(new ArrayIterator([1]))).to.deep.equal([1]);
+    });
+
+    it('Should reconstruct the array with two elements', async () => {
+      return expect(await toArray(new ArrayIterator([1, 2]))).to.deep.equal([1, 2]);
+    });
+  })
 });
+
+
+function toArray(stream) {
+  return new Promise((resolve, reject) => {
+    const array = [];
+    stream.on('data', data => {
+      // console.log('pushing', data)
+      array.push(data) 
+    });
+    stream.on('error', reject);
+    stream.on('end', () => {
+      // console.log('end event called')
+      resolve(array) 
+    });
+  });
+}

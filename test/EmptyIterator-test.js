@@ -54,8 +54,17 @@ describe('EmptyIterator', () => {
       iterator.toString().should.equal('[EmptyIterator]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted one `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should call end on resume', done => {
+      iterator.on('end', done);
+      iterator.resume();
     });
 
     it('should have emitted the `end` event', () => {

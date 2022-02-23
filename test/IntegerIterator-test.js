@@ -171,6 +171,15 @@ describe('IntegerIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -258,6 +267,15 @@ describe('IntegerIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -288,8 +306,17 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have emitted the `end` event', () => {
@@ -322,8 +349,17 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have emitted the `end` event', () => {
@@ -356,8 +392,17 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have emitted the `end` event', () => {
@@ -390,8 +435,17 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should have the end event called when resumed', done => {
+        iterator.on('end', done);
+        iterator.resume();
       });
 
       it('should have emitted the `end` event', () => {

@@ -75,16 +75,25 @@ describe('UnionIterator', () => {
       iterator = new UnionIterator(sources);
     });
 
+    it('should not have ended', () => {
+      iterator.ended.should.be.false;
+    });
+
+    it('should emit an end event as once a data listener is subscribed', done => {
+      iterator.on('data', () => { throw new Error('Unexpected data event'); });
+      iterator.on('end', done);
+    });
+
     it('should have ended', () => {
       iterator.ended.should.be.true;
     });
   });
 
-  describe('when constructed with an array of 0 sources without autoStart', () => {
+  describe('when constructed with an array of 0 sources without preBuffer', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(sources, { autoStart: false });
+      iterator = new UnionIterator(sources, { preBuffer: false });
     });
 
     describe('before reading', () => {
@@ -99,8 +108,22 @@ describe('UnionIterator', () => {
         scheduleTask(done);
       });
 
+      it('should not have ended while not flowing', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should emit an end event once flowing begins', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('Should not receive data'); });
+      });
+
       it('should have ended', () => {
         iterator.ended.should.be.true;
+      });
+
+
+      it('should not have emitted the `end` event', () => {
+      // iterator._eventCounts.end.should.equal(0);
       });
     });
   });
@@ -127,6 +150,48 @@ describe('UnionIterator', () => {
     it('should not have ended', () => {
       iterator.ended.should.be.false;
     });
+
+    describe('after reading', () => {
+      let items;
+      before(async () => {
+        items = (await toArray(iterator)).sort();
+      });
+
+      it('should have emitted all items', () => {
+        items.should.eql([0, 1, 2, 3, 4, 5, 6]);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
+  });
+
+  describe('when constructed with an array of 2 sources with preBuffer', () => {
+    let iterator;
+    before(() => {
+      const sources = [range(0, 2), range(3, 6)];
+      iterator = new UnionIterator(sources, { preBuffer: true });
+    });
+
+    it('should not have ended', () => {
+      iterator.ended.should.be.false;
+    });
+
+    describe('after reading', () => {
+      let items;
+      before(async () => {
+        items = (await toArray(iterator)).sort();
+      });
+
+      it('should have emitted all items', () => {
+        items.should.eql([0, 1, 2, 3, 4, 5, 6]);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
   });
 
   describe('when constructed with an empty iterator', () => {
@@ -135,8 +200,17 @@ describe('UnionIterator', () => {
       iterator = new UnionIterator(new EmptyIterator());
     });
 
+    it('should not have ended while not flowing', () => {
+      expect(iterator.ended).to.be.false;
+    });
+
+    it('should emit an end event once flowing begins', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('Should not receive data'); });
+    });
+
     it('should have ended', () => {
-      iterator.ended.should.be.true;
+      expect(iterator.ended).to.be.true;
     });
   });
 
@@ -147,16 +221,25 @@ describe('UnionIterator', () => {
       iterator = new UnionIterator(new ArrayIterator(sources));
     });
 
+    it('should not have ended while not flowing', () => {
+      expect(iterator.ended).to.be.false;
+    });
+
+    it('should emit an end event once flowing begins', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('Should not receive data'); });
+    });
+
     it('should have ended', () => {
-      iterator.ended.should.be.true;
+      expect(iterator.ended).to.be.true;
     });
   });
 
-  describe('when constructed with an iterator of 0 sources without autoStart', () => {
+  describe('when constructed with an iterator of 0 sources without preBuffer', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(new ArrayIterator(sources), { autoStart: false });
+      iterator = new UnionIterator(new ArrayIterator(sources), { preBuffer: false });
     });
 
     describe('before reading', () => {
@@ -171,8 +254,17 @@ describe('UnionIterator', () => {
         scheduleTask(done);
       });
 
+      it('should not have ended while not flowing', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should emit an end event once flowing begins', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('Should not receive data'); });
+      });
+
       it('should have ended', () => {
-        iterator.ended.should.be.true;
+        expect(iterator.ended).to.be.true;
       });
     });
   });
@@ -199,6 +291,22 @@ describe('UnionIterator', () => {
     it('should not have ended', () => {
       iterator.ended.should.be.false;
     });
+
+
+    describe('after reading', () => {
+      let items;
+      before(async () => {
+        items = (await toArray(iterator)).sort();
+      });
+
+      it('should have emitted all items', () => {
+        items.should.eql([0, 1, 2, 3, 4, 5, 6]);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+    });
   });
 
   describe('when the source iterator emits an error', () => {
@@ -216,13 +324,13 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an iterator and with autoStart', () => {
+  describe('when constructed with an iterator and with preBuffer', () => {
     let iterator, sourceIterator;
     before(() => {
       const sources = [range(0, 2), range(3, 6)];
       sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
-      iterator = new UnionIterator(sourceIterator, { autoStart: true });
+      iterator = new UnionIterator(sourceIterator, { preBuffer: true });
     });
 
     describe('before reading', () => {
@@ -260,13 +368,13 @@ describe('UnionIterator', () => {
     });
   });
 
-  describe('when constructed with an iterator and without autoStart', () => {
+  describe('when constructed with an iterator and without preBuffer', () => {
     let iterator, sourceIterator;
     before(() => {
       const sources = [range(0, 2), range(3, 6)];
       sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
-      iterator = new UnionIterator(sourceIterator, { autoStart: false });
+      iterator = new UnionIterator(sourceIterator, { preBuffer: false });
     });
 
     describe('before reading', () => {
@@ -426,6 +534,19 @@ describe('UnionIterator', () => {
         expect(iterator.read()).to.be.null;
       });
 
+      it('should not have ended while not flowing', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should emit an end event once flowing begins', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('Should not receive data'); });
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
       it('should have ended', () => {
         expect(iterator.ended).to.be.true;
       });
@@ -444,9 +565,15 @@ describe('UnionIterator', () => {
 function toArray(stream) {
   return new Promise((resolve, reject) => {
     const array = [];
-    stream.on('data', data => array.push(data));
+    stream.on('data', data => {
+      // console.log('pushing', data)
+      array.push(data) 
+    });
     stream.on('error', reject);
-    stream.on('end', () => resolve(array));
+    stream.on('end', () => {
+      // console.log('end event called')
+      resolve(array) 
+    });
   });
 }
 
