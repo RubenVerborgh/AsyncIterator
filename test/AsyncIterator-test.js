@@ -8,6 +8,7 @@ import {
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { expect } from 'chai';
 
 describe('AsyncIterator', () => {
   describe('The AsyncIterator module', () => {
@@ -560,7 +561,7 @@ describe('AsyncIterator', () => {
         dataListener2.should.have.callCount(0);
       });
 
-      it('should not have called `read` more', () => {
+      it('should not have called `read` anymore', () => {
         iterator.read.should.have.callCount(3);
       });
 
@@ -597,6 +598,7 @@ describe('AsyncIterator', () => {
       before(() => {
         iterator.removeListener('data', dataListener1);
         iterator.removeListener('data', dataListener2);
+        iterator.pause();
 
         items.push(5, 6);
         iterator.emit('readable');
@@ -615,6 +617,7 @@ describe('AsyncIterator', () => {
       before(() => {
         iterator.on('data', dataListener1);
         iterator.on('data', dataListener2);
+        iterator.resume();
       });
 
       it('should have emitted the `data` event for both new items', () => {
@@ -1160,12 +1163,12 @@ describe('AsyncIterator', () => {
       before(done => {
         let i = 0;
         iterator = new AsyncIterator();
-        iterator.readable = true;
         iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({}).then(array => {
           result = array;
           done();
         }).catch(done);
+        iterator.readable = true;
       });
 
       it('should return an array with five elements', () => {
@@ -1318,6 +1321,48 @@ describe('AsyncIterator', () => {
 
       it('should return an array with five elements', () => {
         expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+
+    describe('pausing and resuming an iterator', () => {
+      let iterator;
+      before(() => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
+      });
+
+      it('should be able to pause after two elements', done => {
+        let a = 1;
+        iterator.on('data', data => {
+          expect(data).to.equal(a);
+          a += 1;
+          if (data === 2) {
+            iterator.pause();
+            done();
+          }
+        });
+      });
+
+      it('should be able to read the next element', () => {
+        iterator.removeAllListeners('data');
+        expect(iterator.read()).to.equal(3);
+      });
+
+      it('should be able to resume then pause again', done => {
+        iterator.on('data', data => {
+          expect(data).to.equal(4);
+          iterator.pause();
+          done();
+        });
+        iterator.resume();
+      });
+
+      it('should be able to resume with no data listeners', done => {
+        iterator.removeAllListeners('data');
+        iterator.on('end', done);
+        iterator.resume();
       });
     });
   });

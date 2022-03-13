@@ -81,12 +81,41 @@ export class AsyncIterator<T> extends EventEmitter {
   private _readable = false;
   protected _properties?: { [name: string]: any };
   protected _propertyCallbacks?: { [name: string]: [(value: any) => void] };
+  private _readableFlowing: boolean | null = null;
 
   /** Creates a new `AsyncIterator`. */
   constructor(initialState = OPEN) {
     super();
     this._state = initialState;
     this.on('newListener', waitForDataListener);
+  }
+
+  /**
+    Switches the iterator into flow mode
+  */
+  resume(): this {
+    this.readableFlowing = true;
+    return this;
+  }
+
+  /**
+    Switches the iterator out of flow mode
+  */
+  pause(): this {
+    this.readableFlowing = false;
+    return this;
+  }
+
+  get readableFlowing(): boolean | null {
+    return this._readableFlowing;
+  }
+
+  set readableFlowing(state: boolean | null) {
+    if (this._readableFlowing !== state && state !== null) {
+      this._readableFlowing = state;
+      if (state && this.readable)
+        taskScheduler(() => emitData.call(this));
+    }
   }
 
   /**
@@ -218,6 +247,7 @@ export class AsyncIterator<T> extends EventEmitter {
       if (!destroy)
         this.emit('end');
       this._readable = false;
+      this.readableFlowing = false;
       this.removeAllListeners('readable');
       this.removeAllListeners('data');
       this.removeAllListeners('end');
@@ -308,26 +338,23 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {integer} [options.limit] The maximum number of items to place in the array.
    */
   toArray(options?: { limit?: number }): Promise<T[]> {
-    const items: T[] = [];
     const limit = typeof options?.limit === 'number' ? options.limit : Infinity;
 
-    return limit <= 0 ? Promise.resolve(items) : new Promise<T[]>((resolve, reject) => {
+    return limit <= 0 ? Promise.resolve([]) : new Promise<T[]>((resolve, reject) => {
+      const items: T[] = [];
+
       // Collect and return all items up to the limit
-      const resolveItems = () => resolve(items);
-      const pushItem = (item: T) => {
+      this.on('data', item => {
         items.push(item);
         if (items.length >= limit) {
-          this.removeListener('error', reject);
-          this.removeListener('data', pushItem);
-          this.removeListener('end', resolveItems);
+          this.destroy();
           resolve(items);
         }
-      };
-
-      // Start item collection
+      });
+      this.on('end', () => {
+        resolve(items);
+      });
       this.on('error', reject);
-      this.on('data', pushItem);
-      this.on('end', resolveItems);
     });
   }
 
@@ -346,7 +373,7 @@ export class AsyncIterator<T> extends EventEmitter {
     // If no callback was passed, return the property value
     if (!callback)
       return properties?.[propertyName];
-      // If the value has been set, send it through the callback
+    // If the value has been set, send it through the callback
     if (properties && (propertyName in properties)) {
       taskScheduler(() => callback(properties[propertyName]));
     }
@@ -538,18 +565,18 @@ function waitForDataListener(this: AsyncIterator<any>, eventName: string) {
   if (eventName === 'data') {
     this.removeListener('newListener', waitForDataListener);
     addSingleListener(this, 'readable', emitData);
-    if (this.readable)
-      taskScheduler(() => emitData.call(this));
+    if (this.readableFlowing === null)
+      this.readableFlowing = true;
   }
 }
 // Emits new items though `data` events as long as there are `data` listeners
 function emitData(this: AsyncIterator<any>) {
   // While there are `data` listeners and items, emit them
   let item;
-  while (this.listenerCount('data') !== 0 && (item = this.read()) !== null)
+  while (this.readableFlowing && (item = this.read()) !== null)
     this.emit('data', item);
   // Stop draining the source if there are no more `data` listeners
-  if (this.listenerCount('data') === 0 && !this.done) {
+  if (!this.readableFlowing && !this.done) {
     this.removeListener('readable', emitData);
     addSingleListener(this, 'newListener', waitForDataListener);
   }
@@ -1045,7 +1072,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // Close this iterator if the source has already ended
     if (source.done) {
       this.close();
-    // Otherwise, react to source events
+      // Otherwise, react to source events
     }
     else {
       source.on('end', destinationCloseWhenDone);

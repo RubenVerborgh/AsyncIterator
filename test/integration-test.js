@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import {
   ArrayIterator,
   TransformIterator,
@@ -15,13 +16,43 @@ describe('Integration tests', () => {
       unionIterator = new UnionIterator([transformIterator], { preBuffer: false });
     });
 
-    it('emits a data event', done => {
-      unionIterator.once('data', () => done());
+    it('emits an end event after reading', done => {
+      const items = [];
+      unionIterator.on('data', item => {
+        items.push(item);
+      });
+      unionIterator.on('end', () => {
+        expect(items).deep.to.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        done();
+      });
+    });
+  });
+
+  describe('A sequence of ArrayIterator, TransformIterator, and Unioniterator', () => {
+    let arrayIterator, transformIterator, unionIterator;
+
+    before(() => {
+      arrayIterator = new ArrayIterator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      transformIterator = new TransformIterator(arrayIterator);
+      unionIterator = new UnionIterator([transformIterator]);
     });
 
-    it('emits an end event after reading', done => {
-      unionIterator.on('data', () => { /* drain */ });
-      unionIterator.on('end', done);
+    it('should return the initial array with toArray', async () => {
+      await expect(await unionIterator.toArray()).deep.to.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+  });
+
+  describe('A sequence of ArrayIterator, TransformIterator, and Unioniterator with limit 5', () => {
+    let arrayIterator, transformIterator, unionIterator;
+
+    before(() => {
+      arrayIterator = new ArrayIterator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      transformIterator = new TransformIterator(arrayIterator);
+      unionIterator = new UnionIterator([transformIterator]);
+    });
+
+    it('should return the initial array with toArray', async () => {
+      await expect(await unionIterator.toArray({ limit: 5 })).deep.to.equal([1, 2, 3, 4, 5]);
     });
   });
 

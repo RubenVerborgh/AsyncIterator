@@ -198,7 +198,6 @@ describe('ArrayIterator', () => {
     });
   });
 
-
   describe('An ArrayIterator with an array [1] (no use of flow)', () => {
     let iterator;
     before(() => {
@@ -260,6 +259,31 @@ describe('ArrayIterator', () => {
 
     it('should return null when read is called', () => {
       expect(iterator.read()).to.be.null;
+    });
+  });
+
+
+  describe('An ArrayIterator with an array [1,2]', () => {
+    let iterator;
+    before(() => {
+      iterator = new ArrayIterator([1, 2]);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should be able to pause at any time', done => {
+      iterator.once('data', data => {
+        expect(data).to.equal(1);
+        iterator.pause();
+        done();
+      });
+    });
+
+    it('should be able to pause at any time', done => {
+      iterator.on('data', data => {
+        expect(data).to.equal(2);
+      });
+      iterator.on('end', done);
+      iterator.resume();
     });
   });
 
