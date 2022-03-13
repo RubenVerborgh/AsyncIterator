@@ -103,7 +103,6 @@ export class AsyncIterator<T> extends EventEmitter {
     const valid = newState > this._state && this._state < ENDED;
     if (valid)
       this._state = newState;
-
     return valid;
   }
 
@@ -187,7 +186,7 @@ export class AsyncIterator<T> extends EventEmitter {
   destroy(cause?: Error) {
     if (!this.done) {
       this._destroy(cause, error => {
-        cause = cause || error;
+        cause ||= error;
         if (cause)
           this.emit('error', cause);
         this._end(true);
@@ -346,8 +345,8 @@ export class AsyncIterator<T> extends EventEmitter {
     const properties = this._properties;
     // If no callback was passed, return the property value
     if (!callback)
-      return properties && properties[propertyName];
-    // If the value has been set, send it through the callback
+      return properties?.[propertyName];
+      // If the value has been set, send it through the callback
     if (properties && (propertyName in properties)) {
       taskScheduler(() => callback(properties[propertyName]));
     }
@@ -370,8 +369,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {object?} value The new value of the property
   */
   setProperty<P>(propertyName: string, value: P) {
-    const properties = this._properties || (this._properties = Object.create(null));
-    properties[propertyName] = value;
+    (this._properties ||= Object.create(null))[propertyName] = value;
     // Execute getter callbacks that were waiting for this property to be set
     const propertyCallbacks = this._propertyCallbacks || {};
     const callbacks = propertyCallbacks[propertyName];
@@ -393,11 +391,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {object} An object with property names as keys.
   */
   getProperties() {
-    const properties = this._properties;
-    const copy: { [name: string]: any } = {};
-    for (const name in properties)
-      copy[name] = properties[name];
-    return copy;
+    return Object.assign({}, this._properties);
   }
 
   /**
@@ -580,7 +574,6 @@ export class EmptyIterator<T> extends AsyncIterator<T> {
     this.close();
   }
 }
-
 
 /**
   An iterator that emits a single item.
