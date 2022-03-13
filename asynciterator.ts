@@ -735,7 +735,6 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   constructor({ maxBufferSize = 4, preBuffer = true } = {}) {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
-    // TODO: See if we can remove this
     this._sourceStarted = preBuffer !== false;
     taskScheduler(() => this._init(this._sourceStarted));
   }
