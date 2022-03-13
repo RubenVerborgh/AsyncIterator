@@ -5,6 +5,7 @@ import {
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { promisifyEventEmitter } from 'event-emitter-promisify';
 
 describe('IntegerIterator', () => {
   describe('The IntegerIterator function', () => {
@@ -510,6 +511,44 @@ describe('IntegerIterator', () => {
       it('should return Infinity on read call 2', () => {
         expect(iterator.read()).to.equal(Infinity);
       });
+    });
+  });
+
+  describe('An range iterator with no elements should not emit until read from (range constructor)', () => {
+    it('no awaiting', async () => {
+      const iterator = range(0, 0);
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting undefined', async () => {
+      const iterator = range(0, 0);
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise', async () => {
+      const iterator = range(0, 0);
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+  });
+
+  describe('An IntegerIterator with no elements should not emit until read from', () => {
+    it('no awaiting', async () => {
+      const iterator = new IntegerIterator({ start: 0, end: 0, step: 1 });
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting undefined', async () => {
+      const iterator = new IntegerIterator({ start: 0, end: 0, step: 1 });
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise', async () => {
+      const iterator = new IntegerIterator({ start: 0, end: 0, step: 1 });
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
     });
   });
 });

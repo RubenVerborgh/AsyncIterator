@@ -5,6 +5,7 @@ import {
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { promisifyEventEmitter } from 'event-emitter-promisify';
 
 describe('ArrayIterator', () => {
   describe('The ArrayIterator function', () => {
@@ -112,8 +113,8 @@ describe('ArrayIterator', () => {
     });
 
     it('emit end once data is subscribed', done => {
-      iterator.on('end', done);
       iterator.on('data', () => { throw new Error('should not emit data'); });
+      iterator.on('end', done);
     });
 
     it('should have emitted the `end` event', () => {
@@ -812,6 +813,59 @@ describe('ArrayIterator', () => {
       it('should have an empty buffer', () => {
         expect(iterator._buffer).to.be.an('undefined');
       });
+    });
+  });
+
+  describe('A ArrayIterator with no elements should not emit until read from', () => {
+    it('awaiting undefined (with empty array)', async () => {
+      const iterator = new ArrayIterator([]);
+      iterator.close()
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise (with empty array)', async () => {
+      const iterator = new ArrayIterator([]);
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting undefined (with one element)', async () => {
+      const iterator = new ArrayIterator([1]);
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise (with one element)', async () => {
+      const iterator = new ArrayIterator([1]);
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+  });
+
+  describe('An ArrayIterator with no elements should not emit until read from (fromArray constructor)', () => {
+    it('awaiting undefined (with empty array)', async () => {
+      const iterator = fromArray([]);
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise (with empty array)', async () => {
+      const iterator = fromArray([]);
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting undefined (with one element)', async () => {
+      const iterator = fromArray([1]);
+      await undefined;
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
+    });
+
+    it('awaiting promise (with one element)', async () => {
+      const iterator = fromArray([1]);
+      await Promise.resolve();
+      await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
     });
   });
 });

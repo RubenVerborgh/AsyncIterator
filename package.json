@@ -32,6 +32,7 @@
     "test:immediate": "npm run mocha -- --require test/config/useSetImmediate.js",
     "mocha": "c8 mocha",
     "lint": "eslint asynciterator.ts test",
+    "lint:fix": "eslint asynciterator.ts test --fix",
     "docs": "npm run build:module && npm run jsdoc",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
@@ -48,6 +49,7 @@
     "c8": "^7.2.0",
     "chai": "^4.2.0",
     "eslint": "^6.8.0",
+    "event-emitter-promisify": "^1.1.0",
     "husky": "^4.2.5",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
