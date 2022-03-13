@@ -97,8 +97,8 @@ describe('AsyncIterator', () => {
     describe('after close has been called', () => {
       before(() => { iterator.close(); });
 
-      it('should not have emitted another `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(1);
+      it('should have emitted another `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(2);
       });
 
       it('should have emitted the `end` event', () => {
@@ -141,7 +141,7 @@ describe('AsyncIterator', () => {
       before(() => { iterator.destroy(); });
 
       it('should not have emitted another `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(1);
+        iterator._eventCounts.readable.should.equal(2);
       });
 
       it('should have emitted the `end` event', () => {
@@ -184,7 +184,7 @@ describe('AsyncIterator', () => {
       before(() => { iterator.close(); });
 
       it('should not have emitted another `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(1);
+        iterator._eventCounts.readable.should.equal(2);
       });
 
       it('should not have emitted the `end` event a second time', () => {
@@ -639,13 +639,27 @@ describe('AsyncIterator', () => {
       });
     });
 
-    describe('after the iterator is closed', () => {
+    describe('after the iterator is closed ', () => {
       before(() => {
         iterator.close();
       });
 
+      it('should have closed', () => {
+        iterator._state.should.equal(CLOSED);
+      });
+    });
+
+    describe('after the iterator is closed and then _end', () => {
+      before(() => {
+        iterator._end();
+      });
+
+      it('should have ended', () => {
+        iterator._state.should.equal(ENDED);
+      });
+
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
@@ -681,7 +695,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
@@ -723,7 +737,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
@@ -1092,7 +1106,7 @@ describe('AsyncIterator', () => {
       before(done => {
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => iterator.close() || null;
+        iterator.read = () => iterator._end() || null;
         iterator.toArray().then(array => {
           result = array;
           done();
@@ -1110,7 +1124,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 2 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 2 ? i : (iterator._end() || null);
         iterator.toArray().then(array => {
           result = array;
           done();
@@ -1147,7 +1161,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({}).then(array => {
           result = array;
           done();
@@ -1165,7 +1179,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray(null).then(array => {
           result = array;
           done();
@@ -1183,7 +1197,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: 0 }).then(array => {
           result = array;
           done();
@@ -1201,7 +1215,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: -3 }).then(array => {
           result = array;
           done();
@@ -1219,7 +1233,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: -0 }).then(array => {
           result = array;
           done();
@@ -1237,7 +1251,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: '3' }).then(array => {
           result = array;
           done();
@@ -1255,7 +1269,7 @@ describe('AsyncIterator', () => {
         i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: 3 }).then(array => {
           result = array;
           done();
@@ -1295,7 +1309,7 @@ describe('AsyncIterator', () => {
         let i = 0;
         iterator = new AsyncIterator();
         iterator.readable = true;
-        iterator.read = () => i++ < 5 ? i : (iterator.close() || null);
+        iterator.read = () => i++ < 5 ? i : (iterator._end() || null);
         iterator.toArray({ limit: 10 }).then(array => {
           result = array;
           done();

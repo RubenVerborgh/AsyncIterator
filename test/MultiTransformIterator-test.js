@@ -10,6 +10,7 @@ import {
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { expect } from 'chai';
 
 describe('MultiTransformIterator', () => {
   describe('The MultiTransformIterator function', () => {
@@ -43,6 +44,26 @@ describe('MultiTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      iterator = new MultiTransformIterator(source, { preBuffer: false });
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return items as they are', () => {
+        items.should.deep.equal(['a', 'b', 'c', 'd', 'e', 'f']);
+      });
+    });
+  });
+
+  describe('A MultiTransformIterator without options', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
       iterator = new MultiTransformIterator(source);
     });
 
@@ -59,11 +80,24 @@ describe('MultiTransformIterator', () => {
     });
   });
 
+  describe('A MultiTransformIterator with an ended AsyncIterator Source', () => {
+    let iterator, source;
+    before(() => {
+      source = new AsyncIterator();
+      iterator = new MultiTransformIterator(source);
+      source._end();
+    });
+
+    it('should be closed', () => {
+      expect(iterator.closed).to.be.true;
+    });
+  });
+
   describe('A MultiTransformIterator with transformers that emit 0 items', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
-      iterator = new MultiTransformIterator(source, { autoStart: false });
+      iterator = new MultiTransformIterator(source, { preBuffer: false });
       iterator._createTransformer = sinon.spy(() => new EmptyIterator());
     });
 
@@ -134,6 +168,34 @@ describe('MultiTransformIterator', () => {
           'd1', 'd2', 'd3',
           'e1', 'e2', 'e3',
           'f1', 'f2', 'f3',
+        ]);
+      });
+    });
+  });
+
+  describe('A MultiTransformIterator with transformers that synchronously emit 5 items', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      iterator = new MultiTransformIterator(source);
+      iterator._createTransformer = sinon.spy(item => new ArrayIterator([`${item}1`, `${item}2`, `${item}3`, `${item}4`, `${item}5`]));
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items', () => {
+        items.should.deep.equal([
+          'a1', 'a2', 'a3', 'a4', 'a5',
+          'b1', 'b2', 'b3', 'b4', 'b5',
+          'c1', 'c2', 'c3', 'c4', 'c5',
+          'd1', 'd2', 'd3', 'd4', 'd5',
+          'e1', 'e2', 'e3', 'e4', 'e5',
+          'f1', 'f2', 'f3', 'f4', 'f5',
         ]);
       });
     });
@@ -292,6 +354,35 @@ describe('MultiTransformIterator', () => {
       });
     });
   });
+
+
+  describe('A MultiTransformIterator with optional set to true', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator([1, 2, 3, 4, 5, 6]);
+      iterator = new MultiTransformIterator(source, { optional: true });
+      iterator._createTransformer = sinon.spy(item => {
+        switch (item) {
+        case 1: return new ArrayIterator(['1', '2', '3', '4']);
+        case 2: return null;
+        default: return new SingletonIterator(`t${item}`);
+        }
+      });
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return the transformed items, and originals when the transformer is empty', () => {
+        items.should.deep.equal(['1', '2', '3', '4', 2, 't3', 't4', 't5', 't6']);
+      });
+    });
+  });
+
 
   describe('A MultiTransformIterator with transformers that error', () => {
     let iterator, source;

@@ -54,16 +54,65 @@ describe('SingletonIterator', () => {
       iterator.toString().should.equal('[SingletonIterator]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should be readable', () => {
+      iterator.readable.should.be.true;
+    });
+
+    it('emit end once data is subscribed', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not emit data'); });
     });
 
     it('should have emitted the `end` event', () => {
       iterator._eventCounts.end.should.equal(1);
     });
 
-    it('should have ended', () => {
-      iterator.ended.should.be.true;
+    it('should not be readable', () => {
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+  });
+
+  describe('An SingletonIterator without item', () => {
+    let iterator;
+    before(() => {
+      iterator = new SingletonIterator(null);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[SingletonIterator]');
+    });
+
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should be readable', () => {
+      iterator.readable.should.be.true;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(1);
     });
 
     it('should not be readable', () => {
@@ -117,6 +166,66 @@ describe('SingletonIterator', () => {
 
       it('should return null when read is called again', () => {
         expect(iterator.read()).to.be.null;
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
+      it('should have ended', () => {
+        iterator.ended.should.be.true;
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
+      });
+    });
+  });
+
+
+  describe('An SingletonIterator with an item', () => {
+    let iterator, item;
+    before(() => {
+      iterator = new SingletonIterator(1);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before calling read', () => {
+      it('should provide a readable `toString` representation', () => {
+        iterator.toString().should.equal('[SingletonIterator (1)]');
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+    });
+
+    describe('after calling read for the first time', () => {
+      before(() => { item = iterator.read(); });
+
+      it('should provide a readable `toString` representation', () => {
+        iterator.toString().should.equal('[SingletonIterator]');
+      });
+
+      it('should read the first item of the array', () => {
+        item.should.equal(1);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {

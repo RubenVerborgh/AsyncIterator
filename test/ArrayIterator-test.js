@@ -10,7 +10,7 @@ describe('ArrayIterator', () => {
   describe('The ArrayIterator function', () => {
     describe('the result when called with `new`', () => {
       let instance;
-      before(() => { instance = new ArrayIterator(); });
+      before(() => { instance = new ArrayIterator([]); });
 
       it('should be an ArrayIterator object', () => {
         instance.should.be.an.instanceof(ArrayIterator);
@@ -27,7 +27,7 @@ describe('ArrayIterator', () => {
 
     describe('the result when called through `fromArray`', () => {
       let instance;
-      before(() => { instance = fromArray(); });
+      before(() => { instance = fromArray([]); });
 
       it('should be an ArrayIterator object', () => {
         instance.should.be.an.instanceof(ArrayIterator);
@@ -46,7 +46,7 @@ describe('ArrayIterator', () => {
   describe('An ArrayIterator without arguments', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator();
+      iterator = new ArrayIterator([]);
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -54,8 +54,17 @@ describe('ArrayIterator', () => {
       iterator.toString().should.equal('[ArrayIterator (0)]');
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('emit end once data is subscribed', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not emit data'); });
     });
 
     it('should have emitted the `end` event', () => {
@@ -95,7 +104,16 @@ describe('ArrayIterator', () => {
     });
 
     it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('emit end once data is subscribed', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not emit data'); });
     });
 
     it('should have emitted the `end` event', () => {
@@ -127,10 +145,127 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with an empty array without autoStart', () => {
+  describe('An ArrayIterator with an empty array (no use of flow)', () => {
     let iterator;
     before(() => {
-      iterator = new ArrayIterator([], { autoStart: false });
+      iterator = new ArrayIterator([]);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[ArrayIterator (0)]');
+    });
+
+    it('should not have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(1);
+    });
+
+    it('should have ended', () => {
+      iterator.ended.should.be.true;
+    });
+
+    it('should not have been destroyed', () => {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should be done', () => {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', () => {
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+  });
+
+
+  describe('An ArrayIterator with an array [1] (no use of flow)', () => {
+    let iterator;
+    before(() => {
+      iterator = new ArrayIterator([1]);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    it('should provide a readable `toString` representation', () => {
+      iterator.toString().should.equal('[ArrayIterator (1)]');
+    });
+
+    it('should not have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should return 1 when read is called', () => {
+      expect(iterator.read()).to.equal(1);
+    });
+
+    it('should not have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(1);
+    });
+
+    it('should have ended', () => {
+      iterator.ended.should.be.true;
+    });
+
+    it('should not have been destroyed', () => {
+      iterator.destroyed.should.be.false;
+    });
+
+    it('should be done', () => {
+      iterator.done.should.be.true;
+    });
+
+    it('should not be readable', () => {
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+  });
+
+  describe('An ArrayIterator with an empty array', () => {
+    let iterator;
+    before(() => {
+      iterator = new ArrayIterator([]);
       captureEvents(iterator, 'readable', 'end');
     });
 

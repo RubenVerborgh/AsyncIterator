@@ -171,6 +171,20 @@ describe('IntegerIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -258,6 +272,19 @@ describe('IntegerIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -289,7 +316,20 @@ describe('IntegerIterator', () => {
 
     describe('before reading', () => {
       it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -322,8 +362,21 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -357,7 +410,20 @@ describe('IntegerIterator', () => {
 
     describe('before reading', () => {
       it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -390,8 +456,17 @@ describe('IntegerIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
