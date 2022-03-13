@@ -1758,8 +1758,9 @@ describe('TransformIterator', () => {
     });
 
     describe('after attaching a data listener', () => {
-      before(() => {
+      before(done => {
         transform2.on('data', sinon.spy());
+        transform2.on('end', done);
       });
 
       it('should have emitted the end event', () => {
