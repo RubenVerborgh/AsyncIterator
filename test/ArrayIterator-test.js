@@ -819,7 +819,7 @@ describe('ArrayIterator', () => {
   describe('A ArrayIterator with no elements should not emit until read from', () => {
     it('awaiting undefined (with empty array)', async () => {
       const iterator = new ArrayIterator([]);
-      iterator.close()
+      iterator.close();
       await undefined;
       await expect(await promisifyEventEmitter(iterator.on('data', () => { /* */ }))).to.be.undefined;
     });
