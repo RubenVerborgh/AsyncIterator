@@ -330,6 +330,19 @@ describe('SimpleTransformIterator', () => {
         source.read.should.have.been.calledOnce;
       });
 
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -556,7 +569,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { offset: Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { offset: Infinity, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -631,7 +644,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: 0, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: 0, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -706,7 +719,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -1, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -1, preBuffer: false });
     });
 
     describe('when reading items', () => {
@@ -731,7 +744,7 @@ describe('SimpleTransformIterator', () => {
     before(() => {
       source = new IntegerIterator({ start: 1, end: 10 });
       sinon.spy(source, 'read');
-      iterator = new SimpleTransformIterator(source, { limit: -Infinity, autoStart: false });
+      iterator = new SimpleTransformIterator(source, { limit: -Infinity, preBuffer: false });
     });
 
     describe('when reading items', () => {

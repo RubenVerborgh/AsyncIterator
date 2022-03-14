@@ -87,8 +87,17 @@ describe('ClonedIterator', () => {
         expect(clone.source).to.be.undefined;
       });
 
-      it('should not have emitted the `readable` event', () => {
-        clone._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        clone._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        clone._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        clone.on('end', done);
+        clone.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -133,8 +142,17 @@ describe('ClonedIterator', () => {
         getClone().toString().should.equal('[ClonedIterator {source: [EmptyIterator]}]');
       });
 
-      it('should not have emitted the `readable` event', () => {
-        getClone()._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        getClone()._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        getClone()._eventCounts.end.should.equal(0);
+      });
+
+      it('emit end once data is subscribed', done => {
+        getClone().on('end', done);
+        getClone().on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -145,11 +163,19 @@ describe('ClonedIterator', () => {
         getClone().ended.should.be.true;
       });
 
+      it('should not have been destroyed', () => {
+        getClone().destroyed.should.be.false;
+      });
+
+      it('should be done', () => {
+        getClone().done.should.be.true;
+      });
+
       it('should not be readable', () => {
         getClone().readable.should.be.false;
       });
 
-      it('should return null on read', () => {
+      it('should return null when read is called', () => {
         expect(getClone().read()).to.be.null;
       });
     });
@@ -226,6 +252,16 @@ describe('ClonedIterator', () => {
           getClone()._eventCounts.readable.should.equal(1);
         });
 
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('emit end once data is subscribed', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not emit data'); });
+        });
+
         it('should have emitted the `end` event', () => {
           getClone()._eventCounts.end.should.equal(1);
         });
@@ -234,11 +270,19 @@ describe('ClonedIterator', () => {
           getClone().ended.should.be.true;
         });
 
+        it('should not have been destroyed', () => {
+          getClone().destroyed.should.be.false;
+        });
+
+        it('should be done', () => {
+          getClone().done.should.be.true;
+        });
+
         it('should not be readable', () => {
           getClone().readable.should.be.false;
         });
 
-        it('should return null on read', () => {
+        it('should return null when read is called', () => {
           expect(getClone().read()).to.be.null;
         });
       });
@@ -301,6 +345,16 @@ describe('ClonedIterator', () => {
           getClone()._eventCounts.readable.should.equal(1);
         });
 
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('emit end once data is subscribed', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not emit data'); });
+        });
+
         it('should have emitted the `end` event', () => {
           getClone()._eventCounts.end.should.equal(1);
         });
@@ -309,11 +363,19 @@ describe('ClonedIterator', () => {
           getClone().ended.should.be.true;
         });
 
+        it('should not have been destroyed', () => {
+          getClone().destroyed.should.be.false;
+        });
+
+        it('should be done', () => {
+          getClone().done.should.be.true;
+        });
+
         it('should not be readable', () => {
           getClone().readable.should.be.false;
         });
 
-        it('should return null on read', () => {
+        it('should return null when read is called', () => {
           expect(getClone().read()).to.be.null;
         });
       });
@@ -402,6 +464,16 @@ describe('ClonedIterator', () => {
           getClone()._eventCounts.readable.should.equal(1);
         });
 
+
+        it('should not have emitted the `end` event', () => {
+          getClone()._eventCounts.end.should.equal(0);
+        });
+
+        it('emit end once data is subscribed', done => {
+          getClone().on('end', done);
+          getClone().on('data', () => { throw new Error('should not emit data'); });
+        });
+
         it('should have emitted the `end` event', () => {
           getClone()._eventCounts.end.should.equal(1);
         });
@@ -410,11 +482,19 @@ describe('ClonedIterator', () => {
           getClone().ended.should.be.true;
         });
 
+        it('should not have been destroyed', () => {
+          getClone().destroyed.should.be.false;
+        });
+
+        it('should be done', () => {
+          getClone().done.should.be.true;
+        });
+
         it('should not be readable', () => {
           getClone().readable.should.be.false;
         });
 
-        it('should return null on read', () => {
+        it('should return null when read is called', () => {
           expect(getClone().read()).to.be.null;
         });
       });
@@ -763,6 +843,7 @@ describe('ClonedIterator', () => {
           iterator.removeListener('error', noop);
           done();
         });
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should not leave any error handlers attached', () => {

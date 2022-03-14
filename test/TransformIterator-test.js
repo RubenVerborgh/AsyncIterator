@@ -155,9 +155,27 @@ describe('TransformIterator', () => {
         expect(iterator.source).to.be.undefined;
       });
 
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
       });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
+      it('should have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(1);
+      });
+
 
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
@@ -183,16 +201,78 @@ describe('TransformIterator', () => {
       iterator = new TransformIterator(source = new EmptyIterator());
       captureEvents(iterator, 'readable', 'end');
       expect(source._events).to.not.contain.key('data');
-      expect(source._events).to.not.contain.key('readable');
-      expect(source._events).to.not.contain.key('end');
+      // expect(source._events).to.not.contain.key('end');
     });
 
     it('should expose the source in the `source` property', () => {
       iterator.source.should.equal(source);
     });
 
-    it('should not have emitted the `readable` event', () => {
-      iterator._eventCounts.readable.should.equal(0);
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', () => {
+      iterator.ended.should.be.false;
+    });
+
+    it('emit end once data is subscribed', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not emit data'); });
+    });
+
+    it('should have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(1);
+    });
+
+    it('should have ended', () => {
+      iterator.ended.should.be.true;
+    });
+
+    it('should not be readable', () => {
+      iterator.readable.should.be.false;
+    });
+
+    it('should return null when read is called', () => {
+      expect(iterator.read()).to.be.null;
+    });
+  });
+
+
+  describe('A TransformIterator initialized with a completed empty source', () => {
+    let iterator, source;
+    before(() => {
+      source = new EmptyIterator();
+      source.read();
+      iterator = new TransformIterator(source);
+      captureEvents(iterator, 'readable', 'end');
+      expect(source._events).to.not.contain.key('data');
+      // expect(source._events).to.not.contain.key('end');
+    });
+
+    it('should expose the source in the `source` property', () => {
+      iterator.source.should.equal(source);
+    });
+
+    it('should have emitted the `readable` event', () => {
+      iterator._eventCounts.readable.should.equal(1);
+    });
+
+    it('should not have emitted the `end` event', () => {
+      iterator._eventCounts.end.should.equal(0);
+    });
+
+    it('should not have ended', () => {
+      iterator.ended.should.be.false;
+    });
+
+    it('emit end once data is subscribed', done => {
+      iterator.on('end', done);
+      iterator.on('data', () => { throw new Error('should not emit data'); });
     });
 
     it('should have emitted the `end` event', () => {
@@ -268,13 +348,28 @@ describe('TransformIterator', () => {
     describe('after the source ends', () => {
       before(() => { source.close(); });
 
-      it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
+
 
       it('should have ended', () => {
         iterator.ended.should.be.true;
@@ -290,6 +385,26 @@ describe('TransformIterator', () => {
     });
   });
 
+  describe('A TransformIterator without options', () => {
+    let iterator, source;
+    before(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      iterator = new TransformIterator(source, { preBuffer: false });
+    });
+
+    describe('when reading items', () => {
+      const items = [];
+      before(done => {
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', done);
+      });
+
+      it('should return items as they are', () => {
+        items.should.deep.equal(['a', 'b', 'c', 'd', 'e', 'f']);
+      });
+    });
+  });
+
   describe('A TransformIterator with a one-item source', () => {
     let iterator, source;
     before(() => {
@@ -301,8 +416,8 @@ describe('TransformIterator', () => {
     });
 
     describe('before reading an item', () => {
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted the `readable` event', () => {
@@ -332,6 +447,19 @@ describe('TransformIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -439,6 +567,19 @@ describe('TransformIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -550,8 +691,17 @@ describe('TransformIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have ended', () => {
@@ -651,8 +801,8 @@ describe('TransformIterator', () => {
     describe('after the promise resolves', () => {
       before(() => resolvePromise(source));
 
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted the `readable` event', () => {
@@ -684,8 +834,17 @@ describe('TransformIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have ended', () => {
@@ -702,7 +861,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a promise and without autoStart', () => {
+  describe('A TransformIterator with a promise and without preBuffer', () => {
     let iterator, source, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);
@@ -711,7 +870,7 @@ describe('TransformIterator', () => {
       });
       sinon.spy(source, 'read');
       sinon.spy(sourcePromise, 'then');
-      iterator = new TransformIterator(sourcePromise, { autoStart: false });
+      iterator = new TransformIterator(sourcePromise, { preBuffer: false });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -774,8 +933,8 @@ describe('TransformIterator', () => {
     describe('after the promise resolves', () => {
       before(() => resolvePromise(source));
 
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted another `readable` event', () => {
@@ -807,9 +966,19 @@ describe('TransformIterator', () => {
         iterator._eventCounts.readable.should.equal(2);
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
       });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
 
       it('should have ended', () => {
         iterator.ended.should.be.true;
@@ -888,8 +1057,8 @@ describe('TransformIterator', () => {
         createSource.should.have.been.calledOnce;
       });
 
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted the `readable` event', () => {
@@ -924,6 +1093,19 @@ describe('TransformIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -987,8 +1169,8 @@ describe('TransformIterator', () => {
     describe('after the promise resolves', () => {
       before(() => resolvePromise(source));
 
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted the `readable` event', () => {
@@ -1020,9 +1202,19 @@ describe('TransformIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
       });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
 
       it('should have ended', () => {
         iterator.ended.should.be.true;
@@ -1038,7 +1230,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('A TransformIterator with a source creation function and without autoStart', () => {
+  describe('A TransformIterator with a source creation function and without preBuffer', () => {
     let iterator, source, createSource, sourcePromise, resolvePromise;
     before(() => {
       source = new ArrayIterator(['a']);
@@ -1047,7 +1239,7 @@ describe('TransformIterator', () => {
         resolvePromise = resolve;
       });
       createSource = sinon.spy(() => sourcePromise);
-      iterator = new TransformIterator({ autoStart: false, source: createSource });
+      iterator = new TransformIterator({ preBuffer: false, source: createSource });
       captureEvents(iterator, 'readable', 'end');
     });
 
@@ -1110,8 +1302,8 @@ describe('TransformIterator', () => {
     describe('after the promise resolves', () => {
       before(() => resolvePromise(source));
 
-      it('should have called `read` on the source', () => {
-        source.read.should.have.been.calledOnce;
+      it('should have called `read` on the source once to read, once to end', () => {
+        source.read.should.have.been.calledTwice;
       });
 
       it('should have emitted another `readable` event', () => {
@@ -1143,9 +1335,19 @@ describe('TransformIterator', () => {
         iterator._eventCounts.readable.should.equal(2);
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
       });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
 
       it('should have ended', () => {
         iterator.ended.should.be.true;
@@ -1165,7 +1367,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source, { autoStart: false });
+      iterator = new TransformIterator(source, { preBuffer: false });
     });
 
     describe('after being closed', () => {
@@ -1173,6 +1375,7 @@ describe('TransformIterator', () => {
         iterator.read();
         iterator.close();
         iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have destroyed the source', () => {
@@ -1185,7 +1388,7 @@ describe('TransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new TransformIterator(source, { autoStart: false, destroySource: false });
+      iterator = new TransformIterator(source, { preBuffer: false, destroySource: false });
     });
 
     describe('after being closed', () => {
@@ -1193,6 +1396,7 @@ describe('TransformIterator', () => {
         iterator.read();
         iterator.close();
         iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should not have destroyed the source', () => {
@@ -1252,6 +1456,7 @@ describe('TransformIterator', () => {
           source.removeListener('error', noop);
           done();
         });
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should not re-emit the error', () => {
@@ -1405,8 +1610,21 @@ describe('TransformIterator', () => {
         source.read.should.have.been.calledOnce;
       });
 
-      it('should have emitted the `end` event', () => {
-        iterator._eventCounts.end.should.equal(1);
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should not be readable', () => {
@@ -1505,7 +1723,7 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('Two transformers in sequence with autostart', () => {
+  describe('Two transformers in sequence with preBuffer', () => {
     let source, transform1, transform2, callback;
     before(() => {
       source = new ArrayIterator([]);
@@ -1513,6 +1731,7 @@ describe('TransformIterator', () => {
       transform2 = new TransformIterator(transform1);
       callback = sinon.spy();
       transform2.on('end', callback);
+      transform2.on('data', () => { throw new Error('should not emit data'); });
     });
 
     describe('before attaching a data listener', () => {
@@ -1522,12 +1741,12 @@ describe('TransformIterator', () => {
     });
   });
 
-  describe('Two transformers in sequence without autostart', () => {
+  describe('Two transformers in sequence without preBuffer', () => {
     let source, transform1, transform2, callback;
     before(() => {
       source = new ArrayIterator([]);
-      transform1 = new TransformIterator(source, { autoStart: false });
-      transform2 = new TransformIterator(transform1, { autoStart: false });
+      transform1 = new TransformIterator(source, { preBuffer: false });
+      transform2 = new TransformIterator(transform1, { preBuffer: false });
       callback = sinon.spy();
       transform2.on('end', callback);
     });
@@ -1539,8 +1758,9 @@ describe('TransformIterator', () => {
     });
 
     describe('after attaching a data listener', () => {
-      before(() => {
+      before(done => {
         transform2.on('data', sinon.spy());
+        transform2.on('end', done);
       });
 
       it('should have emitted the end event', () => {

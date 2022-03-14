@@ -98,19 +98,12 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {boolean} Whether the state was changed
     @emits module:asynciterator.AsyncIterator.end
   */
-  protected _changeState(newState: number, eventAsync = false) {
+  protected _changeState(newState: number) {
     // Validate the state change
     const valid = newState > this._state && this._state < ENDED;
-    if (valid) {
+    if (valid)
       this._state = newState;
-      // Emit the `end` event when changing to ENDED
-      if (newState === ENDED) {
-        if (!eventAsync)
-          this.emit('end');
-        else
-          taskScheduler(() => this.emit('end'));
-      }
-    }
+
     return valid;
   }
 
@@ -128,6 +121,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {object?} The next item, or `null` if none is available
   */
   read(): T | null {
+    if (this._state === CLOSED)
+      this._end();
     return null;
   }
 
@@ -170,8 +165,12 @@ export class AsyncIterator<T> extends EventEmitter {
     @emits module:asynciterator.AsyncIterator.end
   */
   close() {
-    if (this._changeState(CLOSED))
-      this._endAsync();
+    if (this._changeState(CLOSED)) {
+      if (this.readable)
+        emitData.call(this);
+      else
+        this.readable = true;
+    }
   }
 
   /**
@@ -216,19 +215,13 @@ export class AsyncIterator<T> extends EventEmitter {
   */
   protected _end(destroy = false) {
     if (this._changeState(destroy ? DESTROYED : ENDED)) {
+      if (!destroy)
+        this.emit('end');
       this._readable = false;
       this.removeAllListeners('readable');
       this.removeAllListeners('data');
       this.removeAllListeners('end');
     }
-  }
-
-  /**
-    Asynchronously calls `_end`.
-    @protected
-  */
-  protected _endAsync() {
-    taskScheduler(() => this._end());
   }
 
   /**
@@ -432,7 +425,7 @@ export class AsyncIterator<T> extends EventEmitter {
     After this operation, only read the returned iterator instead of the current one.
     @param {object|Function} [options] Settings of the iterator, or the transformation function
     @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.preBuffer=true] Whether buffering starts directly after construction
     @param {integer} [options.offset] The number of items to skip
     @param {integer} [options.limit] The maximum number of items
     @param {Function} [options.filter] A function to synchronously filter items from the source
@@ -583,16 +576,16 @@ export class EmptyIterator<T> extends AsyncIterator<T> {
   /** Creates a new `EmptyIterator`. */
   constructor() {
     super();
-    this._changeState(ENDED, true);
+    this.close();
   }
 }
 
 
 /**
   An iterator that emits a single item.
-  @extends module:asynciterator.AsyncIterator
+  @extends module:asynciterator.EmptyIterator
 */
-export class SingletonIterator<T> extends AsyncIterator<T> {
+export class SingletonIterator<T> extends EmptyIterator<T> {
   private _item: T | null;
 
   /**
@@ -602,17 +595,14 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
   constructor(item: T) {
     super();
     this._item = item;
-    if (item === null)
-      this.close();
-    else
-      this.readable = true;
   }
 
   /* Reads the item from the iterator. */
   read() {
     const item = this._item;
     this._item = null;
-    this.close();
+    if (item === null)
+      this._end();
     return item;
   }
 
@@ -625,43 +615,33 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
 
 /**
   An iterator that emits the items of a given array.
-  @extends module:asynciterator.AsyncIterator
+  @extends module:asynciterator.EmptyIterator
 */
-export class ArrayIterator<T> extends AsyncIterator<T> {
+export class ArrayIterator<T> extends EmptyIterator<T> {
   private _buffer?: T[];
-  protected _sourceStarted: boolean;
 
   /**
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items?: Iterable<T>, { autoStart = true } = {}) {
+  constructor(items: Iterable<T>) {
     super();
-    const buffer = items ? [...items] : [];
-    this._sourceStarted = autoStart !== false;
-    if (this._sourceStarted && buffer.length === 0)
-      this.close();
-    else
+    const buffer = [...items];
+    if (buffer.length !== 0)
       this._buffer = buffer;
-    this.readable = true;
   }
 
   /* Reads an item from the iterator. */
   read() {
-    if (!this._sourceStarted)
-      this._sourceStarted = true;
-
-    let item = null;
-    const buffer = this._buffer;
-    if (buffer) {
-      if (buffer.length !== 0)
-        item = buffer.shift() as T;
-      if (buffer.length === 0) {
-        delete this._buffer;
-        this.close();
-      }
+    const { _buffer } = this;
+    if (!_buffer) {
+      this._end();
+      return null;
     }
-    return item;
+    if (_buffer.length === 1)
+      delete this._buffer;
+
+    return _buffer.shift() as T;
   }
 
   /* Generates details for a textual representation of the iterator. */
@@ -725,8 +705,10 @@ export class IntegerIterator extends AsyncIterator<number> {
 
   /* Reads an item from the iterator. */
   read() {
-    if (this.closed)
+    if (this.closed) {
+      this._end();
       return null;
+    }
     const current = this._next, step = this._step, last = this._last,
           next = this._next += step;
     if (step >= 0 ? next > last : next < last)
@@ -758,13 +740,13 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     Creates a new `BufferedIterator`.
     @param {object} [options] Settings of the iterator
     @param {integer} [options.maxBufferSize=4] The number of items to preload in the internal buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.preBuffer=true] Whether buffering starts directly after construction
   */
-  constructor({ maxBufferSize = 4, autoStart = true } = {}) {
+  constructor({ maxBufferSize = 4, preBuffer = true } = {}) {
     super(INIT);
     this.maxBufferSize = maxBufferSize;
-    taskScheduler(() => this._init(autoStart));
-    this._sourceStarted = autoStart !== false;
+    taskScheduler(() => this._init(preBuffer));
+    this._sourceStarted = preBuffer !== false;
   }
 
   /**
@@ -796,9 +778,9 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     Initializing the iterator by calling {@link BufferedIterator#_begin}
     and changing state from INIT to OPEN.
     @protected
-    @param {boolean} autoStart Whether reading of items should immediately start after OPEN.
+    @param {boolean} preBuffer Whether reading of items should immediately start after OPEN.
   */
-  protected _init(autoStart: boolean) {
+  protected _init(preBuffer: boolean) {
     // Perform initialization tasks
     let doneCalled = false;
     this._reading = true;
@@ -809,7 +791,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
       // Open the iterator and start buffering
       this._reading = false;
       this._changeState(OPEN);
-      if (autoStart)
+      if (preBuffer)
         this._fillBufferAsync();
       // If reading should not start automatically, the iterator doesn't become readable.
       // Therefore, mark the iterator as (potentially) readable so consumers know it might be read.
@@ -850,6 +832,8 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
       item = buffer.shift() as T;
     }
     else {
+      if (this._state === CLOSED)
+        this._end();
       item = null;
       this.readable = false;
     }
@@ -859,9 +843,6 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
       // If the iterator is not closed and thus may still generate new items, fill the buffer
       if (!this.closed)
         this._fillBufferAsync();
-      // No new items will be generated, so if none are buffered, the iterator ends here
-      else if (!buffer.length)
-        this._endAsync();
     }
 
     return item;
@@ -976,17 +957,15 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     @emits module:asynciterator.AsyncIterator.end
   */
   protected _completeClose() {
-    if (this._changeState(CLOSED)) {
+    if (this._state < CLOSED) {
       // Write possible terminating items
       this._reading = true;
       this._flush(() => {
         if (!this._reading)
           throw new Error('done callback called multiple times');
         this._reading = false;
-        // If no items are left, end the iterator
-        // Otherwise, `read` becomes responsible for ending the iterator
-        if (!this._buffer.length)
-          this._endAsync();
+        // If no items are left, close the iterator
+        AsyncIterator.prototype.close.call(this);
       });
     }
   }
@@ -1035,7 +1014,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object} [options] Settings of the iterator
     @param {integer} [options.maxBufferSize=4] The maximum number of items to keep in the buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.preBuffer=true] Whether buffering starts directly after construction
     @param {boolean} [options.optional=false] If transforming is optional, the original item is pushed when its transformation yields no items
     @param {boolean} [options.destroySource=true] Whether the source should be destroyed when this transformed iterator is closed or destroyed
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
@@ -1233,7 +1212,7 @@ export class SimpleTransformIterator<S, D = S> extends TransformIterator<S, D> {
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
     @param {object|Function} [options] Settings of the iterator, or the transformation function
     @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.preBuffer=true] Whether buffering starts directly after construction
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
     @param {integer} [options.offset] The number of items to skip
     @param {integer} [options.limit] The maximum number of items
@@ -1375,7 +1354,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
    @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
    @param {object|Function} [options] Settings of the iterator, or the transformation function
    @param {integer} [options.maxbufferSize=4] The maximum number of items to keep in the buffer
-   @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+   @param {boolean} [options.preBuffer=true] Whether buffering starts directly after construction
    @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
    @param {integer} [options.offset] The number of items to skip
    @param {integer} [options.limit] The maximum number of items
@@ -1405,15 +1384,29 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
     // Remove transformers that have ended
     const transformerQueue = this._transformerQueue, optional = this._optional;
     let head, item;
-    while ((head = transformerQueue[0]) && head.transformer.done) {
+    while ((head = transformerQueue[0]) !== undefined) {
+      const { transformer } = head;
+      while (count > 0 && (item = transformer.read()) !== null) {
+        count--;
+        this._push(item);
+        // If a transformed item was pushed, no need to push the original anymore
+        if (optional && head.item !== null)
+          head.item = null;
+      }
+
+      // If the transformer is not done, end this read so it has time to load items
+      if (!transformer.done)
+        break;
+
       // If transforming is optional, push the original item if none was pushed
       if (optional && head.item !== null) {
+        if (count === 0)
+          break;
+
         count--;
         this._push(head.item as any as D);
       }
-      // Remove listeners from the transformer
       transformerQueue.shift();
-      const { transformer } = head;
       transformer.removeListener('end', destinationFillBuffer);
       transformer.removeListener('readable', destinationFillBuffer);
       transformer.removeListener('error', destinationEmitError);
@@ -1436,21 +1429,10 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
       transformerQueue.push({ transformer, item });
     }
 
-    // Try to read `count` items from the transformer
-    head = transformerQueue[0];
-    if (head) {
-      const { transformer } = head;
-      while (count-- > 0 && (item = transformer.read()) !== null) {
-        this._push(item);
-        // If a transformed item was pushed, no need to push the original anymore
-        if (optional)
-          head.item = null;
-      }
-    }
     // End the iterator if the source has ended
-    else if (source && source.done) {
+    if (transformerQueue.length === 0 && source && source.done)
       this.close();
-    }
+
     done();
   }
 
@@ -1488,13 +1470,13 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>>,
               options: BufferedIteratorOptions = {}) {
     super(options);
-    const autoStart = options.autoStart !== false;
+    const preBuffer = options.preBuffer !== false;
 
     // Sources have been passed as an iterator
     if (isEventEmitter(sources)) {
       sources.on('error', error => this.emit('error', error));
       this._pending = { sources };
-      if (autoStart)
+      if (preBuffer)
         this._loadSources();
     }
     // Sources have been passed as a non-empty array
@@ -1503,7 +1485,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
         this._addSource(source as InternalSource<T>);
     }
     // Sources are an empty list
-    else if (autoStart) {
+    else if (preBuffer) {
       this.close();
     }
   }
@@ -1600,7 +1582,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
     @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator copies items from
   */
   constructor(source: AsyncIterator<T>) {
-    super(source, { autoStart: false });
+    super(source, { preBuffer: false });
     this._reading = false;
   }
 
@@ -1626,7 +1608,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
       (source._destination = new HistoryReader<T>(source) as any);
 
     // Close this clone if history is empty and the source has ended
-    if (history.endsAt(0)) {
+    if (history.endsAt(0) || (source as any)._state === CLOSED) {
       this.close();
     }
     else {
@@ -1714,9 +1696,13 @@ export class ClonedIterator<T> extends TransformIterator<T> {
       else
         this.readable = false;
       // Close the iterator if we are at the end of the source
-      if (history.endsAt(this._readPosition))
+      if (history.endsAt(this._readPosition) || (source as any)._state === CLOSED)
         this.close();
     }
+
+    if (this._state === CLOSED && item === null)
+    this._end(false);
+
     return item;
   }
 
@@ -1885,7 +1871,7 @@ function isSourceExpression<T>(object: any): object is SourceExpression<T> {
 
 export interface BufferedIteratorOptions {
   maxBufferSize?: number;
-  autoStart?: boolean;
+  preBuffer?: boolean;
 }
 
 export interface TransformIteratorOptions<S> extends BufferedIteratorOptions {
