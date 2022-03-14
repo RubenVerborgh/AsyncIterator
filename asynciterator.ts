@@ -1701,7 +1701,7 @@ export class ClonedIterator<T> extends TransformIterator<T> {
     }
 
     if (this._state === CLOSED && item === null)
-    this._end(false);
+      this._end(false);
 
     return item;
   }
