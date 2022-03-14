@@ -75,6 +75,23 @@ describe('BufferedIterator', () => {
         iterator.close();
       });
 
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -113,9 +130,9 @@ describe('BufferedIterator', () => {
       return captureEvents(iterator, 'readable', 'end');
     }
 
-    describe('without autoStart', () => {
+    describe('without preBuffer', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator({ preBuffer: false }); });
 
       describe('before `read` has been called', () => {
         it('should have emitted the `readable` event', () => {
@@ -155,9 +172,23 @@ describe('BufferedIterator', () => {
           expect(item).to.be.null;
         });
 
-        it('should not have emitted the `readable` event anymore', () => {
-          iterator._eventCounts.readable.should.equal(1);
+        it('should have emitted the `readable` event', () => {
+          iterator._eventCounts.readable.should.equal(2);
         });
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
 
         it('should have emitted the `end` event', () => {
           iterator._eventCounts.end.should.equal(1);
@@ -194,7 +225,7 @@ describe('BufferedIterator', () => {
         });
 
         it('should not have emitted the `readable` event anymore', () => {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted another `end` event', () => {
@@ -223,13 +254,30 @@ describe('BufferedIterator', () => {
       });
     });
 
-    describe('with autoStart', () => {
+    describe('with preBuffer', () => {
       let iterator;
       before(() => { iterator = createIterator(); });
 
       describe('before `read` has been called', () => {
-        it('should not have emitted the `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(0);
+        it('should have emitted the `readable` event', () => {
+          iterator._eventCounts.readable.should.equal(1);
+        });
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
         });
 
         it('should have emitted the `end` event', () => {
@@ -267,7 +315,7 @@ describe('BufferedIterator', () => {
         });
 
         it('should not have emitted the `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(0);
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted another `end` event', () => {
@@ -310,9 +358,9 @@ describe('BufferedIterator', () => {
       return captureEvents(iterator, 'readable', 'end');
     }
 
-    describe('without autoStart', () => {
+    describe('without preBuffer', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator({ preBuffer: false }); });
 
       describe('before `read` has been called', () => {
         it('should have emitted the `readable` event', () => {
@@ -353,7 +401,24 @@ describe('BufferedIterator', () => {
         });
 
         it('should not have emitted another `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
+        });
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
         });
 
         it('should have emitted the `end` event', () => {
@@ -391,7 +456,7 @@ describe('BufferedIterator', () => {
         });
 
         it('should not have emitted another `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(1);
+          iterator._eventCounts.readable.should.equal(2);
         });
 
         it('should not have emitted another `end` event', () => {
@@ -420,13 +485,31 @@ describe('BufferedIterator', () => {
       });
     });
 
-    describe('with autoStart', () => {
+    describe('with preBuffer', () => {
       let iterator;
       before(() => { iterator = createIterator(); });
 
       describe('before `read` has been called', () => {
         it('should not have emitted the `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(0);
+          iterator._eventCounts.readable.should.equal(1);
+        });
+
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
         });
 
         it('should have emitted the `end` event', () => {
@@ -464,7 +547,7 @@ describe('BufferedIterator', () => {
         });
 
         it('should not have emitted the `readable` event', () => {
-          iterator._eventCounts.readable.should.equal(0);
+          iterator._eventCounts.readable.should.equal(1);
         });
 
         it('should not have emitted another `end` event', () => {
@@ -535,7 +618,24 @@ describe('BufferedIterator', () => {
       before(() => { iterator.close(); });
 
       it('should not have emitted the `readable` event', () => {
-        iterator._eventCounts.readable.should.equal(0);
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should be readable', () => {
+        iterator.readable.should.be.true;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
+      it('should not be readable', () => {
+        iterator.readable.should.be.false;
       });
 
       it('should have emitted the `end` event', () => {
@@ -563,7 +663,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator that is being closed while reading is in progress', () => {
     let iterator, _readDone;
     function createIterator() {
-      iterator = new BufferedIterator({ autoStart: false, maxBufferSize: 1 });
+      iterator = new BufferedIterator({ preBuffer: false, maxBufferSize: 1 });
       iterator._read = (count, done) => { _readDone = done; };
       sinon.spy(iterator, '_read');
       captureEvents(iterator, 'readable', 'end');
@@ -604,6 +704,24 @@ describe('BufferedIterator', () => {
           iterator.close();
           // _readDone cannot be called, as _read should never be called either
           // because the iterator closes before an asynchronous _read can take place
+        });
+
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
         });
 
         it('should have emitted the `end` event', () => {
@@ -662,6 +780,23 @@ describe('BufferedIterator', () => {
           iterator.read();
           scheduleTask(() => { _readDone(); });
           scheduleTask(() => { iterator.close(); });
+        });
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
         });
 
         it('should have emitted the `end` event', () => {
@@ -839,6 +974,24 @@ describe('BufferedIterator', () => {
           iterator._eventCounts.readable.should.equal(2);
         });
 
+
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
+        });
+
         it('should have emitted the `end` event', () => {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -1014,6 +1167,23 @@ describe('BufferedIterator', () => {
           iterator._eventCounts.readable.should.equal(2);
         });
 
+        it('should not emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should be readable', () => {
+          iterator.readable.should.be.true;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
+        it('should not be readable', () => {
+          iterator.readable.should.be.false;
+        });
+
         it('should have emitted the `end` event', () => {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -1057,9 +1227,9 @@ describe('BufferedIterator', () => {
       return captureEvents(iterator, 'readable', 'end');
     }
 
-    describe('without autoStart', () => {
+    describe('without preBuffer', () => {
       let iterator;
-      before(() => { iterator = createIterator({ autoStart: false }); });
+      before(() => { iterator = createIterator({ preBuffer: false }); });
 
       it('should provide a readable `toString` representation', () => {
         iterator.toString().should.equal('[BufferedIterator {buffer: 0}]');
@@ -1145,6 +1315,23 @@ describe('BufferedIterator', () => {
           iterator._eventCounts.readable.should.equal(2);
         });
 
+        it('should have emitted the `readable` event', () => {
+          iterator._eventCounts.readable.should.equal(2);
+        });
+
+        it('should not have emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should not have ended', () => {
+          iterator.ended.should.be.false;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
         it('should have emitted the `end` event', () => {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -1209,7 +1396,7 @@ describe('BufferedIterator', () => {
       });
     });
 
-    describe('with autoStart', () => {
+    describe('with preBuffer', () => {
       let iterator;
       before(() => { iterator = createIterator(); });
 
@@ -1260,6 +1447,23 @@ describe('BufferedIterator', () => {
           iterator._eventCounts.readable.should.equal(1);
         });
 
+        it('should have emitted the `readable` event', () => {
+          iterator._eventCounts.readable.should.equal(1);
+        });
+
+        it('should not have emitted the `end` event', () => {
+          iterator._eventCounts.end.should.equal(0);
+        });
+
+        it('should not have ended', () => {
+          iterator.ended.should.be.false;
+        });
+
+        it('emit end once data is subscribed', done => {
+          iterator.on('end', done);
+          iterator.on('data', () => { throw new Error('should not emit data'); });
+        });
+
         it('should have emitted the `end` event', () => {
           iterator._eventCounts.end.should.equal(1);
         });
@@ -1302,7 +1506,7 @@ describe('BufferedIterator', () => {
       return captureEvents(iterator, 'readable', 'end');
     }
 
-    describe('with autoStart enabled', () => {
+    describe('with preBuffer enabled', () => {
       let iterator;
       before(() => { iterator = createIterator(); });
 
@@ -1406,7 +1610,7 @@ describe('BufferedIterator', () => {
   describe('A BufferedIterator with `_read` that calls `done` multiple times', () => {
     let iterator, readDone;
     before(done => {
-      iterator = new BufferedIterator({ autoStart: false });
+      iterator = new BufferedIterator({ preBuffer: false });
       iterator._read = (count, callback) => { readDone = callback; };
       scheduleTask(() => { iterator.read(); done(); });
     });
@@ -1544,6 +1748,23 @@ describe('BufferedIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
@@ -1727,6 +1948,19 @@ describe('BufferedIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -1785,7 +2019,8 @@ describe('BufferedIterator', () => {
       expect(iterator.read()).to.equal('a');
     });
 
-    it('should return null on subsequent reads', () => {
+    it('should return null on subsequent reads (1)', () => {
+      expect(iterator.read()).to.be.null;
       expect(iterator.read()).to.be.null;
     });
 
@@ -1909,6 +2144,19 @@ describe('BufferedIterator', () => {
         iterator._eventCounts.readable.should.equal(1);
       });
 
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
+      });
+
       it('should have emitted the `end` event', () => {
         iterator._eventCounts.end.should.equal(1);
       });
@@ -2030,6 +2278,23 @@ describe('BufferedIterator', () => {
 
       it('should not have emitted the `readable` event anymore', () => {
         iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should have emitted the `readable` event', () => {
+        iterator._eventCounts.readable.should.equal(1);
+      });
+
+      it('should not have emitted the `end` event', () => {
+        iterator._eventCounts.end.should.equal(0);
+      });
+
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
+
+      it('emit end once data is subscribed', done => {
+        iterator.on('end', done);
+        iterator.on('data', () => { throw new Error('should not emit data'); });
       });
 
       it('should have emitted the `end` event', () => {
