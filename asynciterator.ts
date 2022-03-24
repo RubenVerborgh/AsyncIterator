@@ -741,6 +741,47 @@ export class IntegerIterator extends AsyncIterator<number> {
 }
 
 
+export interface LinkedNode<V> {
+  value: V;
+  next?: LinkedNode<V>;
+}
+
+export class LinkedList<V> {
+  public head?: LinkedNode<V>;
+  public tail?: LinkedNode<V>;
+  public length: number = 0;
+
+  push(value: V) {
+    if (this.tail) {
+      this.tail.next = { value };
+      this.tail = this.tail.next;
+    }
+    else {
+      this.head = { value };
+      this.tail = this.head;
+    }
+    this.length += 1;
+  }
+
+  shift(): V | null {
+    if (this.head) {
+      const { value } = this.head;
+      this.head = this.head.next;
+      this.length -= 1;
+      if (!this.head)
+        this.tail = undefined;
+      return value;
+    }
+    return null;
+  }
+
+  clear() {
+    this.head = undefined;
+    this.tail = undefined;
+    this.length = 0;
+  }
+}
+
 /**
   A iterator that maintains an internal buffer of items.
   This class serves as a base class for other iterators
@@ -748,7 +789,7 @@ export class IntegerIterator extends AsyncIterator<number> {
   @extends module:asynciterator.AsyncIterator
 */
 export class BufferedIterator<T> extends AsyncIterator<T> {
-  private _buffer: T[] = [];
+  private _buffer: LinkedList<T> = new LinkedList<T>();
   private _maxBufferSize = 4;
   protected _reading = true;
   protected _pushedCount = 0;
@@ -993,7 +1034,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
-    this._buffer = [];
+    this._buffer.clear();
     callback();
   }
 
@@ -1013,8 +1054,8 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     @protected
    */
   protected _toStringDetails() {
-    const buffer = this._buffer, { length } = buffer;
-    return `{${length ? `next: ${buffer[0]}, ` : ''}buffer: ${length}}`;
+    const buffer = this._buffer;
+    return `{${buffer.head ? `next: ${buffer.head.value}, ` : ''}buffer: ${buffer.length}}`;
   }
 }
 
