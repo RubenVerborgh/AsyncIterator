@@ -679,4 +679,17 @@ describe('ArrayIterator', () => {
       });
     });
   });
+
+  describe('An ArrayIterator with 135 items', () => {
+    it('should splice its buffer every 64 items to free up  memory', () => {
+      const array = new Array(135).fill(true);
+      const iterator = new ArrayIterator(array);
+      for (let i = 0; i < 64; i += 1)
+        iterator.read();
+      iterator._buffer.length.should.equal(71);
+      for (let i = 0; i < 64; i += 1)
+        iterator.read();
+      iterator._buffer.length.should.equal(7);
+    });
+  });
 });

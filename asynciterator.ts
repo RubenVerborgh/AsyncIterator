@@ -663,6 +663,10 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
         delete this._buffer;
         this.close();
       }
+      else if (this._currentIndex === 64) {
+        this._buffer.splice(0, 64);
+        this._currentIndex = 0;
+      }
     }
     return item;
   }
