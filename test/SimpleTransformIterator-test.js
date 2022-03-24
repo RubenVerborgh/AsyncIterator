@@ -9,6 +9,8 @@ import {
   scheduleTask,
   MappingIterator,
   FilteringIterator,
+  SkippingIterator,
+  LimitingIterator,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1349,7 +1351,7 @@ describe('SimpleTransformIterator', () => {
         });
 
         it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+          result.should.be.an.instanceof(SkippingIterator);
         });
 
         it('should skip the given number of items', () => {
@@ -1379,7 +1381,7 @@ describe('SimpleTransformIterator', () => {
         });
 
         it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+          result.should.be.an.instanceof(LimitingIterator);
         });
 
         it('should take the given number of items', () => {

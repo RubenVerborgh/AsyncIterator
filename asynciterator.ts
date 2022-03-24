@@ -512,7 +512,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset: number): AsyncIterator<T> {
-    return this.transform({ offset });
+    // return this.transform({ offset });
+    return new SkippingIterator(this, offset);
   }
 
   /**
@@ -522,7 +523,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit: number): AsyncIterator<T> {
-    return this.transform({ limit });
+    // return this.transform({ limit });
+    return new LimitingIterator(this, limit);
   }
 
   /**
@@ -1279,6 +1281,54 @@ export class FilteringIterator<T> extends AsyncIterator<T> {
       while ((item = source.read()) !== null) {
         if (filter.call(this, item))
           return item;
+      }
+      return null;
+    };
+    source.on('end', () => {
+      this.close();
+    });
+    source.on('readable', () => {
+      this.readable = true;
+    });
+  }
+}
+
+export class SkippingIterator<T> extends AsyncIterator<T> {
+  constructor(source: AsyncIterator<T>, skip: number) {
+    super();
+    let item: T | null;
+    let skipped = 0;
+    this.read = (): T | null => {
+      while ((item = source.read()) !== null) {
+        if (skipped < skip)
+          skipped += 1;
+        else
+          return item;
+      }
+      return null;
+    };
+    source.on('end', () => {
+      this.close();
+    });
+    source.on('readable', () => {
+      this.readable = true;
+    });
+  }
+}
+
+export class LimitingIterator<T> extends AsyncIterator<T> {
+  constructor(source: AsyncIterator<T>, limit: number) {
+    super();
+    let item: T | null;
+    let count = 0;
+    this.read = (): T | null => {
+      while ((item = source.read()) !== null) {
+        if (count < limit) {
+          count += 1;
+          return item;
+        }
+        this.close();
+        return null;
       }
       return null;
     };
