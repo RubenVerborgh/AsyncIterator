@@ -680,8 +680,8 @@ describe('ArrayIterator', () => {
     });
   });
 
-  describe('An ArrayIterator with 135 items', () => {
-    it('should splice its buffer every 64 items to free up  memory', () => {
+  describe('The default splicing threshold', () => {
+    it('should lead the iterator to splice its buffer every 64 items', () => {
       const array = new Array(135).fill(true);
       const iterator = new ArrayIterator(array);
       for (let i = 0; i < 64; i += 1)
@@ -690,6 +690,16 @@ describe('ArrayIterator', () => {
       for (let i = 0; i < 64; i += 1)
         iterator.read();
       iterator._buffer.length.should.equal(7);
+    });
+  });
+
+  describe('A custom splicing threshold', () => {
+    it('should lead the iterator to splice its buffer accordingly', () => {
+      const array = new Array(135).fill(true);
+      const iterator = new ArrayIterator(array, { splicingThreshold: 100 });
+      for (let i = 0; i < 100; i += 1)
+        iterator.read();
+      iterator._buffer.length.should.equal(35);
     });
   });
 });

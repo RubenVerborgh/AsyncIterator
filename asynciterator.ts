@@ -631,16 +631,18 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
   private _buffer?: T[];
   protected _currentIndex: number;
   protected _sourceStarted: boolean;
+  protected _splicingThreshold: number;
 
   /**
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
   */
-  constructor(items?: Iterable<T>, { autoStart = true } = {}) {
+  constructor(items?: Iterable<T>, { autoStart = true, splicingThreshold = 64 } = {}) {
     super();
     const buffer = items ? [...items] : [];
     this._sourceStarted = autoStart !== false;
     this._currentIndex = 0;
+    this._splicingThreshold = splicingThreshold;
     if (this._sourceStarted && buffer.length === 0)
       this.close();
     else
@@ -663,8 +665,8 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
         delete this._buffer;
         this.close();
       }
-      else if (this._currentIndex === 64) {
-        this._buffer.splice(0, 64);
+      else if (this._currentIndex === this._splicingThreshold) {
+        this._buffer.splice(0, this._splicingThreshold);
         this._currentIndex = 0;
       }
     }
