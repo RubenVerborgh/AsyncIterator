@@ -456,7 +456,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    return this.transform({ map: self ? map.bind(self) : map });
+    // return this.transform({ map: self ? map.bind(self) : map });
+    return new MappingIterator(this, self ? map.bind(self) : map);
   }
 
   /**
@@ -469,7 +470,8 @@ export class AsyncIterator<T> extends EventEmitter {
   filter<K extends T>(filter: (item: T) => item is K, self?: any): AsyncIterator<K>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    return this.transform({ filter: self ? filter.bind(self) : filter });
+    return new FilteringIterator(this, self ? filter.bind(self) : filter);
+    // return this.transform({ filter: self ? filter.bind(self) : filter });
   }
 
   /**
@@ -1249,6 +1251,44 @@ function destinationCloseWhenDone<S>(this: InternalSource<S>) {
 function destinationFillBuffer<S>(this: InternalSource<S>) {
   if ((this._destination as any)._sourceStarted !== false)
     (this._destination as any)._fillBuffer();
+}
+
+export class MappingIterator<S, D = S> extends AsyncIterator<D> {
+  constructor(source: AsyncIterator<S>, map: (item: S) => D) {
+    super();
+    let item: S | null;
+    this.read = (): D | null => {
+      if ((item = source.read()) !== null)
+        return map.call(this, item);
+      return null;
+    };
+    source.on('end', () => {
+      this.close();
+    });
+    source.on('readable', () => {
+      this.readable = true;
+    });
+  }
+}
+
+export class FilteringIterator<T> extends AsyncIterator<T> {
+  constructor(source: AsyncIterator<T>, filter: (item: T) => boolean) {
+    super();
+    let item: T | null;
+    this.read = (): T | null => {
+      while ((item = source.read()) !== null) {
+        if (filter.call(this, item))
+          return item;
+      }
+      return null;
+    };
+    source.on('end', () => {
+      this.close();
+    });
+    source.on('readable', () => {
+      this.readable = true;
+    });
+  }
 }
 
 

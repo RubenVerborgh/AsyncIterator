@@ -7,6 +7,8 @@ import {
   ArrayIterator,
   IntegerIterator,
   scheduleTask,
+  MappingIterator,
+  FilteringIterator,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1110,8 +1112,8 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+        it('should be a MappingIterator', () => {
+          result.should.be.an.instanceof(MappingIterator);
         });
 
         it('should execute the map function on all items in order', () => {
@@ -1146,7 +1148,7 @@ describe('SimpleTransformIterator', () => {
         });
 
         it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+          result.should.be.an.instanceof(MappingIterator);
         });
 
         it('should execute the map function on all items in order', () => {
@@ -1185,7 +1187,7 @@ describe('SimpleTransformIterator', () => {
         });
 
         it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+          result.should.be.an.instanceof(FilteringIterator);
         });
 
         it('should execute the filter function on all items in order', () => {
@@ -1219,7 +1221,7 @@ describe('SimpleTransformIterator', () => {
         });
 
         it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
+          result.should.be.an.instanceof(FilteringIterator);
         });
 
         it('should execute the filter function on all items in order', () => {
