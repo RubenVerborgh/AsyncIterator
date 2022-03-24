@@ -654,17 +654,15 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
       this._sourceStarted = true;
 
     let item = null;
-    let { _currentIndex, _buffer } = this;
-    if (_buffer) {
-      if (_currentIndex < _buffer.length) {
-        item = _buffer[_currentIndex];
-        _currentIndex += 1;
+    if (this._buffer) {
+      if (this._currentIndex < this._buffer.length) {
+        item = this._buffer[this._currentIndex];
+        this._currentIndex += 1;
       }
-      if (_currentIndex === _buffer.length) {
+      if (this._currentIndex === this._buffer.length) {
         delete this._buffer;
         this.close();
       }
-      this._currentIndex = _currentIndex;
     }
     return item;
   }
