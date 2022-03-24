@@ -629,6 +629,7 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
 */
 export class ArrayIterator<T> extends AsyncIterator<T> {
   private _buffer?: T[];
+  protected _currentIndex: number;
   protected _sourceStarted: boolean;
 
   /**
@@ -639,6 +640,7 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     super();
     const buffer = items ? [...items] : [];
     this._sourceStarted = autoStart !== false;
+    this._currentIndex = 0;
     if (this._sourceStarted && buffer.length === 0)
       this.close();
     else
@@ -652,21 +654,24 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
       this._sourceStarted = true;
 
     let item = null;
-    const buffer = this._buffer;
-    if (buffer) {
-      if (buffer.length !== 0)
-        item = buffer.shift() as T;
-      if (buffer.length === 0) {
+    let { _currentIndex, _buffer } = this;
+    if (_buffer) {
+      if (_currentIndex < _buffer.length) {
+        item = _buffer[_currentIndex];
+        _currentIndex += 1;
+      }
+      if (_currentIndex === _buffer.length) {
         delete this._buffer;
         this.close();
       }
+      this._currentIndex = _currentIndex;
     }
     return item;
   }
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    return `(${this._buffer && this._buffer.length || 0})`;
+    return `(${this._buffer ? this._buffer.length - this._currentIndex : 0})`;
   }
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
