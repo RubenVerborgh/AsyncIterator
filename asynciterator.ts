@@ -5,6 +5,7 @@
 
 import { EventEmitter } from 'events';
 import createTaskScheduler from './taskscheduler';
+import { LinkedList } from './linkedlist';
 import type { Task, TaskScheduler } from './taskscheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
@@ -737,48 +738,6 @@ export class IntegerIterator extends AsyncIterator<number> {
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
     return `(${this._next}...${this._last})`;
-  }
-}
-
-
-export interface LinkedNode<V> {
-  value: V;
-  next?: LinkedNode<V>;
-}
-
-export class LinkedList<V> {
-  public head?: LinkedNode<V>;
-  public tail?: LinkedNode<V>;
-  public length: number = 0;
-
-  push(value: V) {
-    if (this.tail) {
-      this.tail.next = { value };
-      this.tail = this.tail.next;
-    }
-    else {
-      this.head = { value };
-      this.tail = this.head;
-    }
-    this.length += 1;
-  }
-
-  shift(): V | null {
-    if (this.head) {
-      const { value } = this.head;
-      this.head = this.head.next;
-      this.length -= 1;
-      if (!this.head)
-        this.tail = undefined;
-      return value;
-    }
-    return null;
-  }
-
-  clear() {
-    this.head = undefined;
-    this.tail = undefined;
-    this.length = 0;
   }
 }
 
