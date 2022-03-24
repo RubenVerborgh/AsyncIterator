@@ -1322,7 +1322,7 @@ export class LimitingIterator<T> extends AsyncIterator<T> {
     let item: T | null;
     let count = 0;
     this.read = (): T | null => {
-      while ((item = source.read()) !== null) {
+      if ((item = source.read()) !== null) {
         if (count < limit) {
           count += 1;
           return item;
