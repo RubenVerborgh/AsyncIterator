@@ -683,6 +683,24 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
     delete this._buffer;
     callback();
   }
+
+  /**
+   Consume all remaining items of the iterator into an array that will be returned asynchronously.
+   @param {object} [options] Settings for array creation
+   @param {integer} [options.limit] The maximum number of items to place in the array.
+   */
+  async toArray(options: { limit?: number } = {}): Promise<T[]> {
+    const { _buffer: buffer, _currentIndex: currentIndex } = this;
+    if (buffer) {
+      const endIndex = typeof options.limit === 'number' ? currentIndex + options.limit : buffer.length;
+      const items = buffer.slice(this._currentIndex, endIndex);
+      this._currentIndex = endIndex;
+      if (endIndex >= buffer.length)
+        this.close();
+      return items;
+    }
+    return [];
+  }
 }
 
 

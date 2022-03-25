@@ -702,4 +702,67 @@ describe('ArrayIterator', () => {
       iterator._buffer.length.should.equal(35);
     });
   });
+
+  describe('An Infinity splicing threshold', () => {
+    it('should lead the iterator to never splice its buffer', () => {
+      const array = new Array(135).fill(true);
+      const iterator = new ArrayIterator(array, { splicingThreshold: Infinity });
+      for (let i = 0; i < 100; i += 1)
+        iterator.read();
+      iterator._buffer.length.should.equal(135);
+    });
+  });
+
+  describe('The toArray() method', () => {
+    it('should return an empty array given an empty source array', async () => {
+      const array = [];
+      const iterator = new ArrayIterator(array);
+      const items = await iterator.toArray();
+      items.length.should.equal(0);
+    });
+
+    it('should return an empty array given an empty source array, even with the limit option', async () => {
+      const array = [];
+      const iterator = new ArrayIterator(array);
+      const items = await iterator.toArray({ limit: 10 });
+      items.length.should.equal(0);
+    });
+
+    it('should return a copy of the entire source array if called before any other read operation', async () => {
+      const array = [0, 1, 2, 3, 4, 5, 6];
+      const iterator = new ArrayIterator(array);
+      const items = await iterator.toArray();
+      items.should.not.equal(array);
+      for (let i = 0; i < array.length; i += 1)
+        items[i].should.equal(array[i]);
+    });
+
+    it('should return a copy of the entire source array if called before any other read operation with a limit greater than the length of the source array', async () => {
+      const array = [0, 1, 2, 3, 4, 5, 6];
+      const iterator = new ArrayIterator(array);
+      const items = await iterator.toArray({ limit: 10 });
+      items.should.not.equal(array);
+      for (let i = 0; i < array.length; i += 1)
+        items[i].should.equal(array[i]);
+    });
+
+    it('should return a portion of the source array if called with the limit option', async () => {
+      const array = [0, 1, 2, 3, 4, 5, 6];
+      const iterator = new ArrayIterator(array);
+      const items = await iterator.toArray({ limit: 2 });
+      items.should.not.equal(array);
+      for (let i = 0; i < 2; i += 1)
+        items[i].should.equal(array[i]);
+    });
+
+    it('should return a portion of the source array if called with the limit option after a read operation', async () => {
+      const array = [0, 1, 2, 3, 4, 5, 6];
+      const iterator = new ArrayIterator(array);
+      iterator.read();
+      const items = await iterator.toArray({ limit: 2 });
+      items.should.not.equal(array);
+      for (let i = 0; i < 2; i += 1)
+        items[i].should.equal(array[i + 1]);
+    });
+  });
 });
