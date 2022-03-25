@@ -2132,6 +2132,9 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
         this._source = (source as InternalSource<T>)
           .on('end', () => {
             this.close();
+          })
+          .on('readable', () => {
+            this.readable = true;
           });
         this.readable = true;
       })
