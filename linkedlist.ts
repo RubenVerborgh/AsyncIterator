@@ -1,46 +1,41 @@
-
-export interface LinkedNode<V> {
+interface LinkedNode<V> {
   value: V;
   next: LinkedNode<V> | null;
 }
 
-export class LinkedList<V> {
-  public head: LinkedNode<V> | null;
-  public tail: LinkedNode<V> | null;
-  public length: number = 0;
+export default class LinkedList<V> {
+  private _length: number = 0;
+  private _head: LinkedNode<V> | null = null;
+  private _tail: LinkedNode<V> | null = null;
 
-  constructor() {
-    this.head = null;
-    this.tail = null;
-  }
+  get length() { return this._length; }
+  get first()  { return this._head?.value; }
+  get last()   { return this._tail?.value; }
+  get empty()  { return this._head === null; }
 
   push(value: V) {
-    if (this.tail) {
-      this.tail.next = { value, next: null };
-      this.tail = this.tail.next;
-    }
-    else {
-      this.head = { value, next: null };
-      this.tail = this.head;
-    }
-    this.length += 1;
+    const node = { value, next: null } as LinkedNode<V>;
+    if (this._tail === null)
+      this._head = this._tail = node;
+    else
+      this._tail.next = this._tail = node;
+    this._length++;
   }
 
-  shift(): V | null {
-    if (this.head) {
-      const { value } = this.head;
-      this.head = this.head.next;
-      this.length -= 1;
-      if (!this.head)
-        this.tail = null;
-      return value;
-    }
-    return null;
+  shift(): V | undefined {
+    if (this._head === null)
+      return undefined;
+
+    const { value, next } = this._head;
+    this._head = next;
+    if (next === null)
+      this._tail = null;
+    this._length--;
+    return value;
   }
 
   clear() {
-    this.head = null;
-    this.tail = null;
-    this.length = 0;
+    this._length = 0;
+    this._head = this._tail = null;
   }
 }

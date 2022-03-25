@@ -5,7 +5,7 @@
 
 import { EventEmitter } from 'events';
 import createTaskScheduler from './taskscheduler';
-import { LinkedList } from './linkedlist';
+import LinkedList from './linkedlist';
 import type { Task, TaskScheduler } from './taskscheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
@@ -741,6 +741,7 @@ export class IntegerIterator extends AsyncIterator<number> {
   }
 }
 
+
 /**
   A iterator that maintains an internal buffer of items.
   This class serves as a base class for other iterators
@@ -846,12 +847,12 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     // Try to retrieve an item from the buffer
     const buffer = this._buffer;
     let item;
-    if (buffer.length !== 0) {
-      item = buffer.shift() as T;
-    }
-    else {
+    if (buffer.empty) {
       item = null;
       this.readable = false;
+    }
+    else {
+      item = buffer.shift() as T;
     }
 
     // If the buffer is becoming empty, either fill it or end the iterator
@@ -860,7 +861,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
       if (!this.closed)
         this._fillBufferAsync();
       // No new items will be generated, so if none are buffered, the iterator ends here
-      else if (!buffer.length)
+      else if (buffer.empty)
         this._endAsync();
     }
 
@@ -985,7 +986,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
         this._reading = false;
         // If no items are left, end the iterator
         // Otherwise, `read` becomes responsible for ending the iterator
-        if (!this._buffer.length)
+        if (this._buffer.empty)
           this._endAsync();
       });
     }
@@ -1014,7 +1015,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
    */
   protected _toStringDetails() {
     const buffer = this._buffer;
-    return `{${buffer.head ? `next: ${buffer.head.value}, ` : ''}buffer: ${buffer.length}}`;
+    return `{${buffer.empty ? '' : `next: ${buffer.first}, `}buffer: ${buffer.length}}`;
   }
 }
 
