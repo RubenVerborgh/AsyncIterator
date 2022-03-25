@@ -12,8 +12,8 @@ describe('LinkedList', () => {
 
   describe('On a linked list with no items', () => {
     it('head and tail should be undefined', () => {
-      should.equal(ll.head, undefined);
-      should.equal(ll.tail, undefined);
+      should.equal(ll.head, null);
+      should.equal(ll.tail, null);
     });
 
     it('calling shift() should return null', () => {
@@ -40,8 +40,8 @@ describe('LinkedList', () => {
 
     it('calling shift() should set head and tail to undefined, length to 0', () => {
       ll.shift();
-      should.equal(ll.head, undefined);
-      should.equal(ll.tail, undefined);
+      should.equal(ll.head, null);
+      should.equal(ll.tail, null);
       should.equal(ll.length, 0);
     });
   });
@@ -59,8 +59,8 @@ describe('LinkedList', () => {
 
     it('calling clear() should set head and tail to undefined, length to 0', () => {
       ll.clear();
-      should.equal(ll.head, undefined);
-      should.equal(ll.tail, undefined);
+      should.equal(ll.head, null);
+      should.equal(ll.tail, null);
       should.equal(ll.length, 0);
     });
 
@@ -74,7 +74,7 @@ describe('LinkedList', () => {
       should.equal(ll.head.value, 2);
       should.equal(ll.tail.value, 3);
       should.equal(ll.head.next, ll.tail);
-      should.equal(ll.tail.next, undefined);
+      should.equal(ll.tail.next, null);
       should.equal(ll.length, 2);
     });
   });
