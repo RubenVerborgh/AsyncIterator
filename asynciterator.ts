@@ -2117,17 +2117,49 @@ class HistoryReader<T> {
   }
 }
 
+export class WrappingIterator<T> extends AsyncIterator<T> {
+  protected _source?: InternalSource<T>;
+
+  constructor(sourceOrPromise: AsyncIterator<T> | Promise<AsyncIterator<T>> | EventEmitter | Promise<EventEmitter>) {
+    super();
+    if (sourceOrPromise instanceof AsyncIterator)
+      return sourceOrPromise;
+    Promise.resolve(sourceOrPromise)
+      .then(source => {
+        // @ts-ignore - TODO: how to drop this cleanly?
+        if (!isFunction(source.read) || !isFunction(source.on))
+          throw new Error(`Invalid source: ${source}`);
+        this._source = (source as InternalSource<T>)
+          .on('end', () => {
+            this.close();
+          });
+        this.readable = true;
+      })
+      .catch(error => {
+        this.emit('error', error);
+      });
+  }
+
+  read(): T | null {
+    if (this._source)
+      return this._source.read();
+    return null;
+  }
+}
+
 /**
   Creates an iterator that wraps around a given iterator or readable stream.
   Use this to convert an iterator-like object into a full-featured AsyncIterator.
   After this operation, only read the returned iterator instead of the given one.
   @function
-  @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
+  @param {module:asynciterator.AsyncIterator|Readable} [sourceOrPromise] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(source: EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
-  return new TransformIterator<T>(source as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
+export function wrap<T>(sourceOrPromise: AsyncIterator<T> | Promise<AsyncIterator<T>> | EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
+  if (options)
+    return new TransformIterator<T>(sourceOrPromise as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
+  return new WrappingIterator(sourceOrPromise);
 }
 
 /**

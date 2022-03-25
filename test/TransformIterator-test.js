@@ -4,6 +4,7 @@ import {
   EmptyIterator,
   ArrayIterator,
   TransformIterator,
+  WrappingIterator,
   wrap,
   scheduleTask,
 } from '../dist/asynciterator.js';
@@ -38,7 +39,7 @@ describe('TransformIterator', () => {
       before(() => { instance = wrap(); });
 
       it('should be an TransformIterator object', () => {
-        instance.should.be.an.instanceof(TransformIterator);
+        instance.should.be.an.instanceof(WrappingIterator);
       });
 
       it('should be an AsyncIterator object', () => {
