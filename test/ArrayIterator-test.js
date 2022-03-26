@@ -125,6 +125,11 @@ describe('ArrayIterator', () => {
     it('should return null when read is called', () => {
       expect(iterator.read()).to.be.null;
     });
+
+    it('should return an empty array given upon toArray', async () => {
+      (await iterator.toArray()).length.should.equal(0);
+      (await iterator.toArray({ limnit: 10 })).length.should.equal(0);
+    });
   });
 
   describe('An ArrayIterator with an empty array without autoStart', () => {
@@ -424,6 +429,60 @@ describe('ArrayIterator', () => {
     });
   });
 
+  describe('An ArrayIterator with a six-item array', () => {
+    const array = [0, 1, 2, 3, 4, 5];
+    let iterator, items;
+    beforeEach(() => {
+      iterator = new ArrayIterator(array);
+    });
+
+    it('should return all items upon toArray', async () => {
+      items = await iterator.toArray();
+      items.should.not.equal(array);
+      items.should.deep.equal(array);
+    });
+
+    it('should return all items upon toArray with limit 10', async () => {
+      items = await iterator.toArray({ limit: 10 });
+      items.should.not.equal(array);
+      items.should.deep.equal(array);
+    });
+
+    it('should return 2 items upon toArray with limit 2', async () => {
+      items = await iterator.toArray({ limit: 2 });
+      items.should.deep.equal([0, 1]);
+
+      items = await iterator.toArray({ limit: 4 });
+      items.should.deep.equal([2, 3, 4, 5]);
+
+      items = await iterator.toArray({ limit: 2 });
+      items.should.deep.equal([]);
+    });
+
+    describe('after reading elements', () => {
+      beforeEach(() => {
+        expect(iterator.read()).to.equal(0);
+        expect(iterator.read()).to.equal(1);
+      });
+
+      it('should return all remaining items upon toArray', async () => {
+        items = await iterator.toArray();
+        items.should.deep.equal([2, 3, 4, 5]);
+      });
+
+      it('should return 2 remaining items upon toArray with limit 2', async () => {
+        items = await iterator.toArray({ limit: 2 });
+        items.should.deep.equal([2, 3]);
+
+        items = await iterator.toArray({ limit: 2 });
+        items.should.deep.equal([4, 5]);
+
+        items = await iterator.toArray({ limit: 2 });
+        items.should.deep.equal([]);
+      });
+    });
+  });
+
   describe('An ArrayIterator with an iterable object', () => {
     let iterator, item;
     before(() => {
@@ -568,21 +627,68 @@ describe('ArrayIterator', () => {
   });
 
   describe('An ArrayIterator with an array that is modified afterwards', () => {
-    let iterator, items;
-    before(() => {
-      const array = [1, 2, 3];
-      iterator = new ArrayIterator(array);
+    const count = 256;
+    let source;
 
-      // Modify the array
-      array[0] = 'a';
-      array.pop();
-      array.pop();
-
-      items = [iterator.read(), iterator.read(), iterator.read(), iterator.read()];
+    beforeEach(() => {
+      source = [];
+      for (let i = 0; i < count; i++)
+        source.push(i);
     });
 
-    it('should return the original items', () => {
-      items.should.deep.equal([1, 2, 3, null]);
+    describe('with default settings', () => {
+      let iterator;
+      beforeEach(() => {
+        iterator = new ArrayIterator(source);
+
+        // Modify the source
+        source[0] = 'a';
+        source.pop();
+      });
+
+      it('should return the original items', () => {
+        expect(iterator.read()).to.equal(0);
+        expect(iterator.read()).to.equal(1);
+        expect(iterator.read()).to.equal(2);
+        expect(iterator.read()).to.equal(3);
+      });
+    });
+
+    describe('with preserve set to true', () => {
+      let iterator;
+      beforeEach(() => {
+        iterator = new ArrayIterator(source, { preserve: true });
+
+        // Modify the source
+        source[0] = 'a';
+        source.pop();
+      });
+
+      it('should return the original items', () => {
+        expect(iterator.read()).to.equal(0);
+        expect(iterator.read()).to.equal(1);
+        expect(iterator.read()).to.equal(2);
+        expect(iterator.read()).to.equal(3);
+      });
+    });
+
+    describe('with preserve set to false', () => {
+      let iterator;
+      beforeEach(() => {
+        iterator = new ArrayIterator(source, { preserve: false });
+      });
+
+      it('should truncate the source array every 64 items', () => {
+        source.length.should.equal(count);
+
+        for (let i = 0; i < 64; i++)
+          expect(iterator.read()).to.equal(i);
+        source.length.should.equal(count - 64);
+
+        for (let i = 64; i < 128; i++)
+          expect(iterator.read()).to.equal(i);
+        source.length.should.equal(count - 64 - 64);
+      });
     });
   });
 
@@ -677,92 +783,6 @@ describe('ArrayIterator', () => {
       it('should have an empty buffer', () => {
         expect(iterator._buffer).to.be.an('undefined');
       });
-    });
-  });
-
-  describe('The default splicing threshold', () => {
-    it('should lead the iterator to splice its buffer every 64 items', () => {
-      const array = new Array(135).fill(true);
-      const iterator = new ArrayIterator(array);
-      for (let i = 0; i < 64; i += 1)
-        iterator.read();
-      iterator._buffer.length.should.equal(71);
-      for (let i = 0; i < 64; i += 1)
-        iterator.read();
-      iterator._buffer.length.should.equal(7);
-    });
-  });
-
-  describe('A custom splicing threshold', () => {
-    it('should lead the iterator to splice its buffer accordingly', () => {
-      const array = new Array(135).fill(true);
-      const iterator = new ArrayIterator(array, { splicingThreshold: 100 });
-      for (let i = 0; i < 100; i += 1)
-        iterator.read();
-      iterator._buffer.length.should.equal(35);
-    });
-  });
-
-  describe('An Infinity splicing threshold', () => {
-    it('should lead the iterator to never splice its buffer', () => {
-      const array = new Array(135).fill(true);
-      const iterator = new ArrayIterator(array, { splicingThreshold: Infinity });
-      for (let i = 0; i < 100; i += 1)
-        iterator.read();
-      iterator._buffer.length.should.equal(135);
-    });
-  });
-
-  describe('The toArray() method', () => {
-    it('should return an empty array given an empty source array', async () => {
-      const array = [];
-      const iterator = new ArrayIterator(array);
-      const items = await iterator.toArray();
-      items.length.should.equal(0);
-    });
-
-    it('should return an empty array given an empty source array, even with the limit option', async () => {
-      const array = [];
-      const iterator = new ArrayIterator(array);
-      const items = await iterator.toArray({ limit: 10 });
-      items.length.should.equal(0);
-    });
-
-    it('should return a copy of the entire source array if called before any other read operation', async () => {
-      const array = [0, 1, 2, 3, 4, 5, 6];
-      const iterator = new ArrayIterator(array);
-      const items = await iterator.toArray();
-      items.should.not.equal(array);
-      for (let i = 0; i < array.length; i += 1)
-        items[i].should.equal(array[i]);
-    });
-
-    it('should return a copy of the entire source array if called before any other read operation with a limit greater than the length of the source array', async () => {
-      const array = [0, 1, 2, 3, 4, 5, 6];
-      const iterator = new ArrayIterator(array);
-      const items = await iterator.toArray({ limit: 10 });
-      items.should.not.equal(array);
-      for (let i = 0; i < array.length; i += 1)
-        items[i].should.equal(array[i]);
-    });
-
-    it('should return a portion of the source array if called with the limit option', async () => {
-      const array = [0, 1, 2, 3, 4, 5, 6];
-      const iterator = new ArrayIterator(array);
-      const items = await iterator.toArray({ limit: 2 });
-      items.should.not.equal(array);
-      for (let i = 0; i < 2; i += 1)
-        items[i].should.equal(array[i]);
-    });
-
-    it('should return a portion of the source array if called with the limit option after a read operation', async () => {
-      const array = [0, 1, 2, 3, 4, 5, 6];
-      const iterator = new ArrayIterator(array);
-      iterator.read();
-      const items = await iterator.toArray({ limit: 2 });
-      items.should.not.equal(array);
-      for (let i = 0; i < 2; i += 1)
-        items[i].should.equal(array[i + 1]);
     });
   });
 });
