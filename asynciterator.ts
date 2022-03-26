@@ -1937,7 +1937,7 @@ function build(transforms: Transform[]) {
   and uses *mutations* - this means that it is unsafe to do anything with the original iterator
   after map, transform and syncTransform have been applied to it.
   @param source The source to transform
-  @extends module:asynciterator.FastTransformIterator
+  @extends module:asynciterator.AsyncIterator
 */
 export class FastTransformIterator<T> extends AsyncIterator<T> {
     private transforms: Transform[] = [];
