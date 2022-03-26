@@ -1255,20 +1255,40 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
     (this._destination as any)._fillBuffer();
 }
 
-export class MappingIterator<S, D = S> extends AsyncIterator<D> {
-  protected readonly _map: (item: S) => D;
+export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
   protected readonly _source: AsyncIterator<S>;
 
-  constructor(source: AsyncIterator<S>, map: (item: S) => D) {
+  constructor(source: AsyncIterator<S>) {
+    /* eslint-disable no-use-before-define */
     super();
     this._source = source;
-    this._map = map;
-    source.on('end', () => {
+    const cleanup = () => {
+      source.removeListener('end', onEnd);
+      source.removeListener('readable', onReadable);
+    };
+    const onEnd = () => {
+      cleanup();
       this.close();
-    });
-    source.on('readable', () => {
+    };
+    const onReadable = () => {
       this.readable = true;
-    });
+    };
+    source.on('end', onEnd);
+    source.on('readable', onReadable);
+  }
+
+  protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
+    super._destroy(cause, callback);
+    this._source.destroy(cause);
+  }
+}
+
+export class MappingIterator<S, D = S> extends SynchronousTransformIterator<S, D> {
+  protected readonly _map: (item: S) => D;
+
+  constructor(source: AsyncIterator<S>, map: (item: S) => D) {
+    super(source);
+    this._map = map;
   }
 
   read(): D | null {
@@ -1279,20 +1299,12 @@ export class MappingIterator<S, D = S> extends AsyncIterator<D> {
   }
 }
 
-export class FilteringIterator<T> extends AsyncIterator<T> {
+export class FilteringIterator<T> extends SynchronousTransformIterator<T> {
   protected readonly _filter: (item: T) => boolean;
-  protected readonly _source: AsyncIterator<T>;
 
   constructor(source: AsyncIterator<T>, filter: (item: T) => boolean) {
-    super();
-    this._source = source;
+    super(source);
     this._filter = filter;
-    source.on('end', () => {
-      this.close();
-    });
-    source.on('readable', () => {
-      this.readable = true;
-    });
   }
 
   read(): T | null {
@@ -1305,22 +1317,14 @@ export class FilteringIterator<T> extends AsyncIterator<T> {
   }
 }
 
-export class SkippingIterator<T> extends AsyncIterator<T> {
-  protected readonly _source: AsyncIterator<T>;
+export class SkippingIterator<T> extends SynchronousTransformIterator<T> {
   protected readonly _skip: number;
   protected _skipped: number;
 
   constructor(source: AsyncIterator<T>, skip: number) {
-    super();
+    super(source);
     this._skip = skip;
     this._skipped = 0;
-    this._source = source;
-    source.on('end', () => {
-      this.close();
-    });
-    source.on('readable', () => {
-      this.readable = true;
-    });
   }
 
   read(): T | null {
@@ -1335,22 +1339,14 @@ export class SkippingIterator<T> extends AsyncIterator<T> {
   }
 }
 
-export class LimitingIterator<T> extends AsyncIterator<T> {
-  protected readonly _source: AsyncIterator<T>;
+export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
   protected readonly _limit: number;
   protected _count: number;
 
   constructor(source: AsyncIterator<T>, limit: number) {
-    super();
-    this._source = source;
+    super(source);
     this._limit = limit;
     this._count = 0;
-    source.on('end', () => {
-      this.close();
-    });
-    source.on('readable', () => {
-      this.readable = true;
-    });
   }
 
   read(): T | null {
