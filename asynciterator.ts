@@ -5,6 +5,7 @@
 
 import { EventEmitter } from 'events';
 import createTaskScheduler from './taskscheduler';
+import LinkedList from './linkedlist';
 import type { Task, TaskScheduler } from './taskscheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
@@ -748,7 +749,7 @@ export class IntegerIterator extends AsyncIterator<number> {
   @extends module:asynciterator.AsyncIterator
 */
 export class BufferedIterator<T> extends AsyncIterator<T> {
-  private _buffer: T[] = [];
+  private _buffer: LinkedList<T> = new LinkedList<T>();
   private _maxBufferSize = 4;
   protected _reading = true;
   protected _pushedCount = 0;
@@ -846,12 +847,12 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     // Try to retrieve an item from the buffer
     const buffer = this._buffer;
     let item;
-    if (buffer.length !== 0) {
-      item = buffer.shift() as T;
-    }
-    else {
+    if (buffer.empty) {
       item = null;
       this.readable = false;
+    }
+    else {
+      item = buffer.shift() as T;
     }
 
     // If the buffer is becoming empty, either fill it or end the iterator
@@ -860,7 +861,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
       if (!this.closed)
         this._fillBufferAsync();
       // No new items will be generated, so if none are buffered, the iterator ends here
-      else if (!buffer.length)
+      else if (buffer.empty)
         this._endAsync();
     }
 
@@ -985,7 +986,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
         this._reading = false;
         // If no items are left, end the iterator
         // Otherwise, `read` becomes responsible for ending the iterator
-        if (!this._buffer.length)
+        if (this._buffer.empty)
           this._endAsync();
       });
     }
@@ -993,7 +994,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
-    this._buffer = [];
+    this._buffer.clear();
     callback();
   }
 
@@ -1013,8 +1014,8 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
     @protected
    */
   protected _toStringDetails() {
-    const buffer = this._buffer, { length } = buffer;
-    return `{${length ? `next: ${buffer[0]}, ` : ''}buffer: ${length}}`;
+    const buffer = this._buffer;
+    return `{${buffer.empty ? '' : `next: ${buffer.first}, `}buffer: ${buffer.length}}`;
   }
 }
 
