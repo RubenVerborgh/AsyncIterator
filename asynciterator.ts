@@ -1932,6 +1932,13 @@ function build(transforms: Transform[]) {
     (item: any) => f(transform.function(item)), (e: any) => e);
 }
 
+/**
+  An iterator that is used to quickly transform items, it is optimized for performance
+  and uses *mutations* - this means that it is unsafe to do anything with the original iterator
+  after map, transform and syncTransform have been applied to it.
+  @param source The source to transform
+  @extends module:asynciterator.FastTransformIterator
+*/
 export class FastTransformIterator<T> extends AsyncIterator<T> {
     private transforms: Transform[] = [];
     constructor(private source: AsyncIterator<T>) {
@@ -1960,16 +1967,30 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
       return this.read();
     }
 
+    /**
+      Filter items according to a given function
+      @param {item: T) => boolean} filter The function to filter items with
+    */
+    filter<K extends T>(filter: (item: T) => item is K): FastTransformIterator<K>;
+    filter(filter: (item: T) => boolean): FastTransformIterator<T>;
     filter(filter: (item: T) => boolean): FastTransformIterator<T> {
       this.transforms.push({ filter: true, function: filter });
       return this as unknown as FastTransformIterator<T>;
     }
 
+    /**
+      Maps items according to a given function
+      @param {((item: T) => D} map The function to map items with
+    */
     map<D>(map: (item: T) => D): FastTransformIterator<D> {
       this.transforms.push({ filter: false, function: map });
       return this as unknown as FastTransformIterator<D>;
     }
 
+    /**
+      Transforms items according to a synchronous generator (hence no need for buffering)
+      @param {(item: T) => Generator<D>} transform The function to transform items with
+    */
     syncTransform<D>(transform: (item: T) => Generator<D>): FastTransformIterator<D> {
       const { source } = this;
 
