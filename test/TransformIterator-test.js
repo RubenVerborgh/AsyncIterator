@@ -4,8 +4,6 @@ import {
   EmptyIterator,
   ArrayIterator,
   TransformIterator,
-  WrappingIterator,
-  wrap,
   scheduleTask,
 } from '../dist/asynciterator.js';
 
@@ -23,23 +21,6 @@ describe('TransformIterator', () => {
 
       it('should be a BufferedIterator object', () => {
         instance.should.be.an.instanceof(BufferedIterator);
-      });
-
-      it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
-      });
-
-      it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
-      });
-    });
-
-    describe('the result when called through `wrap`', () => {
-      let instance;
-      before(() => { instance = wrap(); });
-
-      it('should be an TransformIterator object', () => {
-        instance.should.be.an.instanceof(WrappingIterator);
       });
 
       it('should be an AsyncIterator object', () => {

@@ -7,7 +7,7 @@ describe('WrappingIterator', () => {
       let instance;
 
       before(() => {
-        instance = new WrappingIterator({});
+        instance = new WrappingIterator(new ArrayIterator([]));
       });
 
       it('should be a WrappingIterator object', () => {
@@ -23,7 +23,7 @@ describe('WrappingIterator', () => {
       });
     });
   });
-  describe('with an invalid source', () => {
+  describe('the result when called with new and with an invalid source', () => {
     it('should emit an error', done => {
       const source = {};
       const wrapped = new WrappingIterator(source);
@@ -33,10 +33,17 @@ describe('WrappingIterator', () => {
       });
     });
   });
-  describe('with an empty source', () => {
-    it('should end when the source ends', done => {
+  describe('with an empty source iterator', () => {
+    it('should end when the source iterator ends and letIteratorThrough is not set', done => {
       const source = new ArrayIterator([]);
       const wrapped = new WrappingIterator(source);
+      wrapped.on('end', () => {
+        done();
+      });
+    });
+    it('should end when the source iterator ends and letIteratorThrough is set to true', done => {
+      const source = new ArrayIterator([]);
+      const wrapped = new WrappingIterator(source, { letIteratorThrough: true });
       wrapped.on('end', () => {
         done();
       });

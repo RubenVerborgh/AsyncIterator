@@ -24,9 +24,23 @@ class IteratorLike extends EventEmitter {
 }
 
 describe('The wrap() function', () => {
-  it('should let an instance of AsyncIterator pass through without wrapping', () => {
+  it('should not let an instance of AsyncIterator pass through without wrapping if letIteratorThrough option is not set', () => {
     const source = new ArrayIterator([0, 1, 2, 3, 4]);
     const wrapped = wrap(source);
+    wrapped.should.not.equal(source);
+    wrapped.should.be.instanceof(WrappingIterator);
+  });
+
+  it('should not let an instance of AsyncIterator pass through without wrapping if letIteratorThrough option is set to false', () => {
+    const source = new ArrayIterator([0, 1, 2, 3, 4]);
+    const wrapped = wrap(source, { letIteratorThrough: false });
+    wrapped.should.not.equal(source);
+    wrapped.should.be.instanceof(WrappingIterator);
+  });
+
+  it('should let an instance of AsyncIterator pass through without wrapping if letIteratorThrough option is set to true', () => {
+    const source = new ArrayIterator([0, 1, 2, 3, 4]);
+    const wrapped = wrap(source, { letIteratorThrough: true });
     wrapped.should.equal(source);
     wrapped.should.be.instanceof(ArrayIterator);
   });
@@ -40,9 +54,9 @@ describe('The wrap() function', () => {
     });
   });
 
-  it('should return a TransformIterator when an options object is passed', () => {
+  it('should return a TransformIterator when transform options are passed', () => {
     const source = new ArrayIterator([0, 1, 2, 3, 4]);
-    const options = { map: num => num * 2 };
+    const options = { maxBufferSize: 42 };
     const wrapped = wrap(source, options);
     wrapped.should.be.instanceof(TransformIterator);
   });

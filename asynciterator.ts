@@ -2117,30 +2117,54 @@ class HistoryReader<T> {
   }
 }
 
+export interface WrappingIteratorOptions {
+  letIteratorThrough?: boolean;
+}
+
+export type PromiseLike<T> = Pick<Promise<T>, 'then' | 'catch'>
+
+/* eslint-disable arrow-body-style */
+export const isPromiseLike = <T>(item: { [key: string]: any }): item is PromiseLike<T> => {
+  return isFunction(item.then) && isFunction(item.catch);
+};
+
 export class WrappingIterator<T> extends AsyncIterator<T> {
   protected _source?: InternalSource<T>;
 
-  constructor(sourceOrPromise: AsyncIterator<T> | Promise<AsyncIterator<T>> | EventEmitter | Promise<EventEmitter>) {
+  constructor(sourceOrPromise: EventEmitter | Promise<EventEmitter> | PromiseLike<EventEmitter>, options: WrappingIteratorOptions = {}) {
     super();
-    if (sourceOrPromise instanceof AsyncIterator)
+    if (options.letIteratorThrough === true && sourceOrPromise instanceof AsyncIterator)
       return sourceOrPromise;
-    Promise.resolve(sourceOrPromise)
-      .then(source => {
-        // @ts-ignore - TODO: how to drop this cleanly?
-        if (!isFunction(source.read) || !isFunction(source.on))
-          throw new Error(`Invalid source: ${source}`);
-        this._source = (source as InternalSource<T>)
-          .on('end', () => {
-            this.close();
-          })
-          .on('readable', () => {
-            this.readable = true;
-          });
-        this.readable = true;
-      })
-      .catch(error => {
-        this.emit('error', error);
+    if (sourceOrPromise instanceof Promise || isPromiseLike(sourceOrPromise)) {
+      sourceOrPromise
+        .then(source => {
+          WrappingIterator._wrapSource<T>(source, this);
+        })
+        .catch(err => {
+          this.emit('error', err);
+        });
+    }
+    else {
+      WrappingIterator._wrapSource<T>(sourceOrPromise, this);
+    }
+  }
+
+  protected static _wrapSource<T>(source: EventEmitter, wrapped: WrappingIterator<T>) {
+    // @ts-ignore - TODO: how to drop this cleanly?
+    if (!isFunction(source.read) || !isFunction(source.on)) {
+      taskScheduler(() => {
+        wrapped.emit('error', new Error(`Invalid source: ${source}`));
       });
+      return;
+    }
+    wrapped._source = (source as InternalSource<T>)
+      .on('end', () => {
+        wrapped.close();
+      })
+      .on('readable', () => {
+        wrapped.readable = true;
+      });
+    wrapped.readable = true;
   }
 
   read(): T | null {
@@ -2159,10 +2183,13 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(sourceOrPromise: AsyncIterator<T> | Promise<AsyncIterator<T>> | EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
-  if (options)
+export function wrap<T>(
+  sourceOrPromise: EventEmitter | Promise<EventEmitter>,
+  options: TransformIteratorOptions<T> & WrappingIteratorOptions = {},
+): AsyncIterator<T> {
+  if ('maxBufferSize' in options || 'autoStart' in options || 'optional' in options || 'destroySource' in options)
     return new TransformIterator<T>(sourceOrPromise as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
-  return new WrappingIterator(sourceOrPromise);
+  return new WrappingIterator(sourceOrPromise, options);
 }
 
 /**
