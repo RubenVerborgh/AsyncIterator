@@ -2121,21 +2121,27 @@ export interface WrappingIteratorOptions {
   letIteratorThrough?: boolean;
 }
 
-export type PromiseLike<T> = Pick<Promise<T>, 'then' | 'catch'>
+export type PromiseLike<T> = Pick<Promise<T>, 'then' | 'catch'>;
 
 /* eslint-disable arrow-body-style */
 export const isPromiseLike = <T>(item: { [key: string]: any }): item is PromiseLike<T> => {
   return isFunction(item.then) && isFunction(item.catch);
 };
 
-export class WrappingIterator<T> extends AsyncIterator<T> {
-  protected _source?: InternalSource<T>;
+export type IteratorLike<T> = EventEmitter & { on: () => any; read: () => T | null };
 
-  constructor(sourceOrPromise: EventEmitter | Promise<EventEmitter> | PromiseLike<EventEmitter>, options: WrappingIteratorOptions = {}) {
+export const isIteratorLike = <T>(item: EventEmitter & { [key: string]: any }): item is IteratorLike<T> => {
+  return isFunction(item.on) && isFunction(item.read);
+};
+
+export class WrappingIterator<T> extends AsyncIterator<T> {
+  protected _source?: IteratorLike<T>;
+
+  constructor(sourceOrPromise: EventEmitter | PromiseLike<EventEmitter>, options: WrappingIteratorOptions = {}) {
     super();
     if (options.letIteratorThrough === true && sourceOrPromise instanceof AsyncIterator)
       return sourceOrPromise;
-    if (sourceOrPromise instanceof Promise || isPromiseLike(sourceOrPromise)) {
+    if (isPromiseLike(sourceOrPromise)) {
       sourceOrPromise
         .then(source => {
           WrappingIterator._wrapSource<T>(source, this);
@@ -2150,14 +2156,13 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 
   protected static _wrapSource<T>(source: EventEmitter, wrapped: WrappingIterator<T>) {
-    // @ts-ignore - TODO: how to drop this cleanly?
-    if (!isFunction(source.read) || !isFunction(source.on)) {
+    if (!isIteratorLike<T>(source)) {
       taskScheduler(() => {
         wrapped.emit('error', new Error(`Invalid source: ${source}`));
       });
       return;
     }
-    wrapped._source = (source as InternalSource<T>)
+    wrapped._source = source
       .on('end', () => {
         wrapped.close();
       })
