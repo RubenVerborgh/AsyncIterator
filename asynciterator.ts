@@ -1924,7 +1924,7 @@ type SourceExpression<T> =
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
 
-  interface Transform { filter: boolean, function: Function }[];
+interface Transform { filter: boolean, function: Function }
 
 function build(transforms: Transform[]) {
   return transforms.reduceRight((f, transform) => transform.filter ?
@@ -1933,7 +1933,7 @@ function build(transforms: Transform[]) {
 }
 
 export class FastTransformIterator<T> extends AsyncIterator<T> {
-    private transforms: { filter: boolean, function: Function }[] = [];
+    private transforms: Transform[] = [];
     constructor(private source: AsyncIterator<T>) {
       super();
       source.on('readable', () => {
@@ -1947,11 +1947,10 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
     read(): T | null {
       const func = build(this.transforms);
 
-      // const { source } = this
-
       this.read = () => {
+        const { source } = this;
         let item;
-        while ((item = this.source.read()) !== null) {
+        while ((item = source.read()) !== null) {
           if ((item = func(item)) !== null)
             return item;
         }
@@ -1963,44 +1962,12 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
 
     filter(filter: (item: T) => boolean): FastTransformIterator<T> {
       this.transforms.push({ filter: true, function: filter });
-
-      if (process.env.NODE_ENV === 'development') {
-        const that = Object.assign({}, this);
-        for (const key in this) {
-          if (typeof this[key] === 'function') {
-            // @ts-ignore
-            this[key] = () => { throw new Error('You are trying to use methods on an iterator - which has been destroyed by another transform operation'); };
-          }
-          else {
-            delete this[key];
-          }
-        }
-        return that as unknown as FastTransformIterator<T>;
-      }
-
       return this as unknown as FastTransformIterator<T>;
     }
 
-    map<D>(map: (item: T) => D): AsyncIterator<D> {
+    map<D>(map: (item: T) => D): FastTransformIterator<D> {
       this.transforms.push({ filter: false, function: map });
-
-      console.log(process.env.NODE_ENV);
-
-      if (process.env.NODE_ENV === 'development') {
-        const that = Object.assign({}, this);
-        for (const key in this) {
-          if (typeof this[key] === 'function') {
-            // @ts-ignore
-            this[key] = () => { throw new Error('You are trying to use methods on an iterator - which has been destroyed by another transform operation'); };
-          }
-          else {
-            delete this[key];
-          }
-        }
-        return that as unknown as AsyncIterator<D>;
-      }
-
-      return this as unknown as AsyncIterator<D>;
+      return this as unknown as FastTransformIterator<D>;
     }
 
     syncTransform<D>(transform: (item: T) => Generator<D>): FastTransformIterator<D> {
@@ -2019,6 +1986,7 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
         read(): D | null {
           let item: any;
 
+          // eslint-disable-next-line no-constant-condition
           while (true) {
             // If we are not currently using a generator then get one
             if (!transformation) {
@@ -2043,20 +2011,6 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
           }
         },
       } as unknown as AsyncIterator<D>;
-
-      if (process.env.NODE_ENV === 'development') {
-        const that = Object.assign({}, this);
-        for (const key in this) {
-          if (typeof this[key] === 'function') {
-            // @ts-ignore
-            this[key] = () => { throw new Error('You are trying to use methods on an iterator - which has been destroyed by another transform operation'); };
-          }
-          else {
-            delete this[key];
-          }
-        }
-        return that as unknown as FastTransformIterator<D>;
-      }
 
       return this as unknown as FastTransformIterator<D>;
     }
