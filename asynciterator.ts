@@ -630,16 +630,22 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
 */
 export class ArrayIterator<T> extends AsyncIterator<T> {
   private _buffer?: T[];
+  protected _index: number;
   protected _sourceStarted: boolean;
+  protected _truncateThreshold: number;
 
   /**
     Creates a new `ArrayIterator`.
     @param {Array} items The items that will be emitted.
+    @param {boolean} [options.autoStart=true] Whether buffering starts directly after construction
+    @param {boolean} [options.preserve=true] If false, the passed array can be safely modified
   */
-  constructor(items?: Iterable<T>, { autoStart = true } = {}) {
+  constructor(items: Iterable<T> = [], { autoStart = true, preserve = true } = {}) {
     super();
-    const buffer = items ? [...items] : [];
+    const buffer = preserve || !Array.isArray(items) ? [...items] : items;
+    this._index = 0;
     this._sourceStarted = autoStart !== false;
+    this._truncateThreshold = preserve ? -1 : 64;
     if (this._sourceStarted && buffer.length === 0)
       this.close();
     else
@@ -653,13 +659,19 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
       this._sourceStarted = true;
 
     let item = null;
-    const buffer = this._buffer;
-    if (buffer) {
-      if (buffer.length !== 0)
-        item = buffer.shift() as T;
-      if (buffer.length === 0) {
+    if (this._buffer) {
+      // Emit the current item
+      if (this._index < this._buffer.length)
+        item = this._buffer[this._index++];
+      // Close when all elements have been returned
+      if (this._index === this._buffer.length) {
         delete this._buffer;
         this.close();
+      }
+      // Do need keep old items around indefinitely
+      else if (this._index === this._truncateThreshold) {
+        this._buffer.splice(0, this._truncateThreshold);
+        this._index = 0;
       }
     }
     return item;
@@ -667,13 +679,37 @@ export class ArrayIterator<T> extends AsyncIterator<T> {
 
   /* Generates details for a textual representation of the iterator. */
   protected _toStringDetails() {
-    return `(${this._buffer && this._buffer.length || 0})`;
+    return `(${this._buffer ? this._buffer.length - this._index : 0})`;
   }
 
   /* Called by {@link module:asynciterator.AsyncIterator#destroy} */
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
     delete this._buffer;
     callback();
+  }
+
+  /**
+   Consume all remaining items of the iterator into an array that will be returned asynchronously.
+   @param {object} [options] Settings for array creation
+   @param {integer} [options.limit] The maximum number of items to place in the array.
+   */
+  toArray(options: { limit?: number } = {}): Promise<T[]> {
+    if (!this._buffer)
+      return Promise.resolve([]);
+
+    // Determine start and end index
+    const { length } = this._buffer;
+    const start = this._index;
+    const end = typeof options.limit !== 'number' ? length : start + options.limit;
+
+    // Slice the items off the buffer
+    const items = this._buffer.slice(start, end);
+    this._index = end;
+    // Close this iterator when we're past the end
+    if (end >= length)
+      this.close();
+
+    return Promise.resolve(items);
   }
 }
 
