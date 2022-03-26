@@ -1062,7 +1062,7 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
 */
 export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _source?: InternalSource<S>;
-  protected _createSource?: (() => AsyncIteratorOrPromise<S>) | null;
+  protected _createSource?: (() => MaybePromise<AsyncIterator<S>>) | null;
   protected _destroySource: boolean;
   protected _optional: boolean;
   protected _boundPush = (item: D) => this._push(item);
@@ -1946,17 +1946,17 @@ export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {
   multiTransform?: (item: S) => AsyncIterator<D>;
 }
 
+type MaybePromise<T> =
+  T |
+  Promise<T>;
+
 type AsyncIteratorOrArray<T> =
   T[] |
   AsyncIterator<T>;
 
-type AsyncIteratorOrPromise<T> =
-  AsyncIterator<T> |
-  Promise<AsyncIterator<T>>;
-
 type SourceExpression<T> =
-  AsyncIteratorOrPromise<T> |
-  (() => AsyncIteratorOrPromise<T>);
+  MaybePromise<AsyncIterator<T>> |
+  (() => MaybePromise<AsyncIterator<T>>);
 
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
