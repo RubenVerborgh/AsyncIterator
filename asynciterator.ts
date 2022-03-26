@@ -1256,57 +1256,65 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
 }
 
 export class MappingIterator<S, D = S> extends AsyncIterator<D> {
+  protected readonly _map: (item: S) => D;
+  protected readonly _source: AsyncIterator<S>;
+
   constructor(source: AsyncIterator<S>, map: (item: S) => D) {
     super();
-    let item: S | null;
-    this.read = (): D | null => {
-      if ((item = source.read()) !== null)
-        return map.call(this, item);
-      return null;
-    };
+    this._source = source;
+    this._map = map;
     source.on('end', () => {
       this.close();
     });
     source.on('readable', () => {
       this.readable = true;
     });
+  }
+
+  read(): D | null {
+    const item = this._source.read();
+    if (item !== null)
+      return this._map(item);
+    return null;
   }
 }
 
 export class FilteringIterator<T> extends AsyncIterator<T> {
+  protected readonly _filter: (item: T) => boolean;
+  protected readonly _source: AsyncIterator<T>;
+
   constructor(source: AsyncIterator<T>, filter: (item: T) => boolean) {
     super();
-    let item: T | null;
-    this.read = (): T | null => {
-      while ((item = source.read()) !== null) {
-        if (filter.call(this, item))
-          return item;
-      }
-      return null;
-    };
+    this._source = source;
+    this._filter = filter;
     source.on('end', () => {
       this.close();
     });
     source.on('readable', () => {
       this.readable = true;
     });
+  }
+
+  read(): T | null {
+    let item;
+    while ((item = this._source.read()) !== null) {
+      if (this._filter(item))
+        return item;
+    }
+    return null;
   }
 }
 
 export class SkippingIterator<T> extends AsyncIterator<T> {
+  protected readonly _source: AsyncIterator<T>;
+  protected readonly _skip: number;
+  protected _skipped: number;
+
   constructor(source: AsyncIterator<T>, skip: number) {
     super();
-    let item: T | null;
-    let skipped = 0;
-    this.read = (): T | null => {
-      while ((item = source.read()) !== null) {
-        if (skipped < skip)
-          skipped += 1;
-        else
-          return item;
-      }
-      return null;
-    };
+    this._skip = skip;
+    this._skipped = 0;
+    this._source = source;
     source.on('end', () => {
       this.close();
     });
@@ -1314,30 +1322,48 @@ export class SkippingIterator<T> extends AsyncIterator<T> {
       this.readable = true;
     });
   }
+
+  read(): T | null {
+    let item;
+    while ((item = this._source.read()) !== null) {
+      if (this._skipped < this._skip)
+        this._skipped += 1;
+      else
+        return item;
+    }
+    return null;
+  }
 }
 
 export class LimitingIterator<T> extends AsyncIterator<T> {
+  protected readonly _source: AsyncIterator<T>;
+  protected readonly _limit: number;
+  protected _count: number;
+
   constructor(source: AsyncIterator<T>, limit: number) {
     super();
-    let item: T | null;
-    let count = 0;
-    this.read = (): T | null => {
-      if ((item = source.read()) !== null) {
-        if (count < limit) {
-          count += 1;
-          return item;
-        }
-        this.close();
-        return null;
-      }
-      return null;
-    };
+    this._source = source;
+    this._limit = limit;
+    this._count = 0;
     source.on('end', () => {
       this.close();
     });
     source.on('readable', () => {
       this.readable = true;
     });
+  }
+
+  read(): T | null {
+    const item = this._source.read();
+    if (item !== null) {
+      if (this._count < this._limit) {
+        this._count += 1;
+        return item;
+      }
+      this.close();
+      return null;
+    }
+    return null;
   }
 }
 
