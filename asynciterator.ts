@@ -1969,7 +1969,7 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
 
     /**
       Filter items according to a given function
-      @param {item: T) => boolean} filter The function to filter items with
+      @param {Function} filter The function to filter items with
     */
     filter<K extends T>(filter: (item: T) => item is K): FastTransformIterator<K>;
     filter(filter: (item: T) => boolean): FastTransformIterator<T>;
@@ -1980,7 +1980,7 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
 
     /**
       Maps items according to a given function
-      @param {((item: T) => D} map The function to map items with
+      @param {Function} map The function to map items with
     */
     map<D>(map: (item: T) => D): FastTransformIterator<D> {
       this.transforms.push({ filter: false, function: map });
@@ -1989,7 +1989,7 @@ export class FastTransformIterator<T> extends AsyncIterator<T> {
 
     /**
       Transforms items according to a synchronous generator (hence no need for buffering)
-      @param {(item: T) => Generator<D>} transform The function to transform items with
+      @param {Function} transform The function to transform items with
     */
     syncTransform<D>(transform: (item: T) => Generator<D>): FastTransformIterator<D> {
       const { source } = this;
