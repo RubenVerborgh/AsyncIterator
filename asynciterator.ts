@@ -456,7 +456,6 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    // return this.transform({ map: self ? map.bind(self) : map });
     return new MappingIterator(this, self ? map.bind(self) : map);
   }
 
@@ -471,7 +470,6 @@ export class AsyncIterator<T> extends EventEmitter {
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
     return new FilteringIterator(this, self ? filter.bind(self) : filter);
-    // return this.transform({ filter: self ? filter.bind(self) : filter });
   }
 
   /**
@@ -512,7 +510,6 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset: number): AsyncIterator<T> {
-    // return this.transform({ offset });
     return new SkippingIterator(this, offset);
   }
 
@@ -523,7 +520,6 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit: number): AsyncIterator<T> {
-    // return this.transform({ limit });
     return new LimitingIterator(this, limit);
   }
 
