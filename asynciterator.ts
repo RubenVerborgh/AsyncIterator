@@ -1783,7 +1783,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
   private _sources : InternalSource<T>[] = [];
-  private _pending? : { sources?: AsyncIterator<AsyncIterator<T>> };
+  private _pending? : { sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
   private _currentSource = -1;
 
   /**
@@ -1791,7 +1791,9 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     @param {module:asynciterator.AsyncIterator|Array} [sources] The sources to read from
     @param {object} [options] Settings of the iterator
   */
-  constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>>,
+  constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
+                       AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
+                       AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>,
               options: BufferedIteratorOptions = {}) {
     super(options);
     const autoStart = options.autoStart !== false;
@@ -1799,14 +1801,14 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     // Sources have been passed as an iterator
     if (isEventEmitter(sources)) {
       sources.on('error', error => this.emit('error', error));
-      this._pending = { sources };
+      this._pending = { sources: sources as AsyncIterator<MaybePromise<AsyncIterator<T>>> };
       if (autoStart)
         this._loadSources();
     }
     // Sources have been passed as a non-empty array
     else if (Array.isArray(sources) && sources.length > 0) {
       for (const source of sources)
-        this._addSource(source as InternalSource<T>);
+        this._addSource(source as MaybePromise<InternalSource<T>>);
     }
     // Sources are an empty list
     else if (autoStart) {
@@ -1828,7 +1830,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     // Otherwise, set up source reading
     else {
       sources.on('data', source => {
-        this._addSource(source as InternalSource<T>);
+        this._addSource(source as MaybePromise<InternalSource<T>>);
         this._fillBufferAsync();
       });
       sources.on('end', () => {
@@ -1839,7 +1841,9 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   }
 
   // Adds the given source to the internal sources array
-  protected _addSource(source: InternalSource<T>) {
+  protected _addSource(source: MaybePromise<InternalSource<T>>) {
+    if (isPromise(source))
+      source = wrap<T>(source) as any as InternalSource<T>;
     if (!source.done) {
       this._sources.push(source);
       source._destination = this;
@@ -2224,7 +2228,9 @@ export function fromArray<T>(items: Iterable<T>) {
   Creates an iterator containing all items from the given iterators.
   @param {Array} items the items
  */
-export function union<T>(sources: AsyncIteratorOrArray<AsyncIterator<T>>) {
+export function union<T>(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
+                                  AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
+                                  AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>) {
   return new UnionIterator<T>(sources);
 }
 
