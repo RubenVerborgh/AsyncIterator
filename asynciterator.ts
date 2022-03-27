@@ -1852,6 +1852,22 @@ class HistoryReader<T> {
   }
 }
 
+class WrapIterator<T> extends AsyncIterator<T> {
+  constructor(private source: Iterator<T>) {
+    super();
+    this.readable = true;
+  }
+
+  read(): T | null {
+    const item = this.source.next();
+    if (item.done) {
+      this.close();
+      return null;
+    }
+    return item.value;
+  }
+}
+
 /**
   Creates an iterator that wraps around a given iterator or readable stream.
   Use this to convert an iterator-like object into a full-featured AsyncIterator.
@@ -1863,6 +1879,18 @@ class HistoryReader<T> {
 */
 export function wrap<T>(source: EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
   return new TransformIterator<T>(source as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
+}
+
+/**
+  Creates an iterator that wraps around a given synchronous iterator.
+  Use this to convert an iterator-like object into a full-featured AsyncIterator.
+  After this operation, only read the returned iterator instead of the given one.
+  @function
+  @param {Iterator} [source] The source this iterator generates items from
+  @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
+*/
+export function wrapIterator<T>(source: Iterator<T>) {
+  return new WrapIterator(source);
 }
 
 /**
