@@ -1837,7 +1837,9 @@ export class SyncUnionIterator<T> extends AsyncIterator<T> {
       this._sources.push(source);
       source._destination = this;
       source.on('error', destinationEmitError);
-      source.on('readable', () => { this.readable = true });
+      source.on('readable', () => {
+        this.readable = true;
+      });
       source.on('end', destinationRemoveEmptySources);
     }
   }
@@ -1851,7 +1853,7 @@ export class SyncUnionIterator<T> extends AsyncIterator<T> {
       return !source.done;
     });
     if (!this._pending && this._sources.length === 0)
-        this.close();
+      this.close();
   }
 
   // Reads items from the next sources
@@ -1861,7 +1863,7 @@ export class SyncUnionIterator<T> extends AsyncIterator<T> {
       const item = this._sources[this._currentSource].read();
       // Attempt to read an item from that source
       if (item !== null)
-        return item
+        return item;
       this._currentSource = (this._currentSource + 1) % this._sources.length;
       // this._currentSource += 1
     }
