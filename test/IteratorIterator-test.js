@@ -1,10 +1,10 @@
 import {
-  wrapIterator,
+  IteratorIterator,
 } from '../dist/asynciterator.js';
 
-describe('wrapIterator', () => {
+describe('IteratorIterator', () => {
   it('Should wrap correctly', async () => {
-    (await wrapIterator((function * () {
+    (await new IteratorIterator((function * () {
       yield 1;
       yield 2;
       yield 3;

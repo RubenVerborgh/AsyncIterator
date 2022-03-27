@@ -2121,58 +2121,55 @@ class HistoryReader<T> {
   }
 }
 
-export interface WrappingIteratorOptions {
-  letIteratorThrough?: boolean;
-}
-
-export type PromiseLike<T> = Pick<Promise<T>, 'then' | 'catch'>;
+export type IteratorLike<T> = EventEmitter & {
+  on: (event: string | symbol, listener: (...args: any[]) => void) => AsyncIterator<T>; read: () => T | null };
 
 /* eslint-disable arrow-body-style */
-export const isPromiseLike = <T>(item: { [key: string]: any }): item is PromiseLike<T> => {
-  return isFunction(item.then) && isFunction(item.catch);
+export const isIteratorLike = <T>(item: { [key: string]: any }): item is IteratorLike<T> => {
+  return isFunction(item.on) && isFunction(item.read);
 };
 
-export type IteratorLike<T> = EventEmitter & { on: () => any; read: () => T | null };
+export const isIterator = <T>(item: { [key: string]: any }): item is Iterator<T> => {
+  return isFunction(item.next);
+};
 
-export const isIteratorLike = <T>(item: EventEmitter & { [key: string]: any }): item is IteratorLike<T> => {
-  return isFunction(item.on) && isFunction(item.read);
+export const isIterable = <T>(item: { [key: string]: any }): item is Iterable<T> => {
+  return Symbol.iterator in item;
 };
 
 export class WrappingIterator<T> extends AsyncIterator<T> {
   protected _source?: IteratorLike<T>;
 
-  constructor(sourceOrPromise: EventEmitter | PromiseLike<EventEmitter>, options: WrappingIteratorOptions = {}) {
+  constructor(sourceOrPromise: WrapSource<T> | Promise<WrapSource<T>>, options: WrapOptions = {}) {
     super();
-    if (options.letIteratorThrough === true && sourceOrPromise instanceof AsyncIterator)
-      return sourceOrPromise;
-    if (isPromiseLike(sourceOrPromise)) {
+    if (isPromise(sourceOrPromise)) {
       sourceOrPromise
         .then(source => {
-          WrappingIterator._wrapSource<T>(source, this);
+          WrappingIterator._wrapSource<T>(source, this, options);
         })
         .catch(err => {
           this.emit('error', err);
         });
-    } else {
-      WrappingIterator._wrapSource<T>(sourceOrPromise, this);
+    }
+    else {
+      WrappingIterator._wrapSource<T>(sourceOrPromise, this, options);
     }
   }
 
-  protected static _wrapSource<T>(source: EventEmitter, wrapped: WrappingIterator<T>) {
-    if (!isIteratorLike<T>(source)) {
-      taskScheduler(() => {
-        wrapped.emit('error', new Error(`Invalid source: ${source}`));
-      });
-      return;
+  protected static _wrapSource<T>(source: WrapSource<T>, iterator: WrappingIterator<T>, options: WrapOptions = {}) {
+    try {
+      iterator._source = (isIteratorLike<T>(source) ? source : _wrap<T>(source, options))
+        .on('end', () => {
+          iterator.close();
+        })
+        .on('readable', () => {
+          iterator.readable = true;
+        });
+      iterator.readable = true;
     }
-    wrapped._source = source
-      .on('end', () => {
-        wrapped.close();
-      })
-      .on('readable', () => {
-        wrapped.readable = true;
-      });
-    wrapped.readable = true;
+    catch (err) {
+      scheduleTask(() => iterator.emit('error', err));
+    }
   }
 
   read(): T | null {
@@ -2182,7 +2179,7 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 }
 
-class WrapIterator<T> extends AsyncIterator<T> {
+export class IteratorIterator<T> extends AsyncIterator<T> {
   constructor(private source: Iterator<T>) {
     super();
     this.readable = true;
@@ -2198,8 +2195,29 @@ class WrapIterator<T> extends AsyncIterator<T> {
   }
 }
 
+export interface WrapOptions {
+  letIteratorThrough?: boolean;
+}
+
+export type WrapSource<T> = T[] | EventEmitter | Iterator<T> | Iterable<T>;
+
+const _wrap = <T>(source: WrapSource<T>, options: WrapOptions = {}): AsyncIterator<T> => {
+  if (options.letIteratorThrough && source instanceof AsyncIterator)
+    return source;
+  if (Array.isArray(source))
+    return new ArrayIterator<T>(source);
+  if (isIteratorLike<T>(source))
+    return new WrappingIterator<T>(source);
+  if (isIterator<T>(source))
+    return new IteratorIterator<T>(source);
+  if (isIterable<T>(source))
+    return new IteratorIterator<T>(source[Symbol.iterator]());
+  throw new Error(`Unsupported source ${source}`);
+};
+
 /**
-  Creates an iterator that wraps around a given iterator or readable stream.
+  Creates an iterator that wraps around a given array, iterator, iterable or
+  readable stream.
   Use this to convert an iterator-like object into a full-featured AsyncIterator.
   After this operation, only read the returned iterator instead of the given one.
   @function
@@ -2208,24 +2226,28 @@ class WrapIterator<T> extends AsyncIterator<T> {
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
 export function wrap<T>(
-  sourceOrPromise: EventEmitter | Promise<EventEmitter>,
-  options: TransformIteratorOptions<T> & WrappingIteratorOptions = {},
+  sourceOrPromise: WrapSource<T> | Promise<WrapSource<T>>,
+  options: TransformIteratorOptions<T> & WrapOptions = {},
 ): AsyncIterator<T> {
+  // For backward compatibility, passing TransformIteratorOptions results in
+  // an instance of TransformIterator.
+  // TODO: consider dropping this in the next major version
   if ('maxBufferSize' in options || 'autoStart' in options || 'optional' in options || 'destroySource' in options)
     return new TransformIterator<T>(sourceOrPromise as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
-  return new WrappingIterator(sourceOrPromise, options);
-}
-
-/**
-  Creates an iterator that wraps around a given synchronous iterator.
-  Use this to convert an iterator-like object into a full-featured AsyncIterator.
-  After this operation, only read the returned iterator instead of the given one.
-  @function
-  @param {Iterator} [source] The source this iterator generates items from
-  @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
-*/
-export function wrapIterator<T>(source: Iterator<T>) {
-  return new WrapIterator(source);
+  // If the source is promisified, we *need* to use a WrappingIterator as this
+  // function is a synchronous one.
+  if (isPromise<T>(sourceOrPromise))
+    return new WrappingIterator(sourceOrPromise, options);
+  // The _wrap function synchronously return an iterator or throws on
+  // unsupported sources. However, for backward-compatiblity we need
+  // to relay errors as events of an AsyncIterator instance.
+  // TODO: consider dropping this in the next major version
+  try {
+    return _wrap(sourceOrPromise as WrapSource<T>, options);
+  }
+  catch (err) {
+    return new WrappingIterator(sourceOrPromise);
+  }
 }
 
 /**
