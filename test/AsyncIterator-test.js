@@ -5,6 +5,7 @@ import {
   ENDED,
   DESTROYED,
   scheduleTask,
+  range,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1305,6 +1306,89 @@ describe('AsyncIterator', () => {
       it('should return an array with five elements', () => {
         expect(result).deep.to.equal([1, 2, 3, 4, 5]);
       });
+    });
+  });
+  describe('Testing chains fo maps and filters', () => {
+    let iterator;
+    beforeEach(() => {
+      iterator = range(0, 2);
+    });
+    it('Should handle no transforms', async () => {
+      iterator.read().should.equal(0);
+      iterator.read().should.equal(1);
+      iterator.read().should.equal(2);
+    });
+    it('Should handle no transforms arrayified', async () => {
+      (await iterator.toArray()).should.deep.equal([0, 1, 2]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
+      (await iterator.map(x => x * 2).toArray()).should.deep.equal([0, 2, 4]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
+      (await iterator.map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply filter correctly', async () => {
+      (await iterator.filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
+    });
+    it('Should apply filter then map correctly', async () => {
+      (await iterator.filter(x => x % 2 === 0).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x2']);
+    });
+    it('Should apply map then filter correctly (1)', async () => {
+      (await iterator.map(x => x).filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
+    });
+    it('Should apply map then filter to false correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => true).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply map then filter to true correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
+    });
+    it('Should apply filter to false then map correctly', async () => {
+      (await iterator.filter(x => true).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply filter to true then map correctly', async () => {
+      (await iterator.filter(x => false).map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
+    });
+    it('Should apply filter one then double', async () => {
+      (await iterator.filter(x => x !== 1).map(x => x * 2).toArray()).should.deep.equal([0, 4]);
+    });
+    it('Should apply double then filter one', async () => {
+      (await iterator.map(x => x * 2).filter(x => x !== 1).toArray()).should.deep.equal([0, 2, 4]);
+    });
+    it('Should apply map then filter correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => (x[1] === '0')).toArray()).should.deep.equal(['x0']);
+    });
+    it('Should correctly apply 3 filters', async () => {
+      (await range(0, 5).filter(x => x !== 1).filter(x => x !== 2).filter(x => x !== 2).toArray()).should.deep.equal([0, 3, 4, 5]);
+    });
+    it('Should correctly apply 3 maps', async () => {
+      (await range(0, 1).map(x => x * 2).map(x => `z${x}`).map(x => `y${x}`).toArray()).should.deep.equal(['yz0', 'yz2']);
+    });
+    it('Should correctly apply a map, followed by a filter, followed by another map', async () => {
+      (await range(0, 1).map(x => x * 2).filter(x => x !== 2).map(x => `y${x}`).toArray()).should.deep.equal(['y0']);
+    });
+    it('Should correctly apply a filter-map-filter', async () => {
+      (await range(0, 2).filter(x => x !== 1).map(x => x * 3).filter(x => x !== 6).toArray()).should.deep.equal([0]);
+    });
+    it('Should handle transforms', async () => {
+      iterator = iterator.multiMap(function* (data) {
+        yield `x${data}`;
+        yield `y${data}`;
+      });
+      (await iterator.toArray()).should.deep.equal(['x0', 'y0', 'x1', 'y1', 'x2', 'y2']);
+    });
+    it('Should handle transforms and maps', async () => {
+      iterator = iterator.multiMap(function* (data) {
+        yield `x${data}`;
+        yield `y${data}`;
+      }).map(x => `z${x}`);
+      (await iterator.toArray()).should.deep.equal(['zx0', 'zy0', 'zx1', 'zy1', 'zx2', 'zy2']);
+    });
+    it('Should handle maps and transforms', async () => {
+      iterator = iterator.map(x => `z${x}`).multiMap(function* (data) {
+        yield `x${data}`;
+        yield `y${data}`;
+      });
+      (await iterator.toArray()).should.deep.equal(['xz0', 'yz0', 'xz1', 'yz1', 'xz2', 'yz2']);
     });
   });
 });
