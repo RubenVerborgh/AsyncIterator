@@ -2153,8 +2153,7 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
         .catch(err => {
           this.emit('error', err);
         });
-    }
-    else {
+    } else {
       WrappingIterator._wrapSource<T>(sourceOrPromise, this);
     }
   }
@@ -2183,6 +2182,22 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 }
 
+class WrapIterator<T> extends AsyncIterator<T> {
+  constructor(private source: Iterator<T>) {
+    super();
+    this.readable = true;
+  }
+
+  read(): T | null {
+    const item = this.source.next();
+    if (item.done) {
+      this.close();
+      return null;
+    }
+    return item.value;
+  }
+}
+
 /**
   Creates an iterator that wraps around a given iterator or readable stream.
   Use this to convert an iterator-like object into a full-featured AsyncIterator.
@@ -2199,6 +2214,18 @@ export function wrap<T>(
   if ('maxBufferSize' in options || 'autoStart' in options || 'optional' in options || 'destroySource' in options)
     return new TransformIterator<T>(sourceOrPromise as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
   return new WrappingIterator(sourceOrPromise, options);
+}
+
+/**
+  Creates an iterator that wraps around a given synchronous iterator.
+  Use this to convert an iterator-like object into a full-featured AsyncIterator.
+  After this operation, only read the returned iterator instead of the given one.
+  @function
+  @param {Iterator} [source] The source this iterator generates items from
+  @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
+*/
+export function wrapIterator<T>(source: Iterator<T>) {
+  return new WrapIterator(source);
 }
 
 /**
