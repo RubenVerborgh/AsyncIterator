@@ -2196,6 +2196,7 @@ export class IteratorIterator<T> extends AsyncIterator<T> {
 }
 
 export interface WrapOptions {
+  prioritizeIterable?: boolean;
   letIteratorThrough?: boolean;
 }
 
@@ -2204,14 +2205,22 @@ export type WrapSource<T> = T[] | EventEmitter | Iterator<T> | Iterable<T>;
 const _wrap = <T>(source: WrapSource<T>, options: WrapOptions = {}): AsyncIterator<T> => {
   if (options.letIteratorThrough && source instanceof AsyncIterator)
     return source;
+  if (options.prioritizeIterable) {
+    if (isIterator<T>(source))
+      return fromIterator<T>(source);
+    if (isIterable<T>(source))
+      return fromIterable<T>(source);
+  }
   if (Array.isArray(source))
-    return new ArrayIterator<T>(source);
+    return fromArray<T>(source);
   if (isIteratorLike<T>(source))
-    return new WrappingIterator<T>(source);
-  if (isIterator<T>(source))
-    return new IteratorIterator<T>(source);
-  if (isIterable<T>(source))
-    return new IteratorIterator<T>(source[Symbol.iterator]());
+    return fromIteratorLike<T>(source);
+  if (!options.prioritizeIterable) {
+    if (isIterator<T>(source))
+      return fromIterator<T>(source);
+    if (isIterable<T>(source))
+      return fromIterable<T>(source);
+  }
   throw new Error(`Unsupported source ${source}`);
 };
 
@@ -2269,8 +2278,33 @@ export function single<T>(item: T) {
   Creates an iterator for the given array.
   @param {Array} items the items
  */
-export function fromArray<T>(items: Iterable<T>) {
+export function fromArray<T>(items: Iterable<T>): AsyncIterator<T> {
   return new ArrayIterator<T>(items);
+}
+
+/**
+ Creates an iterator for the given ES2015 Iterable.
+ @param {Iterable} iterable the iterable
+ */
+export function fromIterable<T>(iterable: Iterable<T>): AsyncIterator<T> {
+  return new IteratorIterator<T>(iterable[Symbol.iterator]());
+}
+
+/**
+ Creates an iterator for the given ES2015 Iterator.
+ @param {Iterable} iterator the iterator
+ */
+export function fromIterator<T>(iterator: Iterator<T>): AsyncIterator<T> {
+  return new IteratorIterator<T>(iterator);
+}
+
+/**
+ * Creates an iterator for the given iterator-like object
+ * (AsyncIterator, stream.Readable, ...).
+ * @param {IteratorLike} iterator
+ */
+export function fromIteratorLike<T>(iterator: IteratorLike<T>): AsyncIterator<T> {
+  return new WrappingIterator(iterator);
 }
 
 /**
