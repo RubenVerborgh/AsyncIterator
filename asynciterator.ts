@@ -1260,25 +1260,52 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
 }
 
 export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
-  protected readonly _source: AsyncIterator<S>;
+  protected _source: AsyncIterator<S>;
 
   constructor(source: AsyncIterator<S>) {
     /* eslint-disable no-use-before-define */
     super();
     this._source = source;
     const cleanup = () => {
-      source.removeListener('end', onEnd);
-      source.removeListener('readable', onReadable);
+      source.removeListener('end', onSourceEnd);
+      source.removeListener('error', onSourceError);
+      source.removeListener('readable', onSourceReadable);
+      taskScheduler(() => {
+        // Delayed as there might be pending tasks using the source at the
+        // time that cleanup() is called.
+        delete this._source;
+      });
     };
-    const onEnd = () => {
+    const onSourceEnd = () => {
       cleanup();
       this.close();
     };
-    const onReadable = () => {
-      this.readable = true;
+    const onSourceError = (err: Error) => {
+      scheduleTask(() => {
+        this.emit('error', err);
+      });
     };
-    source.on('end', onEnd);
-    source.on('readable', onReadable);
+    const onSourceReadable = () => {
+      if (this.readable) {
+        // TODO: I'm not completely sure as to why this is needed but without
+        //       the following line, some use cases relying on flow mode (i.e.
+        //       consuming items via `on('data', (data) => {})`) do not work.
+        //       It looks like the debouncing that happens in `set readable()`
+        //       in `AsyncIterator` prevents the event from firing as `this`
+        //       is already readable.
+        scheduleTask(() => {
+          this.emit('readable');
+        });
+      }
+      else {
+        this.readable = true;
+      }
+    };
+    source.on('end', onSourceEnd);
+    source.on('error', onSourceError);
+    source.on('readable', onSourceReadable);
+    if (source.readable)
+      onSourceReadable();
   }
 
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
