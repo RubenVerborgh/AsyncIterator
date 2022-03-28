@@ -1281,9 +1281,7 @@ export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
       this.close();
     };
     const onSourceError = (err: Error) => {
-      scheduleTask(() => {
-        this.emit('error', err);
-      });
+      this.emit('error', err);
     };
     const onSourceReadable = () => {
       if (this.readable) {
@@ -1293,9 +1291,7 @@ export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
         //       It looks like the debouncing that happens in `set readable()`
         //       in `AsyncIterator` prevents the event from firing as `this`
         //       is already readable.
-        scheduleTask(() => {
-          this.emit('readable');
-        });
+        this.emit('readable');
       }
       else {
         this.readable = true;
