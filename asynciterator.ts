@@ -2121,11 +2121,11 @@ class HistoryReader<T> {
   }
 }
 
-export type IteratorLike<T> = EventEmitter & {
+export type AsyncIteratorLike<T> = EventEmitter & {
   on: (event: string | symbol, listener: (...args: any[]) => void) => AsyncIterator<T>; read: () => T | null };
 
 /* eslint-disable arrow-body-style */
-export const isIteratorLike = <T>(item: { [key: string]: any }): item is IteratorLike<T> => {
+export const isAsyncIteratorLike = <T>(item: { [key: string]: any }): item is AsyncIteratorLike<T> => {
   return isFunction(item.on) && isFunction(item.read);
 };
 
@@ -2138,7 +2138,7 @@ export const isIterable = <T>(item: { [key: string]: any }): item is Iterable<T>
 };
 
 export class WrappingIterator<T> extends AsyncIterator<T> {
-  protected _source?: IteratorLike<T>;
+  protected _source?: AsyncIteratorLike<T>;
 
   constructor(sourceOrPromise: WrapSource<T> | Promise<WrapSource<T>>, options: WrapOptions = {}) {
     super();
@@ -2158,7 +2158,7 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 
   protected static _wrapSource<T>(source: WrapSource<T>, iterator: WrappingIterator<T>, options: WrapOptions = {}) {
     try {
-      iterator._source = (isIteratorLike<T>(source) ? source : _wrap<T>(source, options))
+      iterator._source = (isAsyncIteratorLike<T>(source) ? source : _wrap<T>(source, options))
         .on('end', () => {
           iterator.close();
         })
@@ -2213,8 +2213,8 @@ const _wrap = <T>(source: WrapSource<T>, options: WrapOptions = {}): AsyncIterat
   }
   if (Array.isArray(source))
     return fromArray<T>(source);
-  if (isIteratorLike<T>(source))
-    return fromIteratorLike<T>(source);
+  if (isAsyncIteratorLike<T>(source))
+    return fromAsyncIteratorLike<T>(source);
   if (!options.prioritizeIterable) {
     if (isIterator<T>(source))
       return fromIterator<T>(source);
@@ -2301,9 +2301,9 @@ export function fromIterator<T>(iterator: Iterator<T>): AsyncIterator<T> {
 /**
  * Creates an iterator for the given iterator-like object
  * (AsyncIterator, stream.Readable, ...).
- * @param {IteratorLike} iterator
+ * @param {AsyncIteratorLike} iterator
  */
-export function fromIteratorLike<T>(iterator: IteratorLike<T>): AsyncIterator<T> {
+export function fromAsyncIteratorLike<T>(iterator: AsyncIteratorLike<T>): AsyncIterator<T> {
   return new WrappingIterator(iterator);
 }
 
