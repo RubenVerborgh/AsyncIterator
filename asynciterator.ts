@@ -793,6 +793,11 @@ export class IntegerIterator extends AsyncIterator<number> {
   @extends module:asynciterator.AsyncIterator
 */
 export class BufferedIterator<T> extends AsyncIterator<T> {
+  static ensureInit(iterator: BufferedIterator<any>) {
+    if (iterator._state === INIT)
+      iterator._init(true);
+  }
+
   private _buffer: LinkedList<T> = new LinkedList<T>();
   private _maxBufferSize = 4;
   protected _reading = true;
@@ -1302,6 +1307,8 @@ export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
     source.on('readable', onSourceReadable);
     if (source.readable)
       onSourceReadable();
+    else if (source instanceof BufferedIterator)
+      BufferedIterator.ensureInit(source);
   }
 
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
@@ -2253,14 +2260,51 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 
   protected static _wrapSource<T>(source: WrapSource<T>, iterator: WrappingIterator<T>, options: WrapOptions = {}) {
     try {
-      iterator._source = (isAsyncIteratorLike<T>(source) ? source : _wrap<T>(source, options))
-        .on('end', () => {
-          iterator.close();
-        })
-        .on('readable', () => {
-          iterator.readable = true;
+      const wrappedSource = isAsyncIteratorLike<T>(source) ? source : _wrap<T>(source, options);
+
+      const cleanup = () => {
+        wrappedSource.removeListener('end', onSourceEnd);
+        wrappedSource.removeListener('error', onSourceError);
+        wrappedSource.removeListener('readable', onSourceReadable);
+        scheduleTask(() => {
+          delete iterator._source;
         });
-      iterator.readable = true;
+      };
+
+      const onSourceReadable = () => {
+        if (iterator.readable) {
+          // TODO: I'm not completely sure as to why this is needed but without
+          //       the following line, some use cases relying on flow mode (i.e.
+          //       consuming items via `on('data', (data) => {})`) do not work.
+          //       It looks like the debouncing that happens in `set readable()`
+          //       in `AsyncIterator` prevents the event from firing as `this`
+          //       is already readable.
+          iterator.emit('readable');
+        }
+        else {
+          iterator.readable = true;
+        }
+      };
+
+      const onSourceEnd = () => {
+        iterator.close();
+        cleanup();
+      };
+
+      const onSourceError = (err: Error) => {
+        iterator.emit('error', err);
+      };
+
+      wrappedSource.on('end', onSourceEnd);
+      wrappedSource.on('error', onSourceError);
+      wrappedSource.on('readable', onSourceReadable);
+
+      iterator._source = wrappedSource;
+
+      if (wrappedSource instanceof AsyncIterator && wrappedSource.readable)
+        onSourceReadable();
+      else if (wrappedSource instanceof BufferedIterator)
+        BufferedIterator.ensureInit(wrappedSource);
     }
     catch (err) {
       scheduleTask(() => iterator.emit('error', err));
