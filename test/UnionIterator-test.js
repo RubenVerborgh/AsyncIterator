@@ -4,6 +4,7 @@ import {
   ArrayIterator,
   BufferedIterator,
   EmptyIterator,
+  SyncUnionIterator,
   union,
   range,
   scheduleTask,
@@ -35,7 +36,7 @@ describe('UnionIterator', () => {
       before(() => { instance = union(); });
 
       it('should be an UnionIterator object', () => {
-        instance.should.be.an.instanceof(UnionIterator);
+        instance.should.be.an.instanceof(SyncUnionIterator);
       });
 
       it('should be an AsyncIterator object', () => {
