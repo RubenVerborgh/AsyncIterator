@@ -2453,7 +2453,7 @@ export function fromAsyncIteratorLike<T>(iterator: AsyncIteratorLike<T>): AsyncI
 export function union<T>(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
                                   AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
                                   AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>) {
-  return new SyncUnionIterator<T>(sources);
+  return new UnionIterator<T>(sources);
 }
 
 /**
