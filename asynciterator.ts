@@ -460,6 +460,14 @@ export class AsyncIterator<T> extends EventEmitter {
   }
 
   /**
+    Possibly maps items, return null if no item should be emitted.
+    @param {Function} maybeMap The function to multiMap items with
+  */
+  maybeMap<D>(map: (item: T) => D | null, self?: any): AsyncIterator<D> {
+    return new MaybeMappingIterator(this, self ? map.bind(self) : map);
+  }
+
+  /**
     MultiMaps items according to a synchronous generator (hence no need for buffering)
     @param {Function} multiMap The function to multiMap items with
   */
@@ -1264,8 +1272,12 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
     (this._destination as any)._fillBuffer();
 }
 
-export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
+export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
   protected _source: AsyncIterator<S>;
+
+  get fastInfo(): Transform | false {
+    return false;
+  }
 
   constructor(source: AsyncIterator<S>) {
     /* eslint-disable no-use-before-define */
@@ -1315,6 +1327,40 @@ export class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
     super._destroy(cause, callback);
     this._source.destroy(cause);
   }
+
+  map<T>(map: (item: D) => T, self?: any): AsyncIterator<T> {
+    const next = this.fastInfo;
+    if (!next)
+      return super.map(map, self);
+    return new MultiMapFilterTransformIterator(this._source, {
+      filter: false,
+      function: self ? map.bind(self) : map,
+      next,
+    });
+  }
+
+  filter(filter: (item: D) => boolean, self?: any): AsyncIterator<D> {
+    const next = this.fastInfo;
+    if (!next)
+      return super.filter(filter, self);
+    return new MultiMapFilterTransformIterator(this._source, {
+      filter: true,
+      function: self ? filter.bind(self) : filter,
+      next,
+    });
+  }
+
+  maybeMap<T>(map: (item: D) => T | null, self?: any): AsyncIterator<T> {
+    const next = this.fastInfo;
+    if (!next)
+      return super.maybeMap(map, self);
+    return new MultiMapFilterTransformIterator(this._source, {
+      filter: false,
+      nullable: true,
+      function: self ? map.bind(self) : map,
+      next,
+    });
+  }
 }
 
 export class MultiMappingIterator<S, D = S> extends SynchronousTransformIterator<S, D> {
@@ -1343,6 +1389,32 @@ export class MultiMappingIterator<S, D = S> extends SynchronousTransformIterator
   }
 }
 
+export class MaybeMappingIterator<S, D = S> extends SynchronousTransformIterator<S, D> {
+  protected readonly _map: (item: S) => D | null;
+
+  constructor(source: AsyncIterator<S>, map: (item: S) => D | null) {
+    super(source);
+    this._map = map;
+  }
+
+  get fastInfo(): Transform {
+    return {
+      filter: false,
+      nullable: true,
+      function: this._map,
+    };
+  }
+
+  read(): D | null {
+    let item;
+    while ((item = this._source.read()) !== null) {
+      if ((item = this._map(item)) !== null)
+        return item;
+    }
+    return null;
+  }
+}
+
 export class MappingIterator<S, D = S> extends SynchronousTransformIterator<S, D> {
   protected readonly _map: (item: S) => D;
 
@@ -1351,33 +1423,18 @@ export class MappingIterator<S, D = S> extends SynchronousTransformIterator<S, D
     this._map = map;
   }
 
+  getInfo(): Transform {
+    return {
+      filter: false,
+      function: this._map,
+    };
+  }
+
   read(): D | null {
     const item = this._source.read();
     if (item !== null)
       return this._map(item);
     return null;
-  }
-
-  map<T>(map: (item: D) => T, self?: any): AsyncIterator<T> {
-    return new MultiMapFilterTransformIterator(this._source, {
-      filter: false,
-      function: self ? map.bind(self) : map,
-      next: {
-        filter: false,
-        function: this._map,
-      },
-    });
-  }
-
-  filter(filter: (item: D) => boolean, self?: any): AsyncIterator<D> {
-    return new MultiMapFilterTransformIterator(this._source, {
-      filter: true,
-      function: self ? filter.bind(self) : filter,
-      next: {
-        filter: false,
-        function: this._map,
-      },
-    });
   }
 }
 
@@ -1389,6 +1446,13 @@ export class FilteringIterator<T> extends SynchronousTransformIterator<T> {
     this._filter = filter;
   }
 
+  getInfo(): Transform {
+    return {
+      filter: true,
+      function: this._filter,
+    };
+  }
+
   read(): T | null {
     let item;
     while ((item = this._source.read()) !== null) {
@@ -1396,28 +1460,6 @@ export class FilteringIterator<T> extends SynchronousTransformIterator<T> {
         return item;
     }
     return null;
-  }
-
-  map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    return new MultiMapFilterTransformIterator(this._source, {
-      filter: false,
-      function: self ? map.bind(self) : map,
-      next: {
-        filter: true,
-        function: this._filter,
-      },
-    });
-  }
-
-  filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    return new MultiMapFilterTransformIterator(this._source, {
-      filter: true,
-      function: self ? filter.bind(self) : filter,
-      next: {
-        filter: true,
-        function: this._filter,
-      },
-    });
   }
 }
 
@@ -1469,6 +1511,7 @@ export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
 
 interface Transform {
   filter: boolean,
+  nullable?: true,
   function: Function,
   next?: Transform
 }
@@ -1491,12 +1534,16 @@ export class MultiMapFilterTransformIterator<S, D = S> extends SynchronousTransf
         func as any;
 
       while ((_transforms = _transforms!.next) !== undefined) {
-        const { filter: _filter, function: _func } = _transforms;
+        const { filter: _filter, function: _func, nullable: _nullable } = _transforms;
         const t = this._transformation!;
 
+        // eslint-disable-next-line no-nested-ternary
         this._transformation = _filter ?
-          (item: any) => _func(item) ? t(item) : null :
-          (item: any) => t(_func(item));
+          (item: any) => _func(item) ? t(item) : null : (
+            _nullable === true ?
+              (item: any) => ((item = _func(item)) === null ? null : t(item)) :
+              (item: any) => t(_func(item))
+          );
       }
     }
     return this._transformation!(_item);
@@ -1523,6 +1570,15 @@ export class MultiMapFilterTransformIterator<S, D = S> extends SynchronousTransf
     return new MultiMapFilterTransformIterator(this._source, {
       filter: true,
       function: self ? filter.bind(self) : filter,
+      next: this.transforms,
+    });
+  }
+
+  maybeMap<T>(map: (item: D) => T | null, self?: any): AsyncIterator<T> {
+    return new MultiMapFilterTransformIterator(this._source, {
+      filter: false,
+      nullable: true,
+      function: self ? map.bind(self) : map,
       next: this.transforms,
     });
   }

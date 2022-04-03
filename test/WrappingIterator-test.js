@@ -1,4 +1,4 @@
-import { AsyncIterator, ArrayIterator, WrappingIterator } from '../dist/asynciterator.js';
+import { AsyncIterator, ArrayIterator, WrappingIterator, wrap, fromArray } from '../dist/asynciterator.js';
 import { EventEmitter } from 'events';
 
 describe('WrappingIterator', () => {
@@ -84,6 +84,27 @@ describe('WrappingIterator', () => {
         .on('end', () => {
           done();
         });
+    });
+  });
+  describe('source with read, on and iterable methods', () => {
+    let obj;
+
+    beforeEach(() => {
+      obj = fromArray([1]);
+      obj[Symbol.iterator] = function * () {
+        yield 'x';
+        yield 'y';
+      };
+    });
+
+    it('should prioritize the read method', async () => {
+      (await wrap(obj).toArray()).should.deep.equal([1]);
+    });
+    it('should use the iterator when correctly set-up', async () => {
+      (await wrap(obj, { prioritizeIterable: true }).toArray()).should.deep.equal(['x', 'y']);
+    });
+    it('wrapping should produce a new object', async () => {
+      wrap(obj).should.not.equal(obj);
     });
   });
 });
