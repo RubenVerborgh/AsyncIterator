@@ -49,21 +49,13 @@ describe('MappingIterator', () => {
   });
 
   describe('A MappingIterator with a source that emits 0 items', () => {
-    let iterator, source;
-    before(() => {
-      source = new ArrayIterator([]);
-      iterator = new MappingIterator(source, item => item);
-    });
-
-    describe('when reading items', () => {
+    it('should not return any items', done => {
       const items = [];
-      before(done => {
-        iterator.on('data', item => { items.push(item); });
-        iterator.on('end', done);
-      });
-
-      it('should not return any items', () => {
+      const iterator = new MappingIterator(new ArrayIterator([]), item => item);
+      iterator.on('data', item => { items.push(item); });
+      iterator.on('end', () => {
         items.should.deep.equal([]);
+        done();
       });
     });
   });
