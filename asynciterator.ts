@@ -1321,6 +1321,8 @@ export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterat
     source.on('readable', onSourceReadable);
     if (source.readable)
       onSourceReadable();
+    else if (source.closed)
+      setTaskScheduler(() => this.close());
   }
 
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
