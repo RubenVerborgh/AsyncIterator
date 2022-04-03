@@ -1325,6 +1325,15 @@ describe('AsyncIterator', () => {
       (await iterator.map(x => x * 2).toArray()).should.deep.equal([0, 2, 4]);
     });
     it('Should apply maps that doubles correctly', async () => {
+      (await iterator.map(x => x * 2).maybeMap(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 12]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
+      (await iterator.maybeMap(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 3]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
+      (await iterator.maybeMap(x => x === 2 ? null : x * 3).maybeMap(x => x === 0 ? null : x * 3).toArray()).should.deep.equal([9]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
       (await iterator.map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
     });
     it('Should apply filter correctly', async () => {
