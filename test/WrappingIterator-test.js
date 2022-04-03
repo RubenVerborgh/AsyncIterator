@@ -107,4 +107,39 @@ describe('WrappingIterator', () => {
       wrap(obj).should.not.equal(obj);
     });
   });
+  describe('source that emits an error', () => {
+    it('relay the error', done => {
+      const err = new Error('some error');
+      const source = new ArrayIterator([0, 1, 2, 3]);
+      const iterator = new WrappingIterator(source);
+      iterator.on('error', iteratorErr => {
+        expect(iteratorErr).to.equal(err);
+        done();
+      });
+      source.emit('error', err);
+    });
+  });
+  describe('promise of a source that rejects', () => {
+    it('emit the error', done => {
+      const err = new Error('some error');
+      const iterator = new WrappingIterator(Promise.reject(err));
+      iterator.on('error', iteratorErr => {
+        expect(iteratorErr).to.equal(err);
+        done();
+      });
+    });
+  });
+  describe('promise of a source', () => {
+    it('read null until the promise resolves', done => {
+      const promise = new Promise(resolve => {
+        setTimeout(() => {
+          resolve(new ArrayIterator([0, 1, 2, 3]));
+        }, 10);
+      });
+      const iterator = new WrappingIterator(promise);
+      expect(iterator.readable).to.equal(false);
+      expect(iterator.read()).to.equal(null);
+      done();
+    });
+  });
 });
