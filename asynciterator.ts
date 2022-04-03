@@ -1274,15 +1274,17 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
 
 export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
   protected _source: AsyncIterator<S>;
+  protected _sourceStarted: boolean;
 
   get fastInfo(): Transform | false {
     return false;
   }
 
-  constructor(source: AsyncIterator<S>) {
+  protected constructor(source: AsyncIterator<S>) {
     /* eslint-disable no-use-before-define */
     super();
     this._source = source;
+    this._sourceStarted = false;
     const cleanup = () => {
       source.removeListener('end', onSourceEnd);
       source.removeListener('error', onSourceError);
@@ -1319,13 +1321,20 @@ export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterat
     source.on('readable', onSourceReadable);
     if (source.readable)
       onSourceReadable();
-    else if (source instanceof BufferedIterator)
-      BufferedIterator.ensureInit(source);
   }
 
   protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
     super._destroy(cause, callback);
     this._source.destroy(cause);
+  }
+
+  protected _readSource(): S | null {
+    if (!this._sourceStarted) {
+      this._sourceStarted = true;
+      if (this._source instanceof BufferedIterator)
+        BufferedIterator.ensureInit(this._source);
+    }
+    return this._source.read();
   }
 
   map<T>(map: (item: D) => T, self?: any): AsyncIterator<T> {
@@ -1378,7 +1387,7 @@ export class MultiMappingIterator<S, D = S> extends SynchronousTransformIterator
     // eslint-disable-next-line no-constant-condition
     while (true) {
       if (!this.generator) {
-        if ((_item = this._source.read()) === null)
+        if ((_item = this._readSource()) === null)
           return null;
         this.generator = this._map(_item);
       }
@@ -1407,7 +1416,7 @@ export class MaybeMappingIterator<S, D = S> extends SynchronousTransformIterator
 
   read(): D | null {
     let item;
-    while ((item = this._source.read()) !== null) {
+    while ((item = this._readSource()) !== null) {
       if ((item = this._map(item)) !== null)
         return item;
     }
@@ -1431,7 +1440,7 @@ export class MappingIterator<S, D = S> extends SynchronousTransformIterator<S, D
   }
 
   read(): D | null {
-    const item = this._source.read();
+    const item = this._readSource();
     if (item !== null)
       return this._map(item);
     return null;
@@ -1455,7 +1464,7 @@ export class FilteringIterator<T> extends SynchronousTransformIterator<T> {
 
   read(): T | null {
     let item;
-    while ((item = this._source.read()) !== null) {
+    while ((item = this._readSource()) !== null) {
       if (this._filter(item))
         return item;
     }
@@ -1475,7 +1484,7 @@ export class SkippingIterator<T> extends SynchronousTransformIterator<T> {
 
   read(): T | null {
     let item;
-    while ((item = this._source.read()) !== null) {
+    while ((item = this._readSource()) !== null) {
       if (this._skipped < this._skip)
         this._skipped += 1;
       else
@@ -1496,7 +1505,7 @@ export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
   }
 
   read(): T | null {
-    const item = this._source.read();
+    const item = this._readSource();
     if (item !== null) {
       if (this._count < this._limit) {
         this._count += 1;
@@ -1551,7 +1560,7 @@ export class MultiMapFilterTransformIterator<S, D = S> extends SynchronousTransf
 
   read(): D | null {
     let item;
-    while ((item = this._source.read()) !== null) {
+    while ((item = this._readSource()) !== null) {
       if ((item = this.transformation(item)) !== null)
         return item;
     }
@@ -2202,9 +2211,11 @@ export const isIterable = <T>(item: { [key: string]: any }): item is Iterable<T>
 
 export class WrappingIterator<T> extends AsyncIterator<T> {
   protected _source?: AsyncIteratorLike<T>;
+  protected _sourceStarted: boolean;
 
   constructor(sourceOrPromise: WrapSource<T> | Promise<WrapSource<T>>, options: WrapOptions = {}) {
     super();
+    this._sourceStarted = false;
     if (isPromise(sourceOrPromise)) {
       sourceOrPromise
         .then(source => {
@@ -2264,8 +2275,6 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 
       if (wrappedSource instanceof AsyncIterator && wrappedSource.readable)
         onSourceReadable();
-      else if (wrappedSource instanceof BufferedIterator)
-        BufferedIterator.ensureInit(wrappedSource);
     }
     catch (err) {
       scheduleTask(() => iterator.emit('error', err));
@@ -2273,8 +2282,11 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 
   read(): T | null {
-    if (this._source)
+    if (this._source) {
+      if (!this._sourceStarted && this._source instanceof BufferedIterator)
+        BufferedIterator.ensureInit(this._source);
       return this._source.read();
+    }
     return null;
   }
 }
