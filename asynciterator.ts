@@ -527,7 +527,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit: number): AsyncIterator<T> {
-    return new LimitingIterator(this, limit);
+    return new HeadIterator(this, limit);
   }
 
   /**
@@ -1376,7 +1376,7 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
   }
 }
 
-export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
+export class HeadIterator<T> extends SynchronousTransformIterator<T> {
   protected count: number = 0;
 
   constructor(source: AsyncIterator<T>, protected readonly limit: number) {

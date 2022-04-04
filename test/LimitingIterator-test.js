@@ -1,7 +1,7 @@
 import {
   AsyncIterator,
   ArrayIterator,
-  LimitingIterator,
+  HeadIterator,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -11,11 +11,11 @@ describe('LimitingIterator', () => {
     describe('the result when called with `new`', () => {
       let instance;
       before(() => {
-        instance = new LimitingIterator(new ArrayIterator([]), 10);
+        instance = new HeadIterator(new ArrayIterator([]), 10);
       });
 
       it('should be a LimitingIterator object', () => {
-        instance.should.be.an.instanceof(LimitingIterator);
+        instance.should.be.an.instanceof(HeadIterator);
       });
 
       it('should be an AsyncIterator object', () => {
@@ -32,7 +32,7 @@ describe('LimitingIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
-      iterator = new LimitingIterator(source, 4);
+      iterator = new HeadIterator(source, 4);
     });
 
     describe('when reading items', () => {
@@ -51,7 +51,7 @@ describe('LimitingIterator', () => {
   describe('A LimitingIterator with a source that emits 0 items', () => {
     it('should not return any items', done => {
       const items = [];
-      const iterator = new LimitingIterator(new ArrayIterator([]), 10);
+      const iterator = new HeadIterator(new ArrayIterator([]), 10);
       iterator.on('data', item => { items.push(item); });
       iterator.on('end', () => {
         items.should.deep.equal([]);
@@ -63,7 +63,7 @@ describe('LimitingIterator', () => {
   describe('A LimitingIterator with a limit of 0 items', () => {
     it('should not emit any items', done => {
       const items = [];
-      const iterator = new LimitingIterator(new ArrayIterator([0, 1, 2]), 0);
+      const iterator = new HeadIterator(new ArrayIterator([0, 1, 2]), 0);
       iterator.on('data', item => { items.push(item); });
       iterator.on('end', () => {
         items.should.deep.equal([]);
@@ -75,7 +75,7 @@ describe('LimitingIterator', () => {
   describe('A LimitingIterator with a limit of Infinity items', () => {
     it('should emit all items', done => {
       const items = [];
-      const iterator = new LimitingIterator(new ArrayIterator([0, 1, 2, 3, 4, 5, 6]), Infinity);
+      const iterator = new HeadIterator(new ArrayIterator([0, 1, 2, 3, 4, 5, 6]), Infinity);
       iterator.on('data', item => { items.push(item); });
       iterator.on('end', () => {
         items.should.deep.equal([0, 1, 2, 3, 4, 5, 6]);
