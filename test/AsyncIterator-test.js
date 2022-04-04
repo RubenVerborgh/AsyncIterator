@@ -1311,6 +1311,7 @@ describe('AsyncIterator', () => {
       });
     });
   });
+  
   describe('A chain of maps and filters', () => {
     for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
       // eslint-disable-next-line no-loop-func
