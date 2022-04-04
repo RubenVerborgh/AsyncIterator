@@ -448,6 +448,10 @@ export class AsyncIterator<T> extends EventEmitter {
     return new SimpleTransformIterator<T, D>(this, options);
   }
 
+  syncTransform<D>(fn: (item: T) => D | null) {
+    return new SyncTransformIterator<T, D>(this, { fn }) as any;
+  }
+
   /**
     Maps items from this iterator using the given function.
     After this operation, only read the returned iterator instead of the current one.
@@ -456,7 +460,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    return this.transform({ map: self ? map.bind(self) : map });
+    return this.syncTransform(self ? map.bind(self) : map);
   }
 
   /**
@@ -469,7 +473,8 @@ export class AsyncIterator<T> extends EventEmitter {
   filter<K extends T>(filter: (item: T) => item is K, self?: any): AsyncIterator<K>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    return this.transform({ filter: self ? filter.bind(self) : filter });
+    if (self) filter = filter.bind(self);
+    return this.syncTransform(item => filter(item) ? item : null);
   }
 
   /**
@@ -510,7 +515,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset: number): AsyncIterator<T> {
-    return this.transform({ offset });
+    return this.syncTransform(item => offset-- > 0 ? null : item);
   }
 
   /**
@@ -520,7 +525,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit: number): AsyncIterator<T> {
-    return this.transform({ limit });
+    return new LimitingIterator(this, limit);
   }
 
   /**
@@ -531,7 +536,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with items in the given range
   */
   range(start: number, end: number): AsyncIterator<T> {
-    return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
+    return this.skip(start).take(Math.max(end - start + 1, 0));
   }
 
   /**
@@ -1251,6 +1256,116 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
     (this._destination as any)._fillBuffer();
 }
 
+
+export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
+  protected constructor(protected _source: AsyncIterator<S>, private options: { destroySource?: boolean } = {}) {
+    /* eslint-disable no-use-before-define */
+    super();
+    const cleanup = () => {
+      _source.removeListener('end', onSourceEnd);
+      _source.removeListener('error', onSourceError);
+      _source.removeListener('readable', onSourceReadable);
+    };
+    const onSourceEnd = () => {
+      cleanup();
+      this.close();
+    };
+    const onSourceError = (err: Error) => {
+      this.emit('error', err);
+    };
+    const onSourceReadable = () => {
+      if (this.readable) {
+        // TODO: I'm not completely sure as to why this is needed but without
+        //       the following line, some use cases relying on flow mode (i.e.
+        //       consuming items via `on('data', (data) => {})`) do not work.
+        //       It looks like the debouncing that happens in `set readable()`
+        //       in `AsyncIterator` prevents the event from firing as `this`
+        //       is already readable.
+        this.emit('readable');
+      }
+      else {
+        this.readable = true;
+      }
+    };
+    _source.on('end', onSourceEnd);
+    _source.on('error', onSourceError);
+    _source.on('readable', onSourceReadable);
+    if (_source.done)
+      onSourceEnd();
+    else if (_source.readable)
+      onSourceReadable();
+  }
+
+  protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
+    super._destroy(cause, callback);
+  }
+
+  public close() {
+    if (this.options.destroySource)
+      this._source.destroy();
+    super.close();
+  }
+}
+
+interface Transform {
+  fn: Function,
+  next?: Transform
+}
+
+export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
+
+  private _funcs?: Function[];
+
+  constructor(private source: AsyncIterator<T>, private transforms: Transform, upstream: AsyncIterator<any> = source) {
+    // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
+    // listeners to the original source
+    super(upstream);
+  }
+
+  get funcs() {
+    if (!this._funcs) {
+      this._funcs = [];
+      let transforms: Transform | undefined = this.transforms;
+      do {
+        this._funcs.push(transforms.fn);
+      } while (transforms = transforms.next)
+    }
+    return this._funcs;
+  }
+
+  read(): D | null {
+    const { source, funcs } = this;
+    let item;
+    outer: while ((item = source.read()) !== null) {
+      for (let index = funcs.length - 1; index >= 0; index -= 1)
+        if ((item = funcs[index](item)) === null) continue outer;
+      return item;
+    }
+    return null;
+  }
+
+  syncTransform<K>(fn: (item: D) => K | null): AsyncIterator<K> {
+    return new SyncTransformIterator<T, K>(this.source, { fn, next: this.transforms }, this);
+  }
+}
+
+export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
+  protected count: number = 0;
+
+  constructor(source: AsyncIterator<T>, protected readonly limit: number) {
+    super(source);
+  }
+
+  read(): T | null {
+    const item = this._source.read();
+    if (item !== null && this.count < this.limit) {
+        this.count += 1;
+        return item;
+    }
+    this.close();
+    return null;
+  }
+}
 
 /**
   An iterator that generates items based on a source iterator

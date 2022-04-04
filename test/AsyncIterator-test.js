@@ -5,6 +5,10 @@ import {
   ENDED,
   DESTROYED,
   scheduleTask,
+  range,
+  fromArray,
+  wrap,
+  ArrayIterator
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1304,6 +1308,170 @@ describe('AsyncIterator', () => {
 
       it('should return an array with five elements', () => {
         expect(result).deep.to.equal([1, 2, 3, 4, 5]);
+      });
+    });
+  });  
+  describe('Testing chains fo maps and filters', () => {
+    for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
+      describe(`Testing with ${iteratorGen()}`, () => {
+        let iterator;
+    beforeEach(() => {
+      iterator = iteratorGen();
+    });
+    it('Should handle no transforms arrayified', async () => {
+      (await iterator.toArray()).should.deep.equal([0, 1, 2]);
+    });
+    it('Should apply maps that doubles correctly', async () => {
+      (await iterator.map(x => x * 2).toArray()).should.deep.equal([0, 2, 4]);
+    });
+    it('Should apply maps that doubles correctly and then maybemaps', async () => {
+      (await iterator.map(x => x * 2).map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 12]);
+    });
+    it('Should apply maps that maybemaps correctly', async () => {
+      (await iterator.map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 3]);
+    });
+    it('Should apply maps that maybemaps twice', async () => {
+      (await iterator.map(x => x === 2 ? null : x * 3).map(x => x === 0 ? null : x * 3).toArray()).should.deep.equal([9]);
+    });
+    it('Should apply maps that converts to string', async () => {
+      (await iterator.map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply filter correctly', async () => {
+      (await iterator.filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
+    });
+    it('Should apply filter then map correctly', async () => {
+      (await iterator.filter(x => x % 2 === 0).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x2']);
+    });
+    it('Should apply map then filter correctly (1)', async () => {
+      (await iterator.map(x => x).filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
+    });
+    it('Should apply map then filter to false correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => true).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply map then filter to true correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
+    });
+    it('Should apply filter to false then map correctly', async () => {
+      (await iterator.filter(x => true).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
+    });
+    it('Should apply filter to true then map correctly', async () => {
+      (await iterator.filter(x => false).map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
+    });
+    it('Should apply filter one then double', async () => {
+      (await iterator.filter(x => x !== 1).map(x => x * 2).toArray()).should.deep.equal([0, 4]);
+    });
+    it('Should apply double then filter one', async () => {
+      (await iterator.map(x => x * 2).filter(x => x !== 1).toArray()).should.deep.equal([0, 2, 4]);
+    });
+    it('Should apply map then filter correctly', async () => {
+      (await iterator.map(x => `x${x}`).filter(x => (x[1] === '0')).toArray()).should.deep.equal(['x0']);
+    });
+    it('Should correctly apply 3 filters', async () => {
+      (await range(0, 5).filter(x => x !== 1).filter(x => x !== 2).filter(x => x !== 2).toArray()).should.deep.equal([0, 3, 4, 5]);
+    });
+    it('Should correctly apply 3 maps', async () => {
+      (await range(0, 1).map(x => x * 2).map(x => `z${x}`).map(x => `y${x}`).toArray()).should.deep.equal(['yz0', 'yz2']);
+    });
+    it('Should correctly apply a map, followed by a filter, followed by another map', async () => {
+      (await range(0, 1).map(x => x * 2).filter(x => x !== 2).map(x => `y${x}`).toArray()).should.deep.equal(['y0']);
+    });
+    it('Should correctly apply a filter-map-filter', async () => {
+      (await range(0, 2).filter(x => x !== 1).map(x => x * 3).filter(x => x !== 6).toArray()).should.deep.equal([0]);
+    });
+      })
+    }
+  });
+  describe('Skipping', () => {
+    describe('The SkippingIterator function', () => {
+      describe('the result when called with `new`', () => {
+        let instance;
+        before(() => {
+          instance = new ArrayIterator([]).skip(10);
+        });
+
+        it('should be an AsyncIterator object', () => {
+          instance.should.be.an.instanceof(AsyncIterator);
+        });
+  
+        it('should be an EventEmitter object', () => {
+          instance.should.be.an.instanceof(EventEmitter);
+        });
+      });
+    });
+  
+    describe('A SkippingIterator', () => {
+      let iterator, source;
+      before(() => {
+        source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
+        iterator = source.skip(4);
+      });
+  
+      describe('when reading items', () => {
+        const items = [];
+        before(done => {
+          iterator.on('data', item => { items.push(item); });
+          iterator.on('end', done);
+        });
+  
+        it('should return items skipping the specified amount', () => {
+          items.should.deep.equal([4, 5, 6]);
+        });
+      });
+    });
+
+    describe('A SkippingIterator', () => {
+      let iterator, source;
+      before(() => {
+        source = range(0, 6);
+        iterator = source.skip(4);
+      });
+  
+      describe('when reading items', () => {
+        const items = [];
+        before(done => {
+          iterator.on('data', item => { items.push(item); });
+          iterator.on('end', done);
+        });
+  
+        it('should return items skipping the specified amount', () => {
+          items.should.deep.equal([4, 5, 6]);
+        });
+      });
+    });
+  
+    describe('A SkippingIterator with a source that emits 0 items', () => {
+      it('should not return any items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([]).skip(10);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([]);
+          done();
+        });
+      });
+    });
+  
+    describe('A SkippingIterator with a limit of 0 items', () => {
+      it('should emit all items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]).skip(0);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([0, 1, 2, 3, 4, 5, 6]);
+          done();
+        });
+      });
+    });
+  
+    describe('A SkippingIterator with a limit of Infinity items', () => {
+      it('should skip all items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]).skip(Infinity);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([]);
+          done();
+        });
       });
     });
   });

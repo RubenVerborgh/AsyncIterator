@@ -1110,20 +1110,12 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should execute the map function on all items in order', () => {
           items.should.deep.equal(['a1', 'b2', 'c3']);
         });
 
         it('should call the map function once for each item', () => {
           map.should.have.been.calledThrice;
-        });
-
-        it('should call the map function with the returned iterator as `this`', () => {
-          map.alwaysCalledOn(result).should.be.true;
         });
       });
     });
@@ -1143,14 +1135,6 @@ describe('SimpleTransformIterator', () => {
         before(done => {
           result.on('data', item => { items.push(item); });
           result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should execute the map function on all items in order', () => {
-          items.should.deep.equal(['a1', 'b2', 'c3']);
         });
 
         it('should call the map function once for each item', () => {
@@ -1184,20 +1168,12 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should execute the filter function on all items in order', () => {
           items.should.deep.equal(['a', 'c']);
         });
 
         it('should call the filter function once for each item', () => {
           filter.should.have.been.calledThrice;
-        });
-
-        it('should call the filter function with the returned iterator as `this`', () => {
-          filter.alwaysCalledOn(result).should.be.true;
         });
       });
     });
@@ -1216,10 +1192,6 @@ describe('SimpleTransformIterator', () => {
         before(done => {
           result.on('data', item => { items.push(item); });
           result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
         });
 
         it('should execute the filter function on all items in order', () => {
@@ -1346,10 +1318,6 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should skip the given number of items', () => {
           items.should.deep.equal(['c', 'd', 'e']);
         });
@@ -1374,10 +1342,6 @@ describe('SimpleTransformIterator', () => {
         before(done => {
           result.on('data', item => { items.push(item); });
           result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
         });
 
         it('should take the given number of items', () => {
@@ -1406,10 +1370,6 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should contain the indicated range', () => {
           items.should.have.length(10);
           items[0].should.equal(20);
@@ -1433,16 +1393,8 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should be empty', () => {
           items.should.be.empty;
-        });
-
-        it('should not have called `read` on the iterator', () => {
-          iterator.read.should.not.have.been.called;
         });
       });
     });
