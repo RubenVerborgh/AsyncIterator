@@ -1312,15 +1312,15 @@ export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterat
   }
 }
 
-interface Transform {
+interface ComposedFunction {
   fn: Function,
-  next?: Transform
+  next?: ComposedFunction
 }
 
 export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
   private _fn?: Function;
 
-  constructor(private source: AsyncIterator<T>, private transforms: Transform, private upstream: AsyncIterator<any> = source, options?: { destroySource?: boolean }) {
+  constructor(private source: AsyncIterator<T>, private transforms: ComposedFunction, private upstream: AsyncIterator<any> = source, options?: { destroySource?: boolean }) {
     // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
     // listeners to the original source
     super(upstream, options);
@@ -1330,7 +1330,7 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
     if (!this._fn) {
       const funcs: Function[] = [];
       // eslint-disable-next-line prefer-destructuring
-      let transforms: Transform | undefined = this.transforms;
+      let transforms: ComposedFunction | undefined = this.transforms;
       do
         funcs.push(transforms.fn);
       // eslint-disable-next-line no-cond-assign
