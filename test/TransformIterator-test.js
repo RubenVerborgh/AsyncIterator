@@ -228,7 +228,7 @@ describe('TransformIterator', () => {
         iterator._eventCounts.end.should.equal(0);
       });
 
-      it('should not havef ended', () => {
+      it('should not have ended', () => {
         iterator.ended.should.be.false;
       });
 
