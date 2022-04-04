@@ -1311,10 +1311,10 @@ describe('AsyncIterator', () => {
       });
     });
   });
-  describe('Testing chains fo maps and filters', () => {
+  describe('A chain of maps and filters', () => {
     for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
       // eslint-disable-next-line no-loop-func
-      describe(`Testing with ${iteratorGen()}`, () => {
+      describe(`With ${iteratorGen()}`, () => {
         let iterator;
         beforeEach(() => {
           iterator = iteratorGen();
