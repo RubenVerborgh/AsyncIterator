@@ -451,7 +451,8 @@ export class AsyncIterator<T> extends EventEmitter {
   /**
     Maps items from this iterator using the given function.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Function} map A mapping function to call on this iterator's (remaining) items (null values are skipped)
+    @param {Function} map A mapping function to call on this iterator's (remaining) items.
+        A `null` value indicates that nothing should be returned for a particular item..
     @param {object?} self The `this` pointer for the mapping function
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
