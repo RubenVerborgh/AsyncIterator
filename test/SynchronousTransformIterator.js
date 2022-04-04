@@ -16,6 +16,7 @@ describe('SynchronousTransformIterator', () => {
   describe('The SynchronousTransformIterator function', () => {
     describe('the result when called with `new`', () => {
       let instance;
+
       before(() => {
         instance = new _SynchronousTransformIterator(new ArrayIterator([]));
       });
@@ -36,6 +37,7 @@ describe('SynchronousTransformIterator', () => {
 
   describe('A SynchronousTransformIterator', () => {
     let iterator, source;
+
     before(() => {
       source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
       iterator = new _SynchronousTransformIterator(source);
@@ -43,6 +45,7 @@ describe('SynchronousTransformIterator', () => {
 
     describe('when reading items', () => {
       const items = [];
+
       before(done => {
         iterator.on('data', item => { items.push(item); });
         iterator.on('end', done);
@@ -84,6 +87,7 @@ describe('SynchronousTransformIterator', () => {
 
   describe('A TransformIterator with destroySource set to its default', () => {
     let iterator, source;
+
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
       iterator = new _SynchronousTransformIterator(source);
@@ -104,6 +108,7 @@ describe('SynchronousTransformIterator', () => {
 
   describe('A TransformIterator with destroySource set to false', () => {
     let iterator, source;
+
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
       iterator = new _SynchronousTransformIterator(source, { destroySource: false });
@@ -124,6 +129,7 @@ describe('SynchronousTransformIterator', () => {
 
   describe('A TransformIterator with a source that errors', () => {
     let iterator, source, errorHandler;
+
     before(() => {
       source = new AsyncIterator();
       iterator = new _SynchronousTransformIterator(source);
@@ -151,6 +157,7 @@ describe('SynchronousTransformIterator', () => {
 
     describe('after a second error occurs', () => {
       let error2;
+
       before(() => {
         errorHandler.reset();
         source.emit('error', error2 = new Error('error2'));

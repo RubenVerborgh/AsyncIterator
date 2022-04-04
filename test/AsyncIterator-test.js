@@ -1314,7 +1314,6 @@ describe('AsyncIterator', () => {
 
   describe('A chain of maps and filters', () => {
     for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
-      
       // eslint-disable-next-line no-loop-func
       describe(`with ${iteratorGen()}`, () => {
         let iterator;
@@ -1322,103 +1321,103 @@ describe('AsyncIterator', () => {
         beforeEach(() => {
           iterator = iteratorGen();
         });
-        
+
         it('should handle no transforms arrayified', async () => {
           (await iterator.toArray()).should.deep.equal([0, 1, 2]);
         });
-        
+
         it('should apply maps that doubles correctly', async () => {
           (await iterator.map(x => x * 2).toArray()).should.deep.equal([0, 2, 4]);
         });
-        
+
         it('should apply maps that doubles correctly and then maybemaps', async () => {
           (await iterator.map(x => x * 2).map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 12]);
         });
-        
+
         it('should apply maps that maybemaps correctly', async () => {
           (await iterator.map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 3]);
         });
-        
+
         it('should apply maps that maybemaps twice', async () => {
           (await iterator.map(x => x === 2 ? null : x * 3).map(x => x === 0 ? null : x * 3).toArray()).should.deep.equal([9]);
         });
-        
+
         it('should apply maps that converts to string', async () => {
           (await iterator.map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        
+
         it('should apply filter correctly', async () => {
           (await iterator.filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
         });
-        
+
         it('should apply filter then map correctly', async () => {
           (await iterator.filter(x => x % 2 === 0).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x2']);
         });
-        
+
         it('should apply map then filter correctly (1)', async () => {
           (await iterator.map(x => x).filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
         });
-        
+
         it('should apply map then filter to false correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => true).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        
+
         it('should apply map then filter to true correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
         });
-        
+
         it('should apply filter to false then map correctly', async () => {
           (await iterator.filter(x => true).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        
+
         it('should apply filter to true then map correctly', async () => {
           (await iterator.filter(x => false).map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
         });
-        
+
         it('should apply filter one then double', async () => {
           (await iterator.filter(x => x !== 1).map(x => x * 2).toArray()).should.deep.equal([0, 4]);
         });
-        
+
         it('should apply double then filter one', async () => {
           (await iterator.map(x => x * 2).filter(x => x !== 1).toArray()).should.deep.equal([0, 2, 4]);
         });
-        
+
         it('should apply map then filter correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => (x[1] === '0')).toArray()).should.deep.equal(['x0']);
         });
-        
+
         it('should correctly apply 3 filters', async () => {
           (await range(0, 5).filter(x => x !== 1).filter(x => x !== 2).filter(x => x !== 2).toArray()).should.deep.equal([0, 3, 4, 5]);
         });
-        
+
         it('should correctly apply 3 maps', async () => {
           (await range(0, 1).map(x => x * 2).map(x => `z${x}`).map(x => `y${x}`).toArray()).should.deep.equal(['yz0', 'yz2']);
         });
-        
+
         it('should correctly apply a map, followed by a filter, followed by another map', async () => {
           (await range(0, 1).map(x => x * 2).filter(x => x !== 2).map(x => `y${x}`).toArray()).should.deep.equal(['y0']);
         });
-        
+
         it('should correctly apply a filter-map-filter', async () => {
           (await range(0, 2).filter(x => x !== 1).map(x => x * 3).filter(x => x !== 6).toArray()).should.deep.equal([0]);
         });
-        
+
         it('should destroy when closed before being read after map', () => {
           iterator.map(x => x).close();
           iterator.destroyed.should.be.true;
         });
-        
+
         it('should destroy when closed before being read after map then filter', () => {
           it = iterator.map(x => x);
           it.filter(x => true).close();
           iterator.destroyed.should.be.true;
           it.destroyed.should.be.true;
         });
-        
+
         describe('when called on an iterator with a `this` argument', () => {
           const self = {};
           let map, result;
-        
+
           before(() => {
             let i = 0;
             iterator = new ArrayIterator(['a', 'b', 'c']);
@@ -1428,7 +1427,7 @@ describe('AsyncIterator', () => {
 
           describe('the return value', () => {
             const items = [];
-        
+
             before(done => {
               result.on('data', item => { items.push(item); });
               result.on('end', done);
@@ -1443,11 +1442,11 @@ describe('AsyncIterator', () => {
             });
           });
         });
-        
+
         describe('when called on an iterator with a `this` argument with nested map', () => {
           const self = {};
           let map, result;
-        
+
           before(() => {
             let i = 0;
             iterator = new ArrayIterator(['a', 'b', 'c']);
@@ -1457,7 +1456,7 @@ describe('AsyncIterator', () => {
 
           describe('the return value', () => {
             const items = [];
-        
+
             before(done => {
               result.on('data', item => { items.push(item); });
               result.on('end', done);
@@ -1479,7 +1478,7 @@ describe('AsyncIterator', () => {
     describe('The SkippingIterator function', () => {
       describe('the result when called with `new`', () => {
         let instance;
-        
+
         before(() => {
           instance = new ArrayIterator([]).skip(10);
         });
@@ -1496,7 +1495,7 @@ describe('AsyncIterator', () => {
 
     describe('A SkippingIterator', () => {
       let iterator, source;
-      
+
       before(() => {
         source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
         iterator = source.skip(4);
@@ -1504,7 +1503,7 @@ describe('AsyncIterator', () => {
 
       describe('when reading items', () => {
         const items = [];
-      
+
         before(done => {
           iterator.on('data', item => { items.push(item); });
           iterator.on('end', done);
@@ -1518,7 +1517,7 @@ describe('AsyncIterator', () => {
 
     describe('A SkippingIterator', () => {
       let iterator, source;
-      
+
       before(() => {
         source = range(0, 6);
         iterator = source.skip(4);
@@ -1526,7 +1525,7 @@ describe('AsyncIterator', () => {
 
       describe('when reading items', () => {
         const items = [];
-      
+
         before(done => {
           iterator.on('data', item => { items.push(item); });
           iterator.on('end', done);
