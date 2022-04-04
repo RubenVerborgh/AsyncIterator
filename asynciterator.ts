@@ -1314,7 +1314,7 @@ interface Transform {
 }
 
 export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
-  private _funcs?: Function[];
+  private _fn?: Function;
 
   constructor(private source: AsyncIterator<T>, private transforms: Transform, private upstream: AsyncIterator<any> = source, options?: { destroySource?: boolean }) {
     // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
@@ -1322,30 +1322,36 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
     super(upstream, options);
   }
 
-  get funcs() {
-    if (!this._funcs) {
-      this._funcs = [];
+  get fn() {
+    if (!this._fn) {
+      const funcs: Function[] = [];
       // eslint-disable-next-line prefer-destructuring
       let transforms: Transform | undefined = this.transforms;
       do
-        this._funcs.push(transforms.fn);
+        funcs.push(transforms.fn);
       // eslint-disable-next-line no-cond-assign
       while (transforms = transforms.next);
+
+      const endIndex = funcs.length - 1;
+      this._fn = (item: any) => {
+        // Do not use a for-of loop here, it slows down transformations
+        // by approximately a factor of 2.
+        for (let index = endIndex; index >= 1; index -= 1) {
+          if ((item = funcs[index](item)) === null)
+            return null;
+        }
+        return funcs[0](item);
+      };
     }
-    return this._funcs;
+    return this._fn;
   }
 
   read(): D | null {
-    const { source, funcs } = this;
+    const { source, fn } = this;
     let item;
-    outer: while ((item = source.read()) !== null) {
-      // Do not use a for-of loop here, it slows down transformations
-      // by approximately a factor of 2.
-      for (let index = funcs.length - 1; index >= 0; index -= 1) {
-        if ((item = funcs[index](item)) === null)
-          continue outer;
-      }
-      return item;
+    while ((item = source.read()) !== null) {
+      if ((item = fn(item)) !== null)
+        return item;
     }
     return null;
   }
