@@ -25,6 +25,11 @@ export function setTaskScheduler(scheduler: TaskScheduler): void {
   taskScheduler = scheduler;
 }
 
+/** Binds a function to an object */
+function bind(fn: Function, self: any) {
+  return self ? fn.bind(self) : fn;
+}
+
 /**
   ID of the INIT state.
   An iterator is initializing if it is preparing main item generation.
@@ -161,7 +166,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {object?} self The `this` pointer for the callback
   */
   forEach(callback: (item: T) => void, self?: object) {
-    this.on('data', self ? callback.bind(self) : callback);
+    this.on('data', bind(callback, self));
   }
 
   /**
@@ -451,12 +456,14 @@ export class AsyncIterator<T> extends EventEmitter {
   /**
     Maps items from this iterator using the given function.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Function} map A mapping function to call on this iterator's (remaining) items
+    @param {Function} map A mapping function to call on this iterator's (remaining) items.
+        A `null` value indicates that nothing should be returned for a particular item..
     @param {object?} self The `this` pointer for the mapping function
+    @param {boolean?} close Close the iterator after an item is mapped to null
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
-  map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    return this.transform({ map: self ? map.bind(self) : map });
+  map<D>(map: (item: T, it: AsyncIterator<any>) => D | null, self?: any): AsyncIterator<D> {
+    return new MappingIterator<T, D>(this, [bind(map, self)]);
   }
 
   /**
@@ -469,7 +476,8 @@ export class AsyncIterator<T> extends EventEmitter {
   filter<K extends T>(filter: (item: T) => item is K, self?: any): AsyncIterator<K>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    return this.transform({ filter: self ? filter.bind(self) : filter });
+    filter = bind(filter, self);
+    return this.map(item => filter(item) ? item : null);
   }
 
   /**
@@ -510,7 +518,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset: number): AsyncIterator<T> {
-    return this.transform({ offset });
+    return this.map(item => offset-- > 0 ? null : item);
   }
 
   /**
@@ -520,7 +528,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with at most the given number of items
   */
   take(limit: number): AsyncIterator<T> {
-    return this.transform({ limit });
+    return this.map((item, it) => limit-- > 0 ? item : (it.close(), null));
   }
 
   /**
@@ -531,7 +539,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator with items in the given range
   */
   range(start: number, end: number): AsyncIterator<T> {
-    return this.transform({ offset: start, limit: Math.max(end - start + 1, 0) });
+    return this.skip(start).take(Math.max(end - start + 1, 0));
   }
 
   /**
@@ -1055,6 +1063,14 @@ export class BufferedIterator<T> extends AsyncIterator<T> {
   }
 }
 
+function _validateSource<S>(source?: AsyncIterator<S>, allowDestination = false) {
+  if (!source || !isFunction(source.read) || !isFunction(source.on))
+    throw new Error(`Invalid source: ${source}`);
+  if (!allowDestination && (source as any)._destination)
+    throw new Error('The source already has a destination');
+  return source as InternalSource<S>;
+}
+
 /**
   An iterator that generates items based on a source iterator.
   This class serves as a base class for other iterators.
@@ -1153,11 +1169,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   protected _validateSource(source?: AsyncIterator<S>, allowDestination = false) {
     if (this._source || typeof this._createSource !== 'undefined')
       throw new Error('The source cannot be changed after it has been set');
-    if (!source || !isFunction(source.read) || !isFunction(source.on))
-      throw new Error(`Invalid source: ${source}`);
-    if (!allowDestination && (source as any)._destination)
-      throw new Error('The source already has a destination');
-    return source as InternalSource<S>;
+    return _validateSource(source, allowDestination);
   }
 
   /**
@@ -1251,6 +1263,91 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
     (this._destination as any)._fillBuffer();
 }
 
+export class MappingIterator<T, D = T> extends AsyncIterator<D> {
+  private _destroySource: boolean;
+
+  get readable() {
+    return this.source.readable;
+  }
+
+  set readable(readable) {
+    this.source.readable = readable;
+  }
+
+  constructor(
+    protected source: AsyncIterator<T>,
+    private transforms: ((item: any, iterator: AsyncIterator<any>) => any)[],
+    private upstream: AsyncIterator<any> = source,
+    options: { destroySource?: boolean } = {}
+  ) {
+    // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
+    // listeners to the original source
+    super();
+    this._destroySource = options.destroySource !== false;
+    if (upstream.done) {
+      this.close();
+    }
+    else {
+      _validateSource(upstream);
+      // @ts-ignore
+      upstream._destination = this;
+      upstream.on('end', onSourceEnd);
+      upstream.on('error', onSourceError);
+      upstream.on('readable', onSourceReadable);
+    }
+  }
+
+  read(): D | null {
+    const { source, transforms } = this;
+    let item, i;
+    while ((item = source.read()) !== null) {
+      i = transforms.length;
+      // Applies each of the transforms in sequence, and terminates
+      // early if a transform returns null
+      //
+      // Do not use a for-of loop here, it slows down transformations
+      // by approximately a factor of 2.
+      while (i-- >= 1 && (item = transforms[i](item, this)) !== null)
+        ;
+      if (item !== null)
+        return item;
+    }
+    return null;
+  }
+
+  map<K>(map: (item: D, it: AsyncIterator<any>) => K | null, self?: any): AsyncIterator<K> {
+    return new MappingIterator<T, K>(this.source, [bind(map, self), ...this.transforms], this);
+  }
+
+  destroy(cause?: Error): void {
+    this.upstream.destroy(cause);
+    super.destroy(cause);
+  }
+
+  public close() {
+    this.upstream.removeListener('end', onSourceEnd);
+    this.upstream.removeListener('error', onSourceError);
+    this.upstream.removeListener('readable', onSourceReadable);
+    if (this._destroySource)
+      this.upstream.destroy();
+    scheduleTask(() => {
+      // @ts-ignore
+      delete this.upstream._destination;
+      delete this.source;
+    });
+    super.close();
+  }
+}
+
+function onSourceError<S>(this: InternalSource<S>, error: Error) {
+  this._destination.emit('error', error);
+}
+function onSourceEnd<S>(this: InternalSource<S>) {
+  this._destination.close();
+}
+function onSourceReadable<S>(this: InternalSource<S>) {
+  this._destination.emit('readable');
+}
 
 /**
   An iterator that generates items based on a source iterator
