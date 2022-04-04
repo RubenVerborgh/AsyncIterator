@@ -25,6 +25,11 @@ export function setTaskScheduler(scheduler: TaskScheduler): void {
   taskScheduler = scheduler;
 }
 
+/** Binds a function to an object */
+function bind(fn: Function, self: any) {
+  return self ? fn.bind(self) : fn;
+}
+
 /**
   ID of the INIT state.
   An iterator is initializing if it is preparing main item generation.
@@ -470,8 +475,7 @@ export class AsyncIterator<T> extends EventEmitter {
   filter<K extends T>(filter: (item: T) => item is K, self?: any): AsyncIterator<K>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    if (self)
-      filter = filter.bind(self);
+    filter = bind(filter, self);
     return this.map(item => filter(item) ? item : null);
   }
 
@@ -1357,7 +1361,7 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
   }
 
   map<K>(map: (item: D) => K | null, self?: any): AsyncIterator<K> {
-    return new SyncTransformIterator<T, K>(this.source, { fn: self ? map.bind(self) : map, next: this.transforms }, this);
+    return new SyncTransformIterator<T, K>(this.source, { fn: bind(map, self), next: this.transforms }, this);
   }
 
   destroy(cause?: Error): void {
