@@ -1314,76 +1314,76 @@ describe('AsyncIterator', () => {
   describe('A chain of maps and filters', () => {
     for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
       // eslint-disable-next-line no-loop-func
-      describe(`With ${iteratorGen()}`, () => {
+      describe(`with ${iteratorGen()}`, () => {
         let iterator;
         beforeEach(() => {
           iterator = iteratorGen();
         });
-        it('Should handle no transforms arrayified', async () => {
+        it('should handle no transforms arrayified', async () => {
           (await iterator.toArray()).should.deep.equal([0, 1, 2]);
         });
-        it('Should apply maps that doubles correctly', async () => {
+        it('should apply maps that doubles correctly', async () => {
           (await iterator.map(x => x * 2).toArray()).should.deep.equal([0, 2, 4]);
         });
-        it('Should apply maps that doubles correctly and then maybemaps', async () => {
+        it('should apply maps that doubles correctly and then maybemaps', async () => {
           (await iterator.map(x => x * 2).map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 12]);
         });
-        it('Should apply maps that maybemaps correctly', async () => {
+        it('should apply maps that maybemaps correctly', async () => {
           (await iterator.map(x => x === 2 ? null : x * 3).toArray()).should.deep.equal([0, 3]);
         });
-        it('Should apply maps that maybemaps twice', async () => {
+        it('should apply maps that maybemaps twice', async () => {
           (await iterator.map(x => x === 2 ? null : x * 3).map(x => x === 0 ? null : x * 3).toArray()).should.deep.equal([9]);
         });
-        it('Should apply maps that converts to string', async () => {
+        it('should apply maps that converts to string', async () => {
           (await iterator.map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        it('Should apply filter correctly', async () => {
+        it('should apply filter correctly', async () => {
           (await iterator.filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
         });
-        it('Should apply filter then map correctly', async () => {
+        it('should apply filter then map correctly', async () => {
           (await iterator.filter(x => x % 2 === 0).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x2']);
         });
-        it('Should apply map then filter correctly (1)', async () => {
+        it('should apply map then filter correctly (1)', async () => {
           (await iterator.map(x => x).filter(x => x % 2 === 0).toArray()).should.deep.equal([0, 2]);
         });
-        it('Should apply map then filter to false correctly', async () => {
+        it('should apply map then filter to false correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => true).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        it('Should apply map then filter to true correctly', async () => {
+        it('should apply map then filter to true correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
         });
-        it('Should apply filter to false then map correctly', async () => {
+        it('should apply filter to false then map correctly', async () => {
           (await iterator.filter(x => true).map(x => `x${x}`).toArray()).should.deep.equal(['x0', 'x1', 'x2']);
         });
-        it('Should apply filter to true then map correctly', async () => {
+        it('should apply filter to true then map correctly', async () => {
           (await iterator.filter(x => false).map(x => `x${x}`).filter(x => false).toArray()).should.deep.equal([]);
         });
-        it('Should apply filter one then double', async () => {
+        it('should apply filter one then double', async () => {
           (await iterator.filter(x => x !== 1).map(x => x * 2).toArray()).should.deep.equal([0, 4]);
         });
-        it('Should apply double then filter one', async () => {
+        it('should apply double then filter one', async () => {
           (await iterator.map(x => x * 2).filter(x => x !== 1).toArray()).should.deep.equal([0, 2, 4]);
         });
-        it('Should apply map then filter correctly', async () => {
+        it('should apply map then filter correctly', async () => {
           (await iterator.map(x => `x${x}`).filter(x => (x[1] === '0')).toArray()).should.deep.equal(['x0']);
         });
-        it('Should correctly apply 3 filters', async () => {
+        it('should correctly apply 3 filters', async () => {
           (await range(0, 5).filter(x => x !== 1).filter(x => x !== 2).filter(x => x !== 2).toArray()).should.deep.equal([0, 3, 4, 5]);
         });
-        it('Should correctly apply 3 maps', async () => {
+        it('should correctly apply 3 maps', async () => {
           (await range(0, 1).map(x => x * 2).map(x => `z${x}`).map(x => `y${x}`).toArray()).should.deep.equal(['yz0', 'yz2']);
         });
-        it('Should correctly apply a map, followed by a filter, followed by another map', async () => {
+        it('should correctly apply a map, followed by a filter, followed by another map', async () => {
           (await range(0, 1).map(x => x * 2).filter(x => x !== 2).map(x => `y${x}`).toArray()).should.deep.equal(['y0']);
         });
-        it('Should correctly apply a filter-map-filter', async () => {
+        it('should correctly apply a filter-map-filter', async () => {
           (await range(0, 2).filter(x => x !== 1).map(x => x * 3).filter(x => x !== 6).toArray()).should.deep.equal([0]);
         });
-        it('Should destroy when closed before being read after map', () => {
+        it('should destroy when closed before being read after map', () => {
           iterator.map(x => x).close();
           iterator.destroyed.should.be.true;
         });
-        it('Should destroy when closed before being read after map then filter', () => {
+        it('should destroy when closed before being read after map then filter', () => {
           it = iterator.map(x => x);
           it.filter(x => true).close();
           iterator.destroyed.should.be.true;
