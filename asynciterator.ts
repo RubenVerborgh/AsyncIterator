@@ -166,7 +166,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {object?} self The `this` pointer for the callback
   */
   forEach(callback: (item: T) => void, self?: object) {
-    this.on('data', self ? callback.bind(self) : callback);
+    this.on('data', bind(callback, self));
   }
 
   /**
@@ -462,7 +462,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map<D>(map: (item: T) => D | null, self?: any): AsyncIterator<D> {
-    return new SyncTransformIterator<T, D>(this, { fn: self ? map.bind(self) : map });
+    return new SyncTransformIterator<T, D>(this, { fn: bind(map, self) });
   }
 
   /**
