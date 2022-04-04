@@ -1255,9 +1255,11 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
 
 
 export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
-  protected constructor(protected _source: AsyncIterator<S>, private options: { destroySource?: boolean } = {}) {
+  private _destroySource: boolean;
+  protected constructor(protected _source: AsyncIterator<S>, protected options: { destroySource?: boolean } = {}) {
     /* eslint-disable no-use-before-define */
     super();
+    this._destroySource = options.destroySource !== false;
     const cleanup = () => {
       _source.removeListener('end', onSourceEnd);
       _source.removeListener('error', onSourceError);
@@ -1293,12 +1295,13 @@ export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterat
       onSourceReadable();
   }
 
-  protected _destroy(cause: Error | undefined, callback: (error?: Error) => void) {
-    super._destroy(cause, callback);
+  destroy(cause?: Error): void {
+    this._source.destroy(cause);
+    super.destroy(cause);
   }
 
   public close() {
-    if (this.options.destroySource)
+    if (this._destroySource)
       this._source.destroy();
     super.close();
   }
@@ -1312,10 +1315,10 @@ interface Transform {
 export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
   private _funcs?: Function[];
 
-  constructor(private source: AsyncIterator<T>, private transforms: Transform, upstream: AsyncIterator<any> = source) {
+  constructor(private source: AsyncIterator<T>, private transforms: Transform, private upstream: AsyncIterator<any> = source, options?: { destroySource?: boolean }) {
     // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
     // listeners to the original source
-    super(upstream);
+    super(upstream, options);
   }
 
   get funcs() {
@@ -1348,6 +1351,17 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
 
   map<K>(map: (item: D) => K | null, self?: any): AsyncIterator<K> {
     return new SyncTransformIterator<T, K>(this.source, { fn: self ? map.bind(self) : map, next: this.transforms }, this);
+  }
+
+  destroy(cause?: Error): void {
+    this.upstream.destroy(cause);
+    super.destroy(cause);
+  }
+
+  public close() {
+    if (this.options.destroySource)
+      this.upstream.destroy();
+    super.close();
   }
 }
 

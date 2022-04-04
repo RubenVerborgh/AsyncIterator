@@ -1313,6 +1313,7 @@ describe('AsyncIterator', () => {
   });
   describe('Testing chains fo maps and filters', () => {
     for (const iteratorGen of [() => range(0, 2), () => fromArray([0, 1, 2]), () => wrap(range(0, 2))]) {
+      // eslint-disable-next-line no-loop-func
       describe(`Testing with ${iteratorGen()}`, () => {
         let iterator;
         beforeEach(() => {
@@ -1377,6 +1378,68 @@ describe('AsyncIterator', () => {
         });
         it('Should correctly apply a filter-map-filter', async () => {
           (await range(0, 2).filter(x => x !== 1).map(x => x * 3).filter(x => x !== 6).toArray()).should.deep.equal([0]);
+        });
+        it('Should destroy when closed before being read after map', () => {
+          iterator.map(x => x).close();
+          iterator.destroyed.should.be.true;
+        });
+        it('Should destroy when closed before being read after map then filter', () => {
+          it = iterator.map(x => x);
+          it.filter(x => true).close();
+          iterator.destroyed.should.be.true;
+          it.destroyed.should.be.true;
+        });
+        describe('when called on an iterator with a `this` argument', () => {
+          const self = {};
+          let map, result;
+          before(() => {
+            let i = 0;
+            iterator = new ArrayIterator(['a', 'b', 'c']);
+            map = sinon.spy(item => item + (++i));
+            result = iterator.map(map, self);
+          });
+
+          describe('the return value', () => {
+            const items = [];
+            before(done => {
+              result.on('data', item => { items.push(item); });
+              result.on('end', done);
+            });
+
+            it('should call the map function once for each item', () => {
+              map.should.have.been.calledThrice;
+            });
+
+            it('should call the map function with the passed argument as `this`', () => {
+              map.alwaysCalledOn(self).should.be.true;
+            });
+          });
+        });
+        describe('when called on an iterator with a `this` argument with nested map', () => {
+          const self = {};
+          let map, result;
+          before(() => {
+            let i = 0;
+            iterator = new ArrayIterator(['a', 'b', 'c']);
+            map = sinon.spy(item => item + (++i));
+            result = iterator.map(x => x).map(map, self);
+          });
+
+          describe('the return value', () => {
+            const items = [];
+            before(done => {
+              result.on('data', item => { items.push(item); });
+              result.on('end', done);
+            });
+
+            it('should call the map function once for each item', () => {
+              map.should.have.been.calledThrice;
+            });
+
+            it('should call the map function with the passed argument as `this`', () => {
+              map.alwaysCalledOn(self).should.be.true;
+            });
+          });
         });
       });
     }
