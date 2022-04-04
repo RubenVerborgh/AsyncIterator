@@ -473,7 +473,8 @@ export class AsyncIterator<T> extends EventEmitter {
   filter<K extends T>(filter: (item: T) => item is K, self?: any): AsyncIterator<K>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T>;
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
-    if (self) filter = filter.bind(self);
+    if (self)
+      filter = filter.bind(self);
     return this.syncTransform(item => filter(item) ? item : null);
   }
 
@@ -1313,7 +1314,6 @@ interface Transform {
 }
 
 export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
-
   private _funcs?: Function[];
 
   constructor(private source: AsyncIterator<T>, private transforms: Transform, upstream: AsyncIterator<any> = source) {
@@ -1325,10 +1325,12 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
   get funcs() {
     if (!this._funcs) {
       this._funcs = [];
+      // eslint-disable-next-line prefer-destructuring
       let transforms: Transform | undefined = this.transforms;
-      do {
+      do
         this._funcs.push(transforms.fn);
-      } while (transforms = transforms.next)
+      // eslint-disable-next-line no-cond-assign
+      while (transforms = transforms.next);
     }
     return this._funcs;
   }
@@ -1337,8 +1339,10 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
     const { source, funcs } = this;
     let item;
     outer: while ((item = source.read()) !== null) {
-      for (let index = funcs.length - 1; index >= 0; index -= 1)
-        if ((item = funcs[index](item)) === null) continue outer;
+      for (let index = funcs.length - 1; index >= 0; index -= 1) {
+        if ((item = funcs[index](item)) === null)
+          continue outer;
+      }
       return item;
     }
     return null;
@@ -1359,8 +1363,8 @@ export class LimitingIterator<T> extends SynchronousTransformIterator<T> {
   read(): T | null {
     const item = this._source.read();
     if (item !== null && this.count < this.limit) {
-        this.count += 1;
-        return item;
+      this.count += 1;
+      return item;
     }
     this.close();
     return null;

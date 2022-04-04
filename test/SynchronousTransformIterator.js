@@ -7,9 +7,6 @@ import {
 import { EventEmitter } from 'events';
 
 class _SynchronousTransformIterator extends SynchronousTransformIterator {
-  constructor(source, options) {
-    super(source, options);
-  }
   read() {
     return this._source.read();
   }
@@ -109,7 +106,7 @@ describe('SynchronousTransformIterator', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new _SynchronousTransformIterator(source, {destroySource: false });
+      iterator = new _SynchronousTransformIterator(source, { destroySource: false });
     });
 
     describe('after being closed', () => {
