@@ -448,19 +448,15 @@ export class AsyncIterator<T> extends EventEmitter {
     return new SimpleTransformIterator<T, D>(this, options);
   }
 
-  syncTransform<D>(fn: (item: T) => D | null) {
-    return new SyncTransformIterator<T, D>(this, { fn }) as any;
-  }
-
   /**
     Maps items from this iterator using the given function.
     After this operation, only read the returned iterator instead of the current one.
-    @param {Function} map A mapping function to call on this iterator's (remaining) items
+    @param {Function} map A mapping function to call on this iterator's (remaining) items (null values are skipped)
     @param {object?} self The `this` pointer for the mapping function
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
-  map<D>(map: (item: T) => D, self?: any): AsyncIterator<D> {
-    return this.syncTransform(self ? map.bind(self) : map);
+  map<D>(map: (item: T) => D | null, self?: any): AsyncIterator<D> {
+    return new SyncTransformIterator<T, D>(this, { fn: self ? map.bind(self) : map });
   }
 
   /**
@@ -475,7 +471,7 @@ export class AsyncIterator<T> extends EventEmitter {
   filter(filter: (item: T) => boolean, self?: any): AsyncIterator<T> {
     if (self)
       filter = filter.bind(self);
-    return this.syncTransform(item => filter(item) ? item : null);
+    return this.map(item => filter(item) ? item : null);
   }
 
   /**
@@ -516,7 +512,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that skips the given number of items
   */
   skip(offset: number): AsyncIterator<T> {
-    return this.syncTransform(item => offset-- > 0 ? null : item);
+    return this.map(item => offset-- > 0 ? null : item);
   }
 
   /**
@@ -1339,6 +1335,8 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
     const { source, funcs } = this;
     let item;
     outer: while ((item = source.read()) !== null) {
+      // Do not use a for-of loop here, it slows down transformations
+      // by approximately a factor of 2.
       for (let index = funcs.length - 1; index >= 0; index -= 1) {
         if ((item = funcs[index](item)) === null)
           continue outer;
@@ -1348,8 +1346,8 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
     return null;
   }
 
-  syncTransform<K>(fn: (item: D) => K | null): AsyncIterator<K> {
-    return new SyncTransformIterator<T, K>(this.source, { fn, next: this.transforms }, this);
+  map<K>(map: (item: D) => K | null, self?: any): AsyncIterator<K> {
+    return new SyncTransformIterator<T, K>(this.source, { fn: self ? map.bind(self) : map, next: this.transforms }, this);
   }
 }
 
