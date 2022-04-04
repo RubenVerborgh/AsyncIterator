@@ -1257,7 +1257,7 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
 
 export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
   private _destroySource: boolean;
-  protected constructor(protected _source: AsyncIterator<S>, protected options: { destroySource?: boolean } = {}) {
+  public constructor(protected _source: AsyncIterator<S>, protected options: { destroySource?: boolean } = {}) {
     /* eslint-disable no-use-before-define */
     super();
     this._destroySource = options.destroySource !== false;
