@@ -1267,6 +1267,14 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
   private _fn?: Function;
   private _destroySource: boolean;
 
+  get readable() {
+    return this.source.readable;
+  }
+
+  set readable(readable) {
+    this.source.readable = readable;
+  }
+
   constructor(protected source: AsyncIterator<T>, private transforms?: ComposedFunction, private upstream: AsyncIterator<any> = source, options: { destroySource?: boolean } = {}) {
     // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
     // listeners to the original source
@@ -1287,26 +1295,15 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
       this.emit('error', err);
     };
     const onSourceReadable = () => {
-      if (this.readable) {
-        // TODO: I'm not completely sure as to why this is needed but without
-        //       the following line, some use cases relying on flow mode (i.e.
-        //       consuming items via `on('data', (data) => {})`) do not work.
-        //       It looks like the debouncing that happens in `set readable()`
-        //       in `AsyncIterator` prevents the event from firing as `this`
-        //       is already readable.
-        this.emit('readable');
-      }
-      else {
-        this.readable = true;
-      }
+      this.emit('readable');
     };
     upstream.on('end', onSourceEnd);
     upstream.on('error', onSourceError);
     upstream.on('readable', onSourceReadable);
     if (upstream.done)
       onSourceEnd();
-    else if (upstream.readable)
-      onSourceReadable();
+    else
+      this.readable = upstream.readable;
   }
 
   get fn() {
