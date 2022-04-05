@@ -1292,7 +1292,7 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
     upstream.on('error', this.onSourceError);
     upstream.on('readable', this.onSourceReadable);
     if (upstream.done)
-      this.onSourceEnd();
+      this.close();
   }
 
   get fn() {
