@@ -462,7 +462,7 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that maps the items from this iterator
   */
   map<D>(map: (item: T) => D | null, self?: any): AsyncIterator<D> {
-    return new SyncTransformIterator<T, D>(this, { fn: bind(map, self) });
+    return new MappingIterator<T, D>(this, { fn: bind(map, self) });
   }
 
   /**
@@ -1258,17 +1258,24 @@ function destinationFillBuffer<S>(this: InternalSource<S>) {
     (this._destination as any)._fillBuffer();
 }
 
+interface ComposedFunction {
+  fn: Function,
+  next?: ComposedFunction
+}
 
-export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
+export class MappingIterator<T, D = T> extends AsyncIterator<D> {
+  private _fn?: Function;
   private _destroySource: boolean;
-  public constructor(protected _source: AsyncIterator<S>, protected options: { destroySource?: boolean } = {}) {
-    /* eslint-disable no-use-before-define */
+
+  constructor(protected source: AsyncIterator<T>, private transforms?: ComposedFunction, private upstream: AsyncIterator<any> = source, options: { destroySource?: boolean } = {}) {
+    // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
+    // listeners to the original source
     super();
     this._destroySource = options.destroySource !== false;
     const cleanup = () => {
-      _source.removeListener('end', onSourceEnd);
-      _source.removeListener('error', onSourceError);
-      _source.removeListener('readable', onSourceReadable);
+      upstream.removeListener('end', onSourceEnd);
+      upstream.removeListener('error', onSourceError);
+      upstream.removeListener('readable', onSourceReadable);
     };
     const onSourceEnd = () => {
       cleanup();
@@ -1291,46 +1298,20 @@ export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterat
         this.readable = true;
       }
     };
-    _source.on('end', onSourceEnd);
-    _source.on('error', onSourceError);
-    _source.on('readable', onSourceReadable);
-    if (_source.done)
+    upstream.on('end', onSourceEnd);
+    upstream.on('error', onSourceError);
+    upstream.on('readable', onSourceReadable);
+    if (upstream.done)
       onSourceEnd();
-    else if (_source.readable)
+    else if (upstream.readable)
       onSourceReadable();
-  }
-
-  destroy(cause?: Error): void {
-    this._source.destroy(cause);
-    super.destroy(cause);
-  }
-
-  public close() {
-    if (this._destroySource)
-      this._source.destroy();
-    super.close();
-  }
-}
-
-interface ComposedFunction {
-  fn: Function,
-  next?: ComposedFunction
-}
-
-export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterator<T, D> {
-  private _fn?: Function;
-
-  constructor(private source: AsyncIterator<T>, private transforms: ComposedFunction, private upstream: AsyncIterator<any> = source, options?: { destroySource?: boolean }) {
-    // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
-    // listeners to the original source
-    super(upstream, options);
   }
 
   get fn() {
     if (!this._fn) {
       const funcs: Function[] = [];
       // eslint-disable-next-line prefer-destructuring
-      let transforms: ComposedFunction | undefined = this.transforms;
+      let transforms: ComposedFunction | undefined = this.transforms!;
       do
         funcs.push(transforms.fn);
       // eslint-disable-next-line no-cond-assign
@@ -1361,7 +1342,7 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
   }
 
   map<K>(map: (item: D) => K | null, self?: any): AsyncIterator<K> {
-    return new SyncTransformIterator<T, K>(this.source, { fn: bind(map, self), next: this.transforms }, this);
+    return new MappingIterator<T, K>(this.source, { fn: bind(map, self), next: this.transforms }, this);
   }
 
   destroy(cause?: Error): void {
@@ -1370,13 +1351,13 @@ export class SyncTransformIterator<T, D = T> extends SynchronousTransformIterato
   }
 
   public close() {
-    if (this.options.destroySource)
+    if (this._destroySource)
       this.upstream.destroy();
     super.close();
   }
 }
 
-export class HeadIterator<T> extends SynchronousTransformIterator<T> {
+export class HeadIterator<T> extends MappingIterator<T> {
   protected count: number = 0;
 
   constructor(source: AsyncIterator<T>, protected readonly limit: number) {
@@ -1384,7 +1365,7 @@ export class HeadIterator<T> extends SynchronousTransformIterator<T> {
   }
 
   read(): T | null {
-    const item = this._source.read();
+    const item = this.source.read();
     if (item !== null && this.count < this.limit) {
       this.count += 1;
       return item;

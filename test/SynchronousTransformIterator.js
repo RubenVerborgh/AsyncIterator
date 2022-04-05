@@ -1,14 +1,14 @@
 import {
   AsyncIterator,
   ArrayIterator,
-  SynchronousTransformIterator,
+  MappingIterator,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
 
-class _SynchronousTransformIterator extends SynchronousTransformIterator {
+class _SynchronousTransformIterator extends MappingIterator {
   read() {
-    return this._source.read();
+    return this.source.read();
   }
 }
 
@@ -22,7 +22,7 @@ describe('SynchronousTransformIterator', () => {
       });
 
       it('should be a SynchronousTransformIterator object', () => {
-        instance.should.be.an.instanceof(SynchronousTransformIterator);
+        instance.should.be.an.instanceof(MappingIterator);
       });
 
       it('should be an AsyncIterator object', () => {
@@ -111,7 +111,7 @@ describe('SynchronousTransformIterator', () => {
 
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new _SynchronousTransformIterator(source, { destroySource: false });
+      iterator = new _SynchronousTransformIterator(source, undefined, undefined, { destroySource: false });
     });
 
     describe('after being closed', () => {
