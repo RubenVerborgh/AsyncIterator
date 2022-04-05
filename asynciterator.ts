@@ -1273,9 +1273,11 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
     super();
     this._destroySource = options.destroySource !== false;
     const cleanup = () => {
+      /* eslint-disable no-use-before-define */
       upstream.removeListener('end', onSourceEnd);
       upstream.removeListener('error', onSourceError);
       upstream.removeListener('readable', onSourceReadable);
+      /* eslint-enable no-use-before-define */
     };
     const onSourceEnd = () => {
       cleanup();
