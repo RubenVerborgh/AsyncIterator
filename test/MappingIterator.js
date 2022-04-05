@@ -6,22 +6,22 @@ import {
 
 import { EventEmitter } from 'events';
 
-class _SynchronousTransformIterator extends MappingIterator {
+class CustomTransformIterator extends MappingIterator {
   read() {
     return this.source.read();
   }
 }
 
-describe('SynchronousTransformIterator', () => {
-  describe('The SynchronousTransformIterator function', () => {
+describe('CustomTransformIterator', () => {
+  describe('The CustomTransformIterator function', () => {
     describe('the result when called with `new`', () => {
       let instance;
 
       before(() => {
-        instance = new _SynchronousTransformIterator(new ArrayIterator([]));
+        instance = new CustomTransformIterator(new ArrayIterator([]));
       });
 
-      it('should be a SynchronousTransformIterator object', () => {
+      it('should be a CustomTransformIterator object', () => {
         instance.should.be.an.instanceof(MappingIterator);
       });
 
@@ -35,12 +35,12 @@ describe('SynchronousTransformIterator', () => {
     });
   });
 
-  describe('A SynchronousTransformIterator', () => {
+  describe('A CustomTransformIterator', () => {
     let iterator, source;
 
     before(() => {
       source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
-      iterator = new _SynchronousTransformIterator(source);
+      iterator = new CustomTransformIterator(source);
     });
 
     describe('when reading items', () => {
@@ -57,10 +57,25 @@ describe('SynchronousTransformIterator', () => {
     });
   });
 
-  describe('A SynchronousTransformIterator with a source that emits 0 items', () => {
+  describe('A CustomTransformIterator', () => {
+    let iterator, source;
+
+    before(() => {
+      source = new ArrayIterator([1]);
+      source._readable = false;
+      iterator = new CustomTransformIterator(source);
+    });
+
+    it('Should emit readable when readable is set to true', done => {
+      iterator.on('readable', done);
+      iterator.readable = true;
+    });
+  });
+
+  describe('A CustomTransformIterator with a source that emits 0 items', () => {
     it('should not return any items', done => {
       const items = [];
-      const iterator = new _SynchronousTransformIterator(new ArrayIterator([]));
+      const iterator = new CustomTransformIterator(new ArrayIterator([]));
       iterator.on('data', item => { items.push(item); });
       iterator.on('end', () => {
         items.should.deep.equal([]);
@@ -69,12 +84,12 @@ describe('SynchronousTransformIterator', () => {
     });
   });
 
-  describe('A SynchronousTransformIterator with a source that is already ended', () => {
+  describe('A CustomTransformIterator with a source that is already ended', () => {
     it('should not return any items', done => {
       const items = [];
       const source = new ArrayIterator([]);
       source.on('end', () => {
-        const iterator = new _SynchronousTransformIterator(source);
+        const iterator = new CustomTransformIterator(source);
         iterator.on('data', item => { items.push(item); });
         iterator.on('end', () => {
           items.should.deep.equal([]);
@@ -90,7 +105,7 @@ describe('SynchronousTransformIterator', () => {
 
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new _SynchronousTransformIterator(source);
+      iterator = new CustomTransformIterator(source);
     });
 
     describe('after being closed', () => {
@@ -111,7 +126,7 @@ describe('SynchronousTransformIterator', () => {
 
     before(() => {
       source = new ArrayIterator([1, 2, 3]);
-      iterator = new _SynchronousTransformIterator(source, undefined, undefined, { destroySource: false });
+      iterator = new CustomTransformIterator(source, undefined, undefined, { destroySource: false });
     });
 
     describe('after being closed', () => {
@@ -132,7 +147,7 @@ describe('SynchronousTransformIterator', () => {
 
     before(() => {
       source = new AsyncIterator();
-      iterator = new _SynchronousTransformIterator(source);
+      iterator = new CustomTransformIterator(source);
       iterator.on('error', errorHandler = sinon.stub());
     });
 
