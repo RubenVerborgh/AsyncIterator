@@ -1288,11 +1288,13 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
     // listeners to the original source
     super();
     this._destroySource = options.destroySource !== false;
-    upstream.on('end', this.onSourceEnd);
-    upstream.on('error', this.onSourceError);
-    upstream.on('readable', this.onSourceReadable);
     if (upstream.done)
       this.close();
+    else {
+      upstream.on('end', this.onSourceEnd);
+      upstream.on('error', this.onSourceError);
+      upstream.on('readable', this.onSourceReadable);
+    }
   }
 
   get fn() {
