@@ -1266,6 +1266,9 @@ interface ComposedFunction {
 export class MappingIterator<T, D = T> extends AsyncIterator<D> {
   private _fn?: Function;
   private _destroySource: boolean;
+  private onSourceError = (err: Error) => this.emit('error', err);
+  private onSourceReadable = () => this.emit('readable');
+  private onSourceEnd = () => this.close();
 
   get readable() {
     return this.source.readable;
@@ -1280,30 +1283,11 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
     // listeners to the original source
     super();
     this._destroySource = options.destroySource !== false;
-    const cleanup = () => {
-      /* eslint-disable no-use-before-define */
-      upstream.removeListener('end', onSourceEnd);
-      upstream.removeListener('error', onSourceError);
-      upstream.removeListener('readable', onSourceReadable);
-      /* eslint-enable no-use-before-define */
-    };
-    const onSourceEnd = () => {
-      cleanup();
-      this.close();
-    };
-    const onSourceError = (err: Error) => {
-      this.emit('error', err);
-    };
-    const onSourceReadable = () => {
-      this.emit('readable');
-    };
-    upstream.on('end', onSourceEnd);
-    upstream.on('error', onSourceError);
-    upstream.on('readable', onSourceReadable);
+    upstream.on('end', this.onSourceEnd);
+    upstream.on('error', this.onSourceError);
+    upstream.on('readable', this.onSourceReadable);
     if (upstream.done)
-      onSourceEnd();
-    else
-      this.readable = upstream.readable;
+      this.onSourceEnd();
   }
 
   get fn() {
@@ -1350,8 +1334,14 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
   }
 
   public close() {
+    this.upstream.removeListener('end', this.onSourceEnd);
+    this.upstream.removeListener('error', this.onSourceError);
+    this.upstream.removeListener('readable', this.onSourceReadable);
     if (this._destroySource)
       this.upstream.destroy();
+    scheduleTask(() => {
+      delete this.source;
+    });
     super.close();
   }
 }
