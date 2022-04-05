@@ -1278,7 +1278,12 @@ export class MappingIterator<T, D = T> extends AsyncIterator<D> {
     this.source.readable = readable;
   }
 
-  constructor(protected source: AsyncIterator<T>, private transforms?: ComposedFunction, private upstream: AsyncIterator<any> = source, options: { destroySource?: boolean } = {}) {
+  constructor(
+    protected source: AsyncIterator<T>,
+    private transforms?: ComposedFunction,
+    private upstream: AsyncIterator<any> = source,
+    options: { destroySource?: boolean } = {}
+  ) {
     // Subscribe the iterator directly upstream rather than the original source to avoid over-subscribing
     // listeners to the original source
     super();
