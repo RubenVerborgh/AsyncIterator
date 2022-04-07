@@ -25,6 +25,7 @@ jobs:
         if: ${{ matrix.node-version != '10.x' }}
       - run: npx c8 --reporter=lcov mocha
       - uses: coverallsapp/github-action@master
+        if: ${{ matrix.node-version != '10.x' }}
         with:
           github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.node-version }}
