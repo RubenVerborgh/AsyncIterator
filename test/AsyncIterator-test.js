@@ -5,6 +5,8 @@ import {
   ENDED,
   DESTROYED,
   scheduleTask,
+  isPromise,
+  isIterator,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1305,6 +1307,28 @@ describe('AsyncIterator', () => {
       it('should return an array with five elements', () => {
         expect(result).deep.to.equal([1, 2, 3, 4, 5]);
       });
+    });
+  });
+});
+
+describe('Type-checking functions', () => {
+  describe('isPromise', () => {
+    it('returns false for null', () => {
+      expect(isPromise(null)).to.equal(false);
+    });
+
+    it('returns true for a Promise', () => {
+      expect(isPromise(Promise.resolve(0))).to.equal(true);
+    });
+  });
+
+  describe('isIterator', () => {
+    it('returns false for null', () => {
+      expect(isIterator(null)).to.equal(false);
+    });
+
+    it('returns true for an iterator', () => {
+      expect(isIterator([][Symbol.iterator]())).to.equal(true);
     });
   });
 });

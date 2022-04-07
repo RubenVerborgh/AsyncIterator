@@ -2,6 +2,7 @@ import {
   AsyncIterator,
   EmptyIterator,
   empty,
+  wrap,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -28,6 +29,23 @@ describe('EmptyIterator', () => {
     describe('the result when called through `.empty`', () => {
       let instance;
       before(() => { instance = empty(); });
+
+      it('should be an EmptyIterator object', () => {
+        instance.should.be.an.instanceof(EmptyIterator);
+      });
+
+      it('should be an AsyncIterator object', () => {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', () => {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `.wrap`', () => {
+      let instance;
+      before(() => { instance = wrap(); });
 
       it('should be an EmptyIterator object', () => {
         instance.should.be.an.instanceof(EmptyIterator);

@@ -2,6 +2,7 @@ import {
   AsyncIterator,
   ArrayIterator,
   fromArray,
+  wrap,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -28,6 +29,23 @@ describe('ArrayIterator', () => {
     describe('the result when called through `fromArray`', () => {
       let instance;
       before(() => { instance = fromArray(); });
+
+      it('should be an ArrayIterator object', () => {
+        instance.should.be.an.instanceof(ArrayIterator);
+      });
+
+      it('should be an AsyncIterator object', () => {
+        instance.should.be.an.instanceof(AsyncIterator);
+      });
+
+      it('should be an EventEmitter object', () => {
+        instance.should.be.an.instanceof(EventEmitter);
+      });
+    });
+
+    describe('the result when called through `wrap`', () => {
+      let instance;
+      before(() => { instance = wrap([]); });
 
       it('should be an ArrayIterator object', () => {
         instance.should.be.an.instanceof(ArrayIterator);

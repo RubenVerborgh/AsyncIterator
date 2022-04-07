@@ -25,10 +25,6 @@ export function setTaskScheduler(scheduler: TaskScheduler): void {
   taskScheduler = scheduler;
 }
 
-// Returns a function that calls `fn` with `self` as `this` pointer. */
-function bind<T extends Function>(fn: T, self?: object): T {
-  return self ? fn.bind(self) : fn;
-}
 
 /**
   ID of the INIT state.
@@ -868,7 +864,7 @@ export class MappingIterator<S, D = S> extends AsyncIterator<D> {
 // Validates an AsyncIterator for use as a source within another AsyncIterator
 function ensureSourceAvailable<S>(source?: AsyncIterator<S>, allowDestination = false) {
   if (!source || !isFunction(source.read) || !isFunction(source.on))
-    throw new Error(`Invalid source: ${source}`);
+    throw new TypeError(`Invalid source: ${source}`);
   if (!allowDestination && (source as any)._destination)
     throw new Error('The source already has a destination');
   return source as InternalSource<S>;
@@ -1175,8 +1171,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {module:asynciterator.AsyncIterator} [options.source] The source this iterator generates items from
   */
   constructor(source?: SourceExpression<S>,
-              options: TransformIteratorOptions<S> =
-                source as TransformIteratorOptions<S> || {}) {
+              options: TransformIteratorOptions<S> = source as TransformIteratorOptions<S> || {}) {
     super(options);
 
     // Shift parameters if needed
@@ -1982,22 +1977,124 @@ class HistoryReader<T> {
 }
 
 /**
+ * An iterator that takes a variety of iterable objects as a source.
+ */
+export class WrappingIterator<T> extends AsyncIterator<T> {
+  protected _source: InternalSource<T> | null = null;
+
+  constructor(source: MaybePromise<IterableSource<T>>) {
+    super();
+    if (!isPromise(source))
+      this.source = source as any;
+    else
+      source.then(s => this.source = s as any).catch(e => this.emit('error', e));
+  }
+
+  protected set source(source: InternalSource<T>) {
+    // Process an iterable source
+    if (isIterable(source))
+      source = source[Symbol.iterator]() as any;
+    // Process an iterator source
+    if (isIterator<T>(source)) {
+      let iterator: Iterator<T> | null = source;
+      source = new EventEmitter() as any;
+      source.read = (): T | null => {
+        if (iterator !== null) {
+          const item = iterator.next();
+          if (!item.done)
+            return item.value;
+          // No remaining values, so stop iterating
+          iterator = null;
+          this.close();
+        }
+        return null;
+      };
+    }
+    // Process any other readable source
+    else {
+      source = ensureSourceAvailable(source);
+    }
+
+    // Set up event handling
+    source._destination = this;
+    source.on('end', destinationClose);
+    source.on('error', destinationEmitError);
+    source.on('readable', destinationSetReadable);
+
+    // Enable reading from source
+    this._source = source;
+    this.readable = true;
+  }
+
+  read(): T | null {
+    if (this._source !== null) {
+      const item = this._source.read();
+      if (item !== null)
+        return item;
+      this.readable = false;
+    }
+    return null;
+  }
+
+  protected _end(destroy: boolean = false) {
+    super._end(destroy);
+    // Clean up event handlers
+    if (this._source !== null) {
+      this._source.removeListener('end', destinationClose);
+      this._source.removeListener('error', destinationEmitError);
+      this._source.removeListener('readable', destinationSetReadable);
+      delete this._source._destination;
+      this._source = null;
+    }
+  }
+}
+
+
+/**
   Creates an iterator that wraps around a given iterator or readable stream.
   Use this to convert an iterator-like object into a full-featured AsyncIterator.
   After this operation, only read the returned iterator instead of the given one.
   @function
-  @param {module:asynciterator.AsyncIterator|Readable} [source] The source this iterator generates items from
+  @param [source] The source this iterator generates items from
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(source: EventEmitter | Promise<EventEmitter>, options?: TransformIteratorOptions<T>) {
-  return new TransformIterator<T>(source as AsyncIterator<T> | Promise<AsyncIterator<T>>, options);
+export function wrap<T>(source: null | undefined): AsyncIterator<T>;
+export function wrap<T>(source: MaybePromise<IterableSource<T>>): AsyncIterator<T>;
+export function wrap<T>(source: MaybePromise<AsyncIterator<T>>,
+                        options?: TransformIteratorOptions<T>): AsyncIterator<T>;
+export function wrap<T>(source?: MaybePromise<IterableSource<T>> | null,
+                        options?: TransformIteratorOptions<T>,): AsyncIterator<T> {
+  // TransformIterator if TransformIteratorOptions were specified
+  if (options)
+    return new TransformIterator<T>(source as MaybePromise<AsyncIterator<T>>, options);
+
+  // Empty iterator if no source specified
+  if (!source)
+    return empty();
+
+  // Unwrap promised sources
+  if (isPromise<T>(source))
+    return new WrappingIterator(source);
+
+  // Directly return any AsyncIterator
+  if (source instanceof AsyncIterator)
+    return source;
+
+  // Other iterable objects
+  if (Array.isArray(source))
+    return fromArray<T>(source);
+  if (isIterable(source) || isIterator(source) || isEventEmitter(source))
+    return new WrappingIterator<T>(source);
+
+  // Other types are unsupported
+  throw new TypeError(`Invalid source: ${source}`);
 }
 
 /**
   Creates an empty iterator.
  */
-export function empty<T>() {
+export function empty<T>(): AsyncIterator<T> {
   return new EmptyIterator<T>();
 }
 
@@ -2005,7 +2102,7 @@ export function empty<T>() {
   Creates an iterator with a single item.
   @param {object} item the item
  */
-export function single<T>(item: T) {
+export function single<T>(item: T): AsyncIterator<T> {
   return new SingletonIterator<T>(item);
 }
 
@@ -2013,8 +2110,24 @@ export function single<T>(item: T) {
   Creates an iterator for the given array.
   @param {Array} items the items
  */
-export function fromArray<T>(items: Iterable<T>) {
+export function fromArray<T>(items: Iterable<T>): AsyncIterator<T> {
   return new ArrayIterator<T>(items);
+}
+
+/**
+ Creates an iterator for the given Iterator.
+ @param {Iterable} source the iterator
+ */
+export function fromIterator<T>(source: Iterable<T> | Iterator<T>): AsyncIterator<T> {
+  return new WrappingIterator<T>(source);
+}
+
+/**
+ Creates an iterator for the given Iterable.
+ @param {Iterable} source the iterable
+ */
+export function fromIterable<T>(source: Iterable<T> | Iterator<T>): AsyncIterator<T> {
+  return new WrappingIterator<T>(source);
 }
 
 /**
@@ -2035,25 +2148,12 @@ export function range(start: number, end: number, step?: number) {
   return new IntegerIterator({ start, end, step });
 }
 
-// Determines whether the given object is a function
-function isFunction(object: any): object is Function {
-  return typeof object === 'function';
-}
-
-// Determines whether the given object is an EventEmitter
-function isEventEmitter(object: any): object is EventEmitter {
-  return object && typeof object.on === 'function';
-}
-
-// Determines whether the given object is a promise
-function isPromise<T>(object: any): object is Promise<T> {
-  return object && typeof object.then === 'function';
-}
-
-// Determines whether the given object is a source expression
-function isSourceExpression<T>(object: any): object is SourceExpression<T> {
-  return object && (isEventEmitter(object) || isPromise(object) || isFunction(object));
-}
+export type IterableSource<T> =
+  T[] |
+  AsyncIterator<T> |
+  EventEmitter |
+  Iterator<T> |
+  Iterable<T>;
 
 export interface SourcedIteratorOptions {
   destroySource?: boolean;
@@ -2098,3 +2198,38 @@ type SourceExpression<T> =
 
 type InternalSource<T> =
   AsyncIterator<T> & { _destination?: AsyncIterator<any> };
+
+// Returns a function that calls `fn` with `self` as `this` pointer. */
+function bind<T extends Function>(fn: T, self?: object): T {
+  return self ? fn.bind(self) : fn;
+}
+
+// Determines whether the given object is a function
+export function isFunction(object: any): object is Function {
+  return typeof object === 'function';
+}
+
+// Determines whether the given object is an EventEmitter
+export function isEventEmitter(object: any): object is EventEmitter {
+  return isFunction(object?.on);
+}
+
+// Determines whether the given object is a promise
+export function isPromise<T>(object: any): object is Promise<T> {
+  return isFunction(object?.then);
+}
+
+// Determines whether the given object is a source expression
+export function isSourceExpression<T>(object: any): object is SourceExpression<T> {
+  return object && (isEventEmitter(object) || isPromise(object) || isFunction(object));
+}
+
+// Determines whether the given object supports the iterable protocol
+export function isIterable<T>(object: { [key: string]: any }): object is Iterable<T> {
+  return object && (Symbol.iterator in object);
+}
+
+// Determines whether the given object supports the iterator protocol
+export function isIterator<T>(object: { [key: string]: any }): object is Iterator<T> {
+  return isFunction(object?.next);
+}
