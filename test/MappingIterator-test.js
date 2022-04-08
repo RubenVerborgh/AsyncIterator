@@ -874,6 +874,69 @@ describe('MappingIterator', () => {
     });
   });
 
+  describe('The AsyncIterator#uniq function', () => {
+    it('should be a function', () => {
+      expect(AsyncIterator.prototype.uniq).to.be.a('function');
+    });
+
+    describe('when called on an iterator', () => {
+      let iterator, result;
+      before(() => {
+        iterator = new ArrayIterator([1, 1, 2, 1, 1, 2, 2, 3, 3, 3, 3]);
+        result = iterator.uniq();
+      });
+
+      describe('the return value', () => {
+        const items = [];
+        before(done => {
+          result.on('data', item => { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a MappingIterator', () => {
+          result.should.be.an.instanceof(MappingIterator);
+        });
+
+        it('only contains unique items', () => {
+          items.should.deep.equal([1, 2, 3]);
+        });
+      });
+    });
+
+    describe('when called with a hashing function', () => {
+      let iterator, hash, result;
+      before(() => {
+        iterator = new ArrayIterator([{ x: 1 }, { x: 1 }, { x: 1 }]);
+        hash = sinon.spy(x => JSON.stringify(x));
+        result = iterator.uniq(hash);
+      });
+
+      describe('the return value', () => {
+        const items = [];
+        before(done => {
+          result.on('data', item => { items.push(item); });
+          result.on('end', done);
+        });
+
+        it('should be a MappingIterator', () => {
+          result.should.be.an.instanceof(MappingIterator);
+        });
+
+        it('only contains unique items', () => {
+          items.should.deep.equal([{ x: 1 }]);
+        });
+
+        it('should call the hash function once for each item', () => {
+          hash.should.have.been.calledThrice;
+        });
+
+        it('should call the hash function with the returned iterator as `this`', () => {
+          hash.alwaysCalledOn(result).should.be.true;
+        });
+      });
+    });
+  });
+
   describe('The AsyncIterator#skip function', () => {
     it('should be a function', () => {
       expect(AsyncIterator.prototype.skip).to.be.a('function');

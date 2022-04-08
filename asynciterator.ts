@@ -479,6 +479,24 @@ export class AsyncIterator<T> extends EventEmitter {
   }
 
   /**
+   * Returns a new iterator containing all of the unique items in the original iterator.
+   * @param by - The derived value by which to determine uniqueness (e.g., stringification).
+                 Defaults to the identity function.
+   * @returns An iterator with duplicates filtered out.
+   */
+  uniq(by: (item: T) => any = identity): AsyncIterator<T> {
+    const uniques = new Set();
+    return this.filter(function (this: AsyncIterator<T>, item) {
+      const hashed = by.call(this, item);
+      if (!uniques.has(hashed)) {
+        uniques.add(hashed);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
     Prepends the items after those of the current iterator.
     After this operation, only read the returned iterator instead of the current one.
     @param {Array|module:asynciterator.AsyncIterator} items Items to insert before this iterator's (remaining) items
