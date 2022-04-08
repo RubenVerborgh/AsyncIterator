@@ -1212,7 +1212,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     @param {function} done To be called when reading is complete
     @param {function} push A callback to push zero or more transformation results.
   */
-  protected _transform(item: S, done: () => void, push: (item: D) => void) {
+  protected _transform(item: S, done: () => void, push: (i: D) => void) {
     push(item as any as D);
     done();
   }
@@ -1945,7 +1945,7 @@ export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
 
   filter?: (item: S) => boolean;
   map?: (item: S) => D;
-  transform?: (item: S, done: () => void, push: (item: D) => void) => void;
+  transform?: (item: S, done: () => void, push: (i: D) => void) => void;
 }
 
 export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {

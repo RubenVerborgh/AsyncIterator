@@ -105,9 +105,11 @@
     no-undef: error,
     no-undef-init: error,
     no-undefined: off,
-    no-unused-vars: [ error, { args: none } ],
+    no-unused-vars: off,
     "@typescript-eslint/no-unused-vars": [ error, { args: none } ],
-    no-use-before-define: [ error, { functions: false, classes: false } ],
+    no-use-before-define: off,
+    "@typescript-eslint/no-use-before-define":
+      [ error, { functions: false, classes: false, typedefs: false } ],
 
     // Node.js
     callback-return: off,
