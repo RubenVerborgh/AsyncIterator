@@ -20,27 +20,43 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/checkout@v2
       - run: npm ci
-      - run: npm run lint
       - run: npm run test:microtask
       - run: npm run test:immediate
         if: ${{ matrix.node-version != '10.x' }}
-      - run: npm pack
-      - run: tar -xzf asynciterator-*.tgz
-      - name: Test package
-        if: ${{ matrix.node-version == '16.x' }}
-        run: |
-          pushd package
-          node -e 'require(".")'
-          echo 'import { AsyncIterator } from "asynciterator"' > test.mjs;
-          node test.mjs;
-          popd
-      - run: npx tsc package/dist/asynciterator.d.ts
       - run: npx c8 --reporter=lcov mocha
       - uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
           flag-name: run-${{ matrix.node-version }}
           parallel: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm run lint
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - run: npm pack
+      - run: tar -xzf asynciterator-*.tgz
+      - run: npx tsc package/dist/asynciterator.d.ts
+      - run: |
+          pushd package
+          node -e 'require(".")'
+          echo 'import { AsyncIterator } from "asynciterator"' > test.mjs;
+          node test.mjs;
+          popd
 
   coveralls:
     needs: test
@@ -71,8 +87,10 @@ jobs:
 
   gh-pages:
     needs:
-      - docs
+      - lint
       - test
+      - package
+      - docs
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
