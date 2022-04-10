@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import LinkedList from '../dist/linkedlist.js';
 
 describe('LinkedList', () => {
@@ -91,6 +92,42 @@ describe('LinkedList', () => {
       expect(list.first).to.equal(2);
       expect(list.last).to.equal(3);
       expect(list.length).to.equal(2);
+    });
+  });
+
+  describe('Testing filter', () => {
+    beforeEach(() => {
+      list = new LinkedList();
+      list.push(1);
+      list.push(2);
+      list.push(3);
+      list.push(4);
+    });
+
+    it('Should remove odd elements', () => {
+      list.filter(x => x % 2 === 0);
+      expect(list.length).to.equal(2);
+      expect([...list]).to.deep.equal([2, 4]);
+    });
+
+    it('Should remove even elements', () => {
+      list.filter(x => x % 2 === 1);
+      expect(list.length).to.equal(2);
+      expect([...list]).to.deep.equal([1, 3]);
+    });
+
+    it('Should remove all elements', () => {
+      list.filter(x => false);
+      expect(list.length).to.equal(0);
+      expect([...list]).to.deep.equal([]);
+      expect(list.empty).to.equal(true);
+    });
+
+    it('Should remove no elements', () => {
+      list.filter(x => true);
+      expect(list.length).to.equal(4);
+      expect([...list]).to.deep.equal([1, 2, 3, 4]);
+      expect(list.empty).to.equal(false);
     });
   });
 });

@@ -233,15 +233,6 @@ describe('UnionIterator', () => {
       it('should not have ended', () => {
         iterator.ended.should.be.false;
       });
-
-      it('should pass errors', () => {
-        const callback = sinon.spy();
-        const error = new Error('error');
-        iterator.once('error', callback);
-        sourceIterator.emit('error', error);
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWith(error);
-      });
     });
 
     describe('after reading', () => {
@@ -277,15 +268,6 @@ describe('UnionIterator', () => {
       it('should not have ended', () => {
         iterator.ended.should.be.false;
       });
-
-      it('should pass errors', () => {
-        const callback = sinon.spy();
-        const error = new Error('error');
-        iterator.once('error', callback);
-        sourceIterator.emit('error', error);
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWith(error);
-      });
     });
 
     describe('after reading', () => {
@@ -314,21 +296,8 @@ describe('UnionIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should not have read the sources', () => {
-        sourceIterator.read.should.not.have.been.called;
-      });
-
       it('should not have ended', () => {
         iterator.ended.should.be.false;
-      });
-
-      it('should pass errors', () => {
-        const callback = sinon.spy();
-        const error = new Error('error');
-        iterator.once('error', callback);
-        sourceIterator.emit('error', error);
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWith(error);
       });
     });
 
@@ -368,15 +337,6 @@ describe('UnionIterator', () => {
 
       it('should not have ended', () => {
         iterator.ended.should.be.false;
-      });
-
-      it('should pass errors', () => {
-        const callback = sinon.spy();
-        const error = new Error('error');
-        iterator.once('error', callback);
-        sourceIterator.emit('error', error);
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWith(error);
       });
     });
 
@@ -433,11 +393,6 @@ describe('UnionIterator', () => {
       (await toArray(iterator)).should.be.instanceof(Array);
     });
 
-    it('should allow the _read method to be called multiple times', () => {
-      iterator._read(1, noop);
-      iterator._read(1, noop);
-    });
-
     it('should make a round-robin union of the data elements', async () => {
       (await toArray(iterator)).sort().should.eql([0, 1, 2, 3, 4, 5, 6]);
     });
@@ -492,15 +447,15 @@ describe('UnionIterator', () => {
       it('should read 2 streams in round-robin order', async () => {
         // Read 4 buffered items
         expect(iterator.read()).to.equal(3);
-        expect(iterator.read()).to.equal(6);
         expect(iterator.read()).to.equal(4);
-        expect(iterator.read()).to.equal(7);
+        expect(iterator.read()).to.equal(5);
+        expect(iterator.read()).to.equal(6);
 
         // Buffer
         await new Promise(resolve => scheduleTask(resolve));
 
         // Read remaining items
-        expect(iterator.read()).to.equal(5);
+        expect(iterator.read()).to.equal(7);
         expect(iterator.read()).to.be.null;
       });
 
@@ -541,5 +496,3 @@ function toArray(stream) {
     stream.on('end', () => resolve(array));
   });
 }
-
-function noop() { /* */ }
