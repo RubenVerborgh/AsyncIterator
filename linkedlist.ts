@@ -5,7 +5,7 @@ interface LinkedNode<V> {
 
 export default class LinkedList<V> {
   private _length: number = 0;
-  private _head: LinkedNode<V> | null = null;
+  _head: LinkedNode<V> | null = null;
   private _tail: LinkedNode<V> | null = null;
 
   get length() { return this._length; }
@@ -34,7 +34,7 @@ export default class LinkedList<V> {
     return value;
   }
 
-  filter(filter: (item: V) => boolean) {
+  mutateFilter(filter: (item: V) => boolean) {
     let last: LinkedNode<V> | null;
     let next: LinkedNode<V> | null;
     while (this._head !== null && !filter(this._head.value)) {

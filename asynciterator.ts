@@ -1519,6 +1519,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   private _sources : AsyncIterator<AsyncIterator<T>>;
   private buffer = new LinkedList<AsyncIterator<T>>();
   private _sourceStarted: boolean;
+  private _maxBufferSize: number;
 
   /**
     Creates a new `UnionIterator`.
@@ -1549,6 +1550,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     this._addSource(this._sources);
 
     this._sourceStarted = options.autoStart !== false;
+    this._maxBufferSize = options.maxBufferSize || Infinity;
     if (this._sources.done && this._sourceStarted)
       this.close();
     else
@@ -1572,7 +1574,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   }
 
   protected _removeEmptySources() {
-    this.buffer.filter((source: any) => {
+    this.buffer.mutateFilter((source: any) => {
       if (source.done) {
         this._removeSource(source);
         return false;
@@ -1597,19 +1599,22 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     const { buffer, _sources } = this;
     let item: T | null;
     let iterator: AsyncIterator<T> | null;
-    for (iterator of buffer) {
-      if (iterator.readable && (item = iterator.read()) !== null)
+    let node = buffer._head;
+    while (node !== null) {
+      if (node.value.readable && (item = node.value.read()) !== null)
         return item;
+      node = node.next;
     }
-    while ((iterator = _sources.read()) !== null) {
+
+    while (this.buffer.length < this._maxBufferSize && (iterator = _sources.read()) !== null) {
       this._addSource(iterator as any);
       this.buffer.push(iterator);
 
       if ((item = iterator.read()) !== null)
         return item;
     }
-    this.readable = false;
     this._removeEmptySources();
+    this.readable = false;
     return null;
   }
 }
