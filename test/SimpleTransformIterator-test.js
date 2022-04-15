@@ -1256,10 +1256,6 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should prepend the items', () => {
           items.should.deep.equal(['i', 'ii', 'iii', 'a', 'b', 'c']);
         });
@@ -1284,10 +1280,6 @@ describe('SimpleTransformIterator', () => {
         before(done => {
           result.on('data', item => { items.push(item); });
           result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
         });
 
         it('should append the items', () => {

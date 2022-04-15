@@ -68,6 +68,17 @@ describe('UnionIterator', () => {
     (await toArray(iterator)).sort().should.eql([0, 1, 2]);
   });
 
+  it('should include all data from 1 non-empty and 4 empty sources - with maxBufferSize: 1', async () => {
+    const iterator = new UnionIterator([
+      new EmptyIterator(),
+      new EmptyIterator(),
+      range(0, 2),
+      new EmptyIterator(),
+      new EmptyIterator(),
+    ], { maxBufferSize: 1 });
+    (await toArray(iterator)).sort().should.eql([0, 1, 2]);
+  });
+
   describe('when constructed with an array of 0 sources', () => {
     let iterator;
     before(() => {

@@ -479,7 +479,10 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that prepends items to this iterator
   */
   prepend(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
-    return this.transform({ prepend: items });
+    return new UnionIterator(
+      [Array.isArray(items) ? new ArrayIterator(items, { autoStart: false }) : items, this],
+      { maxBufferSize: 1 }
+    );
   }
 
   /**
@@ -489,7 +492,10 @@ export class AsyncIterator<T> extends EventEmitter {
     @returns {module:asynciterator.AsyncIterator} A new iterator that appends items to this iterator
   */
   append(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
-    return this.transform({ append: items });
+    return new UnionIterator(
+      [this, Array.isArray(items) ? new ArrayIterator(items, { autoStart: false }) : items],
+      { maxBufferSize: 1 }
+    );
   }
 
   /**
@@ -1583,6 +1589,8 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     });
     if (this.buffer.empty && this._sources.done && this._sourceStarted)
       this.close();
+    else
+      this.readable = true;
   }
 
   public close() {
