@@ -5,9 +5,11 @@ import {
   ENDED,
   DESTROYED,
   scheduleTask,
+  range,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
+import { expect } from 'chai';
 
 describe('AsyncIterator', () => {
   describe('The AsyncIterator module', () => {
@@ -1305,6 +1307,24 @@ describe('AsyncIterator', () => {
       it('should return an array with five elements', () => {
         expect(result).deep.to.equal([1, 2, 3, 4, 5]);
       });
+    });
+  });
+
+  describe('Testing #append', () => {
+    it('Should append an array', async () => {
+      expect(await range(0, 1).append([2, 3, 4]).toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+    it('Should append an iterator', async () => {
+      expect(await range(0, 1).append(range(2, 4)).toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+  });
+
+  describe('Testing #prepend', () => {
+    it('Should prepend an array', async () => {
+      expect(await range(0, 1).prepend([2, 3, 4]).toArray()).to.deep.equal([2, 3, 4, 0, 1]);
+    });
+    it('Should prepend an iterator', async () => {
+      expect(await range(0, 1).prepend(range(2, 4)).toArray()).to.deep.equal([2, 3, 4, 0, 1]);
     });
   });
 });
