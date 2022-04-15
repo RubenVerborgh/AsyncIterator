@@ -65,6 +65,8 @@ export default class LinkedList<V> {
     this._head = this._tail = null;
   }
 
+  // This iterator does not keep yielding items as they are pushed into the list.
+  // It synchronously runs until the current end of the list and that's it.
   *[Symbol.iterator]() {
     let node = this._head;
     while (node !== null) {
