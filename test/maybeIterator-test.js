@@ -37,7 +37,10 @@ class MyBufferingIterator extends AsyncIterator {
 
 
 class MyItemBufferingIterator extends AsyncIterator {
-  i = 10;
+  constructor() {
+    super();
+    this.i = 10;
+  }
 
   read() {
     this.i--;
