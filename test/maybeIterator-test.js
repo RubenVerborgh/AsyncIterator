@@ -17,7 +17,10 @@ class MyIterator extends AsyncIterator {
 
 
 class MyBufferingIterator extends AsyncIterator {
-  i = 3;
+  constructor() {
+    super();
+    this.i = 10;
+  }
 
   read() {
     if (this.i-- < 0) {
