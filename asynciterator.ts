@@ -1977,9 +1977,9 @@ export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null |
   // if ((source instanceof ArrayIterator || source instanceof BufferedIterator) && (source as any)._buffer.length > 0) {
   //    return source
   // }
-  // if (source instanceof IntegerIterator && (source as any).step >= 0 ? (source as any).next > (source as any).last : (source as any).next < (source as any).last) {
-  //    return source;
-  // }
+  if (source instanceof IntegerIterator && (source as any)._step >= 0 ? (source as any)._next <= (source as any)._last : (source as any)._next >= (source as any)._last) {
+     return source;
+  }
 
   let item;
   do {

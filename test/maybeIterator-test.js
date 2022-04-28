@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import {
   AsyncIterator,
   fromArray,
@@ -90,7 +91,28 @@ describe('maybeIterator', () => {
       expect(await (await maybeIterator(range(1, 3))).toArray()).to.deep.equal([1, 2, 3]);
     });
     it('range', async () => {
+      expect(await (await maybeIterator(range(1, 1))).toArray()).to.deep.equal([1]);
+    });
+    it('range', async () => {
       expect(await (await maybeIterator(new MyItemBufferingIterator())).toArray()).to.deep.equal([8, 6, 4, 2, 0]);
     });
   });
+
+  // TODO: Add better error coverage - it is *possible* that there may be a bug
+  // that occurs when errors are thrown when we are *not* in the awaitReadable
+  // code section
+  it('Should reject on error before first element', async () => {
+    const iterator = new AsyncIterator();
+    scheduleTask(() => { iterator.emit('error', new Error('myError')); });
+    
+    let error = false;
+
+    try {
+      await maybeIterator(iterator);
+    } catch (e) {
+      error = true
+    }
+
+    expect(error).to.be.true;
+  })
 });
