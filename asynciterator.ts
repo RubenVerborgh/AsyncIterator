@@ -1967,16 +1967,15 @@ type SourceExpression<T> =
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
 
-
 /**
  * @param source An AsyncIterator
  * @returns The AsyncIterator if it is not empty, otherwise undefined
  */
 export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null | AsyncIterator<T>> {
   // Avoid creating a new iterator where possible
-  if ((source instanceof ArrayIterator || source instanceof BufferedIterator) && (source as any)._buffer?.length > 0) {
-     return source
-  }
+  if ((source instanceof ArrayIterator || source instanceof BufferedIterator) && (source as any)._buffer?.length > 0)
+    return source;
+
   if (source instanceof IntegerIterator && (source as any)._step >= 0 ? (source as any)._next <= (source as any)._last : (source as any)._next >= (source as any)._last)
     return source;
 
