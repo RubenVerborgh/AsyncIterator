@@ -1,11 +1,10 @@
 import {
   AsyncIterator,
-  ArrayIterator,
   fromArray,
   maybeIterator,
   range,
   empty,
-  scheduleTask
+  scheduleTask,
 } from '../dist/asynciterator.js';
 
 class MyIterator extends AsyncIterator {
@@ -18,17 +17,18 @@ class MyIterator extends AsyncIterator {
 
 class MyBufferingIterator extends AsyncIterator {
   i = 3;
-  
+
   read() {
     if (this.i-- < 0) {
       this.close();
-    } else {
+    }
+    else {
       scheduleTask(() => {
         if (this.readable)
-          this.emit('readable')
+          this.emit('readable');
         else
-          this.readable = true
-      })
+          this.readable = true;
+      });
     }
     return null;
   }
@@ -37,25 +37,26 @@ class MyBufferingIterator extends AsyncIterator {
 
 class MyItemBufferingIterator extends AsyncIterator {
   i = 10;
-  
+
   read() {
     this.i--;
     if (this.i < 0) {
       this.close();
-    } else {
+    }
+    else {
       scheduleTask(() => {
         if (this.readable)
-          this.emit('readable')
+          this.emit('readable');
         else
-          this.readable = true
-      })
+          this.readable = true;
+      });
     }
     return this.i % 2 === 0 ? this.i : null;
   }
 }
 
 describe('maybeIterator', () => {
-  // TODO: 
+  // TODO:
   describe('Should return null on empty iterators', () => {
     it('fromArray', async () => {
       expect(await maybeIterator(fromArray([]))).to.be.null;

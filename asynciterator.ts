@@ -1972,7 +1972,7 @@ type InternalSource<T> =
  * @param source An AsyncIterator
  * @returns The AsyncIterator if it is not empty, otherwise undefined
  */
- export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null | AsyncIterator<T>> {
+export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null | AsyncIterator<T>> {
   // Avoid creating a new iterator where possible
   // if ((source instanceof ArrayIterator || source instanceof BufferedIterator) && (source as any)._buffer.length > 0) {
   //    return source
@@ -2000,9 +2000,9 @@ function awaitReadable<T>(source: AsyncIterator<T>): Promise<void> {
       res();
     }
 
-    function err() {
+    function err(e: Error) {
       cleanup();
-      rej();
+      rej(e);
     }
 
     function cleanup() {
