@@ -104,15 +104,16 @@ describe('maybeIterator', () => {
   it('Should reject on error before first element', async () => {
     const iterator = new AsyncIterator();
     scheduleTask(() => { iterator.emit('error', new Error('myError')); });
-    
+
     let error = false;
 
     try {
       await maybeIterator(iterator);
-    } catch (e) {
-      error = true
+    }
+    catch (e) {
+      error = true;
     }
 
     expect(error).to.be.true;
-  })
+  });
 });
