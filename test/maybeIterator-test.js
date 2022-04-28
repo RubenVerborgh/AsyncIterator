@@ -87,13 +87,13 @@ describe('maybeIterator', () => {
     it('fromArray', async () => {
       expect(await (await maybeIterator(fromArray([1, 2, 3]))).toArray()).to.deep.equal([1, 2, 3]);
     });
-    it('range', async () => {
+    it('range 1-3', async () => {
       expect(await (await maybeIterator(range(1, 3))).toArray()).to.deep.equal([1, 2, 3]);
     });
-    it('range', async () => {
+    it('range 1-1', async () => {
       expect(await (await maybeIterator(range(1, 1))).toArray()).to.deep.equal([1]);
     });
-    it('range', async () => {
+    it('MyItemBufferingIterator', async () => {
       expect(await (await maybeIterator(new MyItemBufferingIterator())).toArray()).to.deep.equal([8, 6, 4, 2, 0]);
     });
   });
