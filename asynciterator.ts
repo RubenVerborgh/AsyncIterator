@@ -2010,5 +2010,5 @@ export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null |
     source.on('readable', onReadable);
     source.on('end', onReadable);
     source.on('error', err);
-  })
+  });
 }
