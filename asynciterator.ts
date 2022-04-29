@@ -1972,31 +1972,28 @@ type InternalSource<T> =
  * @returns The AsyncIterator if it is not empty, otherwise undefined
  */
 export async function maybeIterator<T>(source: AsyncIterator<T>): Promise<null | AsyncIterator<T>> {
-  // Avoid creating a new iterator where possible
-  if ((source instanceof ArrayIterator || source instanceof BufferedIterator) && (source as any)._buffer?.length > 0)
-    return source;
+  return new Promise((res, rej) => {
+    let item;
 
-  if (source instanceof IntegerIterator && (source as any)._step >= 0 ? (source as any)._next <= (source as any)._last : (source as any)._next >= (source as any)._last)
-    return source;
+    if ((item = source.read()) !== null) {
+      res(source.prepend([item]));
+      return;
+    }
+    if (source.done) {
+      res(null);
+      return;
+    }
 
-
-  let item;
-  do {
-    if ((item = source.read()) !== null)
-      return source.prepend([item]);
-    await awaitReadable(source);
-  } while (!source.done);
-  return null;
-}
-
-function awaitReadable<T>(source: AsyncIterator<T>): Promise<void> {
-  return new Promise<void>((res, rej) => {
-    if (source.readable || source.done)
-      res();
-
-    function done() {
-      cleanup();
-      res();
+    function onReadable() {
+      if ((item = source.read()) !== null) {
+        cleanup();
+        res(source.prepend([item]));
+        return;
+      }
+      if (source.done) {
+        cleanup();
+        res(null);
+      }
     }
 
     function err(e: Error) {
@@ -2005,14 +2002,13 @@ function awaitReadable<T>(source: AsyncIterator<T>): Promise<void> {
     }
 
     function cleanup() {
-      source.removeListener('readable', done);
-      source.removeListener('end', done);
+      source.removeListener('readable', onReadable);
+      source.removeListener('end', onReadable);
       source.removeListener('error', err);
     }
 
-    source.on('readable', done);
-    source.on('end', done);
+    source.on('readable', onReadable);
+    source.on('end', onReadable);
     source.on('error', err);
-  });
+  })
 }
-
