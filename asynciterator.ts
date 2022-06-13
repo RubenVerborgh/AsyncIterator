@@ -623,7 +623,6 @@ export class SingletonIterator<T> extends AsyncIterator<T> {
   }
 }
 
-
 /**
   An iterator that emits the items of a given array.
   @extends module:asynciterator.AsyncIterator
@@ -1966,3 +1965,49 @@ type SourceExpression<T> =
 
 type InternalSource<T> =
   AsyncIterator<T> & { _destination: AsyncIterator<any> };
+
+/**
+ * @param source An AsyncIterator
+ * @returns The AsyncIterator if it is not empty, otherwise undefined
+ */
+export async function ensureNonEmpty<T>(source: AsyncIterator<T>): Promise<null | AsyncIterator<T>> {
+  return new Promise((res, rej) => {
+    let item;
+
+    if ((item = source.read()) !== null) {
+      res(source.prepend([item]));
+      return;
+    }
+    if (source.done) {
+      res(null);
+      return;
+    }
+
+    function onReadable() {
+      if ((item = source.read()) !== null) {
+        cleanup();
+        res(source.prepend([item]));
+        return;
+      }
+      if (source.done) {
+        cleanup();
+        res(null);
+      }
+    }
+
+    function err(e: Error) {
+      cleanup();
+      rej(e);
+    }
+
+    function cleanup() {
+      source.removeListener('readable', onReadable);
+      source.removeListener('end', onReadable);
+      source.removeListener('error', err);
+    }
+
+    source.on('readable', onReadable);
+    source.on('end', onReadable);
+    source.on('error', err);
+  });
+}
