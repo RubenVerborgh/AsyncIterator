@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import {
   AsyncIterator,
   fromArray,
-  maybeIterator,
+  ensureNonEmpty,
   range,
   empty,
   scheduleTask,
@@ -62,45 +62,45 @@ class MyItemBufferingIterator extends AsyncIterator {
   }
 }
 
-describe('maybeIterator', () => {
+describe('ensureNonEmpty', () => {
   // TODO:
   describe('Should return null on empty iterators', () => {
     it('fromArray', async () => {
-      expect(await maybeIterator(fromArray([]))).to.be.null;
+      expect(await ensureNonEmpty(fromArray([]))).to.be.null;
     });
     it('range', async () => {
-      expect(await maybeIterator(range(0, -1))).to.be.null;
+      expect(await ensureNonEmpty(range(0, -1))).to.be.null;
     });
     it('MyIterator', async () => {
-      expect(await maybeIterator(new MyIterator())).to.be.null;
+      expect(await ensureNonEmpty(new MyIterator())).to.be.null;
     });
     it('empty', async () => {
-      expect(await maybeIterator(empty())).to.be.null;
+      expect(await ensureNonEmpty(empty())).to.be.null;
     });
     it('awaited empty', async () => {
       const e = empty();
       // Add an await so that scheduleMacroTask will have run
       await Promise.resolve();
 
-      expect(await maybeIterator(e)).to.be.null;
+      expect(await ensureNonEmpty(e)).to.be.null;
     });
     it('MyBufferingIterator', async () => {
-      expect(await maybeIterator(new MyBufferingIterator())).to.be.null;
+      expect(await ensureNonEmpty(new MyBufferingIterator())).to.be.null;
     });
   });
 
   describe('Should return an iterator with all elements if the iterator is not empty', () => {
     it('fromArray', async () => {
-      expect(await (await maybeIterator(fromArray([1, 2, 3]))).toArray()).to.deep.equal([1, 2, 3]);
+      expect(await (await ensureNonEmpty(fromArray([1, 2, 3]))).toArray()).to.deep.equal([1, 2, 3]);
     });
     it('range 1-3', async () => {
-      expect(await (await maybeIterator(range(1, 3))).toArray()).to.deep.equal([1, 2, 3]);
+      expect(await (await ensureNonEmpty(range(1, 3))).toArray()).to.deep.equal([1, 2, 3]);
     });
     it('range 1-1', async () => {
-      expect(await (await maybeIterator(range(1, 1))).toArray()).to.deep.equal([1]);
+      expect(await (await ensureNonEmpty(range(1, 1))).toArray()).to.deep.equal([1]);
     });
     it('MyItemBufferingIterator', async () => {
-      expect(await (await maybeIterator(new MyItemBufferingIterator())).toArray()).to.deep.equal([8, 6, 4, 2, 0]);
+      expect(await (await ensureNonEmpty(new MyItemBufferingIterator())).toArray()).to.deep.equal([8, 6, 4, 2, 0]);
     });
   });
 
@@ -114,7 +114,7 @@ describe('maybeIterator', () => {
     let error = false;
 
     try {
-      await maybeIterator(iterator);
+      await ensureNonEmpty(iterator);
     }
     catch (e) {
       error = true;
