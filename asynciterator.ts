@@ -1514,25 +1514,27 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
   private _sources : InternalSource<T>[] = [];
-  private _pending? : { sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
+  private _pending? : { loading: boolean, sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
   private _currentSource = -1;
+  protected _destroySources: boolean;
 
   /**
     Creates a new `UnionIterator`.
     @param {module:asynciterator.AsyncIterator|Array} [sources] The sources to read from
     @param {object} [options] Settings of the iterator
+    @param {boolean} [options.destroySource=true] Whether the sources should be destroyed when transformed iterator is closed or destroyed
   */
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
                        AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
                        AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>,
-              options: BufferedIteratorOptions = {}) {
+              options: BufferedIteratorOptions & { destroySources?: boolean } = {}) {
     super(options);
     const autoStart = options.autoStart !== false;
 
     // Sources have been passed as an iterator
     if (isEventEmitter(sources)) {
       sources.on('error', error => this.emit('error', error));
-      this._pending = { sources: sources as AsyncIterator<MaybePromise<AsyncIterator<T>>> };
+      this._pending = { loading: false, sources: sources as AsyncIterator<MaybePromise<AsyncIterator<T>>> };
       if (autoStart)
         this._loadSources();
     }
@@ -1545,13 +1547,15 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     else if (autoStart) {
       this.close();
     }
+    // Set other options
+    this._destroySources = options.destroySources !== false;
   }
 
-  // Loads sources passed as an iterator
+  // Loads pending sources into the sources list
   protected _loadSources() {
     // Obtain sources iterator
     const sources = this._pending!.sources!;
-    delete this._pending!.sources;
+    this._pending!.loading = true;
 
     // Close immediately if done
     if (sources.done) {
@@ -1598,7 +1602,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   // Reads items from the next sources
   protected _read(count: number, done: () => void): void {
     // Start source loading if needed
-    if (this._pending?.sources)
+    if (this._pending?.loading === false)
       this._loadSources();
 
     // Try to read `count` items
@@ -1621,6 +1625,22 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     if (!this._pending && this._sources.length === 0)
       this.close();
     done();
+  }
+
+  protected _end(destroy: boolean = false) {
+    super._end(destroy);
+
+    // Destroy all sources that are still readable
+    if (this._destroySources) {
+      for (const source of this._sources)
+        source.destroy();
+
+      // Also close the sources stream if applicable
+      if (this._pending) {
+        this._pending!.sources!.destroy();
+        delete this._pending;
+      }
+    }
   }
 }
 
