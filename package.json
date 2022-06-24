@@ -51,7 +51,7 @@
     "husky": "^4.2.5",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",
-    "mocha": "^8.0.0",
+    "mocha": "^9.0.0",
     "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0",
     "typescript": "^3.9.5"
