@@ -1241,7 +1241,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
 }
 
 function destinationEmitError<S>(this: InternalSource<S>, error: Error) {
-  this._destination.emit('error', error);
+  this._destination!.emit('error', error);
 }
 function destinationCloseWhenDone<S>(this: InternalSource<S>) {
   (this._destination as any)._closeWhenDone();
@@ -1985,4 +1985,4 @@ type SourceExpression<T> =
   (() => MaybePromise<AsyncIterator<T>>);
 
 type InternalSource<T> =
-  AsyncIterator<T> & { _destination: AsyncIterator<any> };
+  AsyncIterator<T> & { _destination?: AsyncIterator<any> };
