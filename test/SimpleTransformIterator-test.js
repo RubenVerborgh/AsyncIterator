@@ -1089,154 +1089,6 @@ describe('SimpleTransformIterator', () => {
     });
   });
 
-  describe('The AsyncIterator#map function', () => {
-    it('should be a function', () => {
-      expect(AsyncIterator.prototype.map).to.be.a('function');
-    });
-
-    describe('when called on an iterator', () => {
-      let iterator, map, result;
-      before(() => {
-        let i = 0;
-        iterator = new ArrayIterator(['a', 'b', 'c']);
-        map = sinon.spy(item => item + (++i));
-        result = iterator.map(map);
-      });
-
-      describe('the return value', () => {
-        const items = [];
-        before(done => {
-          result.on('data', item => { items.push(item); });
-          result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should execute the map function on all items in order', () => {
-          items.should.deep.equal(['a1', 'b2', 'c3']);
-        });
-
-        it('should call the map function once for each item', () => {
-          map.should.have.been.calledThrice;
-        });
-
-        it('should call the map function with the returned iterator as `this`', () => {
-          map.alwaysCalledOn(result).should.be.true;
-        });
-      });
-    });
-
-    describe('when called on an iterator with a `this` argument', () => {
-      const self = {};
-      let iterator, map, result;
-      before(() => {
-        let i = 0;
-        iterator = new ArrayIterator(['a', 'b', 'c']);
-        map = sinon.spy(item => item + (++i));
-        result = iterator.map(map, self);
-      });
-
-      describe('the return value', () => {
-        const items = [];
-        before(done => {
-          result.on('data', item => { items.push(item); });
-          result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should execute the map function on all items in order', () => {
-          items.should.deep.equal(['a1', 'b2', 'c3']);
-        });
-
-        it('should call the map function once for each item', () => {
-          map.should.have.been.calledThrice;
-        });
-
-        it('should call the map function with the passed argument as `this`', () => {
-          map.alwaysCalledOn(self).should.be.true;
-        });
-      });
-    });
-  });
-
-  describe('The AsyncIterator#filter function', () => {
-    it('should be a function', () => {
-      expect(AsyncIterator.prototype.filter).to.be.a('function');
-    });
-
-    describe('when called on an iterator', () => {
-      let iterator, filter, result;
-      before(() => {
-        iterator = new ArrayIterator(['a', 'b', 'c']);
-        filter = sinon.spy(item => item !== 'b');
-        result = iterator.filter(filter);
-      });
-
-      describe('the return value', () => {
-        const items = [];
-        before(done => {
-          result.on('data', item => { items.push(item); });
-          result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should execute the filter function on all items in order', () => {
-          items.should.deep.equal(['a', 'c']);
-        });
-
-        it('should call the filter function once for each item', () => {
-          filter.should.have.been.calledThrice;
-        });
-
-        it('should call the filter function with the returned iterator as `this`', () => {
-          filter.alwaysCalledOn(result).should.be.true;
-        });
-      });
-    });
-
-    describe('when called on an iterator with a `this` argument', () => {
-      const self = {};
-      let iterator, filter, result;
-      before(() => {
-        iterator = new ArrayIterator(['a', 'b', 'c']);
-        filter = sinon.spy(item => item !== 'b');
-        result = iterator.filter(filter, self);
-      });
-
-      describe('the return value', () => {
-        const items = [];
-        before(done => {
-          result.on('data', item => { items.push(item); });
-          result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should execute the filter function on all items in order', () => {
-          items.should.deep.equal(['a', 'c']);
-        });
-
-        it('should call the filter function once for each item', () => {
-          filter.should.have.been.calledThrice;
-        });
-
-        it('should call the filter function with the passed argument as `this`', () => {
-          filter.alwaysCalledOn(self).should.be.true;
-        });
-      });
-    });
-  });
-
   describe('The AsyncIterator#prepend function', () => {
     it('should be a function', () => {
       expect(AsyncIterator.prototype.prepend).to.be.a('function');
@@ -1327,36 +1179,6 @@ describe('SimpleTransformIterator', () => {
     });
   });
 
-  describe('The AsyncIterator#skip function', () => {
-    it('should be a function', () => {
-      expect(AsyncIterator.prototype.skip).to.be.a('function');
-    });
-
-    describe('when called on an iterator', () => {
-      let iterator, result;
-      before(() => {
-        iterator = new ArrayIterator(['a', 'b', 'c', 'd', 'e']);
-        result = iterator.skip(2);
-      });
-
-      describe('the return value', () => {
-        const items = [];
-        before(done => {
-          result.on('data', item => { items.push(item); });
-          result.on('end', done);
-        });
-
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
-        it('should skip the given number of items', () => {
-          items.should.deep.equal(['c', 'd', 'e']);
-        });
-      });
-    });
-  });
-
   describe('The AsyncIterator#take function', () => {
     it('should be a function', () => {
       expect(AsyncIterator.prototype.take).to.be.a('function');
@@ -1382,6 +1204,62 @@ describe('SimpleTransformIterator', () => {
 
         it('should take the given number of items', () => {
           items.should.deep.equal(['a', 'b', 'c']);
+        });
+      });
+    });
+
+    describe('on an array', () => {
+      let iterator, source;
+      before(() => {
+        source = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]);
+        iterator = source.take(4);
+      });
+
+      describe('when reading items', () => {
+        const items = [];
+        before(done => {
+          iterator.on('data', item => { items.push(item); });
+          iterator.on('end', done);
+        });
+
+        it('should return items to the specified take', () => {
+          items.should.deep.equal([0, 1, 2, 3]);
+        });
+      });
+    });
+
+    describe('with a source that emits 0 items', () => {
+      it('should not return any items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([]).take(10);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([]);
+          done();
+        });
+      });
+    });
+
+    describe('with a take of 0 items', () => {
+      it('should not emit any items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([0, 1, 2]).take(0);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([]);
+          done();
+        });
+      });
+    });
+
+    describe('with a take of Infinity items', () => {
+      it('should emit all items', done => {
+        const items = [];
+        const iterator = new ArrayIterator([0, 1, 2, 3, 4, 5, 6]).take(Infinity);
+        iterator.on('data', item => { items.push(item); });
+        iterator.on('end', () => {
+          items.should.deep.equal([0, 1, 2, 3, 4, 5, 6]);
+          done();
         });
       });
     });
