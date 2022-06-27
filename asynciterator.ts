@@ -1506,6 +1506,16 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
     if (!this._transformerQueue.length)
       this.close();
   }
+
+  protected _end(destroy: boolean) {
+    super._end(destroy);
+
+    // Also destroy the open transformers left in the queue
+    if (this._destroySource) {
+      for (const item of this._transformerQueue)
+        item.transformer.destroy();
+    }
+  }
 }
 
 /**

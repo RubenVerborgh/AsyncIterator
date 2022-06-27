@@ -386,4 +386,108 @@ describe('MultiTransformIterator', () => {
       });
     });
   });
+
+  describe('A MultiTransformIterator with transformers that never end', () => {
+    let iterator, source, multiTransform;
+    beforeEach(() => {
+      source = new ArrayIterator(['a', 'b', 'c', 'd', 'e', 'f']);
+      multiTransform = sinon.spy(item => {
+        const transformer = new BufferedIterator();
+        scheduleTask(() => {
+          transformer._push(`${item}1`);
+          transformer._push(`${item}2`);
+          transformer._push(`${item}3`);
+        });
+        return transformer;
+      });
+    });
+
+    describe('with autoStart and with destroySource', () => {
+      beforeEach(() => {
+        iterator = new MultiTransformIterator(source, { multiTransform, autoStart: true, destroySource: true });
+      });
+
+      it('should destroy the transformers in the queue when closing', async () => {
+        // Wait until the iterator has produced one result
+        await new Promise(resolve => iterator.on('data', resolve));
+
+        // Immediately close the iterator
+        iterator.close();
+
+        // Wait until the iterator has ended
+        await new Promise(resolve => iterator.on('end', resolve));
+
+        // All transformers in the queue must have been closed
+        iterator._transformerQueue.length.should.equal(4);
+        for (const item of iterator._transformerQueue)
+          item.transformer.closed.should.be.true;
+      });
+    });
+
+    describe('without autoStart and with destroySource', () => {
+      beforeEach(() => {
+        iterator = new MultiTransformIterator(source, { multiTransform, autoStart: false, destroySource: true });
+      });
+
+      it('should destroy the transformers in the queue when closing', async () => {
+        // Wait until the iterator has produced one result
+        await new Promise(resolve => iterator.on('data', resolve));
+
+        // Immediately close the iterator
+        iterator.close();
+
+        // Wait until the iterator has ended
+        await new Promise(resolve => iterator.on('end', resolve));
+
+        // All transformers in the queue must have been closed
+        iterator._transformerQueue.length.should.equal(4);
+        for (const item of iterator._transformerQueue)
+          item.transformer.closed.should.be.true;
+      });
+    });
+
+    describe('with autoStart and without destroySource', () => {
+      beforeEach(() => {
+        iterator = new MultiTransformIterator(source, { multiTransform, autoStart: true, destroySource: false });
+      });
+
+      it('should destroy the transformers in the queue when closing', async () => {
+        // Wait until the iterator has produced one result
+        await new Promise(resolve => iterator.on('data', resolve));
+
+        // Immediately close the iterator
+        iterator.close();
+
+        // Wait until the iterator has ended
+        await new Promise(resolve => iterator.on('end', resolve));
+
+        // All transformers in the queue must not have been closed
+        iterator._transformerQueue.length.should.equal(4);
+        for (const item of iterator._transformerQueue)
+          item.transformer.closed.should.be.false;
+      });
+    });
+
+    describe('without autoStart and without destroySource', () => {
+      beforeEach(() => {
+        iterator = new MultiTransformIterator(source, { multiTransform, autoStart: false, destroySource: false });
+      });
+
+      it('should destroy the transformers in the queue when closing', async () => {
+        // Wait until the iterator has produced one result
+        await new Promise(resolve => iterator.on('data', resolve));
+
+        // Immediately close the iterator
+        iterator.close();
+
+        // Wait until the iterator has ended
+        await new Promise(resolve => iterator.on('end', resolve));
+
+        // All transformers in the queue must not have been closed
+        iterator._transformerQueue.length.should.equal(4);
+        for (const item of iterator._transformerQueue)
+          item.transformer.closed.should.be.false;
+      });
+    });
+  });
 });
