@@ -1198,10 +1198,6 @@ describe('SimpleTransformIterator', () => {
           result.on('end', done);
         });
 
-        it('should be a SimpleTransformIterator', () => {
-          result.should.be.an.instanceof(SimpleTransformIterator);
-        });
-
         it('should take the given number of items', () => {
           items.should.deep.equal(['a', 'b', 'c']);
         });
