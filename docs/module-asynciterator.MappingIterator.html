@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Class: AsyncIterator</title>
+    <title>Class: MappingIterator</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -1211,7 +1211,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="module-asynciterator.AsyncIterator.html">Class: AsyncIterator</h1>
+        <h1 class="page-title" data-filename="module-asynciterator.MappingIterator.html">Class: MappingIterator</h1>
         
 
 
@@ -1222,10 +1222,11 @@
     <h2>
         <span class="ancestors"><a href="module-asynciterator.html">asynciterator</a>.</span>
     
-    AsyncIterator
+    MappingIterator
     </h2>
     
-        <div class="class-description"><p>An asynchronous iterator provides pull-based access to a stream of objects.</p></div>
+        <div class="class-description"><p>An iterator that synchronously transforms every item from its source
+by applying a mapping function.</p></div>
     
 </header>  
 
@@ -1237,14 +1238,14 @@
         
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="AsyncIterator">
+        <h4 class="name" id="MappingIterator">
             
-            new module:asynciterator.AsyncIterator<span class="signature">()</span>
+            new module:asynciterator.MappingIterator<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 70
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 689
         </div>
         
     </div>
@@ -1255,7 +1256,7 @@
     
     
     <div class="description">
-        <p>Creates a new <code>AsyncIterator</code>.</p>
+        <p>Applies the given mapping to the source iterator.</p>
     </div>
     
 
@@ -1311,7 +1312,7 @@
         <h3 class="subsection-title">Extends</h3>
         
         <ul>
-            <li>module:asynciterator.EventEmitter</li>
+            <li><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></li>
         </ul>
     
     
@@ -1563,8 +1564,10 @@ a value of <code>true</code> means items <em>might</em> be available.</p>
         <dl>
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="_changeState">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#_changeState">inherited</a></span>
             
             <span class="type-signature ">protected</span>_changeState<span class="signature">(newState, <span class="optional">eventAsync</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{boolean}</span>
         </h4>
@@ -1761,8 +1764,10 @@ possibly emitting events to signal that change.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="_destroy">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#_destroy">inherited</a></span>
             
             _destroy<span class="signature">(cause, callback)</span>
         </h4>
@@ -1913,8 +1918,10 @@ Implementers can override this, but this should not be called directly.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="_end">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#_end">inherited</a></span>
             
             <span class="type-signature ">protected</span>_end<span class="signature">(<span class="optional">destroy</span>)</span>
         </h4>
@@ -2051,8 +2058,10 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="_endAsync">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#_endAsync">inherited</a></span>
             
             <span class="type-signature ">protected</span>_endAsync<span class="signature">()</span>
         </h4>
@@ -2122,8 +2131,10 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="_toStringDetails">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#_toStringDetails">inherited</a></span>
             
             <span class="type-signature ">protected</span>_toStringDetails<span class="signature">()</span>
         </h4>
@@ -2193,8 +2204,10 @@ typically, <code>close</code> is responsible for calling <code>_end</code>.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="append">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#append">inherited</a></span>
             
             append<span class="signature">(items)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -2342,8 +2355,10 @@ After this operation, only read the returned iterator instead of the current one
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="clone">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#clone">inherited</a></span>
             
             clone<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -2445,8 +2460,10 @@ After this operation, only read the returned copies instead of the original iter
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="close">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#close">inherited</a></span>
             
             close<span class="signature">()</span>
         </h4>
@@ -2523,8 +2540,10 @@ After this, the iterator will end asynchronously.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="copyProperties">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#copyProperties">inherited</a></span>
             
             copyProperties<span class="signature">(source, propertyNames)</span>
         </h4>
@@ -2662,8 +2681,10 @@ After this, the iterator will end asynchronously.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="destroy">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#destroy">inherited</a></span>
             
             destroy<span class="signature">(<span class="optional">cause</span>)</span>
         </h4>
@@ -2797,8 +2818,10 @@ but instead implement <a href="module-asynciterator.AsyncIterator.html#_destroy"
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="forEach">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#forEach">inherited</a></span>
             
             forEach<span class="signature">(callback, self)</span>
         </h4>
@@ -2949,8 +2972,10 @@ Switches the iterator to flow mode.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="getProperties">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#getProperties">inherited</a></span>
             
             getProperties<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{object}</span>
         </h4>
@@ -3049,8 +3074,10 @@ Switches the iterator to flow mode.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="getProperty">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#getProperty">inherited</a></span>
             
             getProperty<span class="signature">(propertyName, <span class="optional">callback</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{object}</span>
         </h4>
@@ -3235,8 +3262,10 @@ and calls the callback with the property the moment it is set.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="map">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#map">inherited</a></span>
             
             map<span class="signature">(map, self)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -3416,8 +3445,10 @@ After this operation, only read the returned iterator instead of the current one
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="prepend">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#prepend">inherited</a></span>
             
             prepend<span class="signature">(items)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -3565,8 +3596,10 @@ After this operation, only read the returned iterator instead of the current one
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="range">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#range">inherited</a></span>
             
             range<span class="signature">(start, end)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -3734,8 +3767,10 @@ The current iterator may not be read anymore until the returned iterator ends.</
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="read">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#read">inherited</a></span>
             
             read<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{object}</span>
         </h4>
@@ -3843,8 +3878,10 @@ When in flow mode, do not use the <code>read</code> method.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="setProperties">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#setProperties">inherited</a></span>
             
             setProperties<span class="signature">(properties)</span>
         </h4>
@@ -3959,8 +3996,10 @@ When in flow mode, do not use the <code>read</code> method.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="setProperty">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#setProperty">inherited</a></span>
             
             setProperty<span class="signature">(propertyName, value)</span>
         </h4>
@@ -4110,8 +4149,10 @@ When in flow mode, do not use the <code>read</code> method.</p>
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="skip">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#skip">inherited</a></span>
             
             skip<span class="signature">(offset)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -4256,8 +4297,10 @@ The current iterator may not be read anymore until the returned iterator ends.</
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="surround">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#surround">inherited</a></span>
             
             surround<span class="signature">(prepend, append)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -4431,8 +4474,10 @@ After this operation, only read the returned iterator instead of the current one
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="take">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#take">inherited</a></span>
             
             take<span class="signature">(limit)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -4577,8 +4622,10 @@ The current iterator may not be read anymore until the returned iterator ends.</
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="toArray">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#toArray">inherited</a></span>
             
             toArray<span class="signature">(<span class="optional">options</span>)</span>
         </h4>
@@ -4752,8 +4799,10 @@ The current iterator may not be read anymore until the returned iterator ends.</
         
             
 <dt>
-    <div class="nameContainer">
+    <div class="nameContainer inherited">
         <h4 class="name" id="transform">
+            
+                <span class="inherited"><a href="module-asynciterator.AsyncIterator.html#transform">inherited</a></span>
             
             transform<span class="signature">(<span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
         </h4>
@@ -5300,7 +5349,7 @@ After this operation, only read the returned iterator instead of the current one
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Jul 04 2022 13:12:55 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Jul 04 2022 13:12:56 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
