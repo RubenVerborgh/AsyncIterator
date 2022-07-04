@@ -2,7 +2,14 @@
   "name": "asynciterator",
   "version": "3.4.2",
   "description": "An asynchronous iterator library for advanced object pipelines.",
-  "author": "Ruben Verborgh <ruben@verborgh.org>",
+  "author": "Ruben Verborgh <ruben@verborgh.org> (https://ruben.verborgh.org/)",
+  "contributors": [
+    "Ruben Taelman <ruben.taelman@ugent.be> (https://www.rubensworks.net/)",
+    "Jesse Wright <jmwright.045@gmail.com> (https://github.com/jeswr/)",
+    "Jacopo Scazzosi <jacopo@scazzosi.com> (https://jacoscaz.com/)"
+  ],
+  "license": "MIT",
+  "repository": "RubenVerborgh/AsyncIterator",
   "type": "module",
   "main": "dist/asynciterator.cjs",
   "exports": {
@@ -35,8 +42,6 @@
     "docs": "npm run build:module && npm run jsdoc",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
-  "license": "MIT",
-  "repository": "RubenVerborgh/AsyncIterator",
   "devDependencies": {
     "@babel/cli": "^7.10.1",
     "@babel/core": "^7.10.2",
