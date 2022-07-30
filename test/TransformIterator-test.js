@@ -6,6 +6,7 @@ import {
   TransformIterator,
   wrap,
   scheduleTask,
+  DESTINATION,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -359,7 +360,7 @@ describe('TransformIterator', () => {
       });
 
       it('should remove itself as destination from the source', () => {
-        source.should.not.have.key('_destination');
+        source.should.not.have.key(DESTINATION);
       });
     });
   });
@@ -466,7 +467,7 @@ describe('TransformIterator', () => {
       });
 
       it('should remove itself as destination from the source', () => {
-        source.should.not.have.key('_destination');
+        source.should.not.have.key(DESTINATION);
       });
     });
   });
@@ -575,7 +576,7 @@ describe('TransformIterator', () => {
       });
 
       it('should remove itself as destination from the source', () => {
-        source.should.not.have.key('_destination');
+        source.should.not.have.key(DESTINATION);
       });
     });
   });
