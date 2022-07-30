@@ -320,7 +320,7 @@ export class AsyncIterator<T> extends EventEmitter {
     const items: T[] = [];
     const limit = typeof options?.limit === 'number' ? options.limit : Infinity;
 
-    return limit <= 0 ? Promise.resolve(items) : new Promise<T[]>((resolve, reject) => {
+    return this.ended || limit <= 0 ? Promise.resolve(items) : new Promise<T[]>((resolve, reject) => {
       // Collect and return all items up to the limit
       const resolveItems = () => resolve(items);
       const pushItem = (item: T) => {
@@ -1203,6 +1203,10 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   }
 
   set source(value: AsyncIterator<S> | undefined) {
+    // Do not change sources if the iterator is already done
+    if (this.done)
+      return;
+
     // Validate and set source
     const source = this._source = this._validateSource(value);
     source._destination = this;
@@ -1784,6 +1788,10 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   }
 
   set source(value: AsyncIterator<T> | undefined) {
+    // Do not change sources if the iterator is already done
+    if (this.done)
+      return;
+
     // Validate and set the source
     const source = this._source = this._validateSource(value);
     // Create a history reader for the source if none already existed
@@ -1991,6 +1999,10 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 
   protected set source(source: InternalSource<T>) {
+    // Do not change sources if the iterator is already done
+    if (this.done)
+      return;
+
     // Process an iterable source
     if (isIterable(source))
       source = source[Symbol.iterator]() as any;

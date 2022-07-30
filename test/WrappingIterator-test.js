@@ -148,7 +148,35 @@ describe('WrappingIterator', () => {
     });
   });
 
+  describe('with a promise that resolves after closing', () => {
+    let iterator;
+    before(() => {
+      let resolve;
+      iterator = new WrappingIterator(new Promise(r => {
+        resolve = r;
+      }));
+      iterator.close();
+      resolve([1, 2, 3]);
+    });
+
+    it('should not emit any items', async () => {
+      expect(await iterator.toArray()).to.deep.equal([]);
+    });
+  });
+
   describe('with an array source', () => {
+    let iterator, source;
+    before(() => {
+      source = [0, 1, 2, 3, 4];
+      iterator = new WrappingIterator(source);
+    });
+
+    it('should emit all items', async () => {
+      expect(await iterator.toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+  });
+
+  describe('with a promisified array source', () => {
     let iterator, source;
     before(() => {
       source = Promise.resolve([0, 1, 2, 3, 4]);

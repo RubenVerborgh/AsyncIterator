@@ -83,6 +83,10 @@ describe('ClonedIterator', () => {
         clone.close();
       });
 
+      it('should not do anything when a source is set', () => {
+        clone.source = {};
+      });
+
       it('should have undefined as `source` property', () => {
         expect(clone.source).to.be.undefined;
       });
