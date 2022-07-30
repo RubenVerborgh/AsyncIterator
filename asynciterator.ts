@@ -1990,18 +1990,30 @@ class HistoryReader<T> {
 export class WrappingIterator<T> extends AsyncIterator<T> {
   protected _source: InternalSource<T> | null = null;
 
-  constructor(source: MaybePromise<IterableSource<T>>) {
+  constructor(source?: MaybePromise<IterableSource<T>>) {
     super();
-    if (!isPromise(source))
-      this.source = source as any;
-    else
-      source.then(s => this.source = s as any).catch(e => this.emit('error', e));
+
+    // If promise, set up a temporary source and replace when ready
+    if (isPromise(source)) {
+      this._source = new AsyncIterator() as any;
+      source.then(value => {
+        this._source = null;
+        this.source = value;
+      }).catch(error => this.emit('error', error));
+    }
+    // Otherwise, set the source synchronously
+    else if (source) {
+      this.source = source;
+    }
   }
 
-  protected set source(source: InternalSource<T>) {
+  set source(value: IterableSource<T>) {
+    let source: InternalSource<T> = value as any;
     // Do not change sources if the iterator is already done
     if (this.done)
       return;
+    if (this._source !== null)
+      throw new Error('The source cannot be changed after it has been set');
 
     // Process an iterable source
     if (isIterable(source))

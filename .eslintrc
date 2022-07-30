@@ -69,7 +69,7 @@
     no-redeclare: off,
     "@typescript-eslint/no-redeclare": ["error"],
     no-restricted-properties: error,
-    no-return-assign: off,
+    no-return-assign: error,
     no-return-await: error,
     no-script-url: error,
     no-self-assign: error,

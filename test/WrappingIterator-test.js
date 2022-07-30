@@ -16,19 +16,116 @@ import { Readable } from 'stream';
 describe('WrappingIterator', () => {
   describe('The WrappingIterator function', () => {
     describe('the result when called with `new`', () => {
-      let instance;
-      before(() => { instance = new WrappingIterator(new EmptyIterator()); });
+      let iterator;
+      before(() => { iterator = new WrappingIterator(); });
 
-      it('should be an WrappingIterator object', () => {
-        instance.should.be.an.instanceof(WrappingIterator);
+      it('should be an AsyncWrapper object', () => {
+        iterator.should.be.an.instanceof(WrappingIterator);
       });
 
       it('should be an AsyncIterator object', () => {
-        instance.should.be.an.instanceof(AsyncIterator);
+        iterator.should.be.an.instanceof(AsyncIterator);
       });
 
       it('should be an EventEmitter object', () => {
-        instance.should.be.an.instanceof(EventEmitter);
+        iterator.should.be.an.instanceof(EventEmitter);
+      });
+    });
+  });
+
+  describe('constructed without a source', () => {
+    let iterator, source;
+    before(() => {
+      source = new AsyncIterator();
+      source.read = () => 'item';
+      iterator = new WrappingIterator();
+    });
+
+    describe('before a source is set', () => {
+      it('should not be readable', () => {
+        expect(iterator.readable).to.be.false;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return null upon read', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+
+    describe('after a source is set', () => {
+      before(() => {
+        iterator.source = new ArrayIterator([1, 2, 3]);
+      });
+
+      it('should be readable', () => {
+        expect(iterator.readable).to.be.true;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return the first item upon read', () => {
+        expect(iterator.read()).to.equal(1);
+      });
+
+      it('disallows setting another source', () => {
+        (() => { iterator.source = new EmptyIterator(); })
+          .should.throw('The source cannot be changed after it has been set');
+      });
+    });
+  });
+
+  describe('constructed with a promise to a source', () => {
+    let iterator, resolve;
+    before(() => {
+      iterator = new WrappingIterator(new Promise(r => {
+        resolve = r;
+      }));
+    });
+
+    describe('before the promise resolves', () => {
+      it('should not be readable', () => {
+        expect(iterator.readable).to.be.false;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return null upon read', () => {
+        expect(iterator.read()).to.be.null;
+      });
+
+      it('disallows setting another source', () => {
+        (() => { iterator.source = new EmptyIterator(); })
+          .should.throw('The source cannot be changed after it has been set');
+      });
+    });
+
+    describe('after the promise resolves', () => {
+      before(() => {
+        resolve(new ArrayIterator([1, 2, 3]));
+      });
+
+      it('should be readable', () => {
+        expect(iterator.readable).to.be.true;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return the first item upon read', () => {
+        expect(iterator.read()).to.equal(1);
+      });
+
+      it('disallows setting another source', () => {
+        (() => { iterator.source = new EmptyIterator(); })
+          .should.throw('The source cannot be changed after it has been set');
       });
     });
   });
