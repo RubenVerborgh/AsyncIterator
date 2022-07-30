@@ -86,6 +86,25 @@ describe('WrappingIterator', () => {
     });
   });
 
+  describe('with an iterable that emits null values', () => {
+    let iterator;
+    beforeEach(() => {
+      iterator = new WrappingIterator((function * () {
+        yield 0;
+        yield null;
+        yield null;
+        yield 1;
+        yield null;
+        yield null;
+      })());
+    });
+
+    it('should skip null values', async () => {
+      const arr = await iterator.toArray();
+      expect(arr).to.deep.equal([0, 1]);
+    });
+  });
+
   describe('with an iterator that emits one item', () => {
     let iterator;
     before(() => {

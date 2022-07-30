@@ -2000,9 +2000,12 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
       source = new EventEmitter() as any;
       source.read = (): T | null => {
         if (iterator !== null) {
-          const item = iterator.next();
-          if (!item.done)
-            return item.value;
+          // Skip any null values inside of the iterator
+          let next: IteratorResult<T>;
+          while (!(next = iterator.next()).done) {
+            if (next.value !== null)
+              return next.value;
+          }
           // No remaining values, so stop iterating
           iterator = null;
           this.close();
