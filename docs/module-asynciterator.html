@@ -1208,6 +1208,28 @@
             </ul>
         </li>
     
+        <li class="item" data-name="module:asynciterator.WrappingIterator">
+            <span class="title">
+                <a href="module-asynciterator.WrappingIterator.html">module:asynciterator.WrappingIterator</a>
+                
+            </span>
+            <ul class="members itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="typedefs itemMembers">
+            
+            </ul>
+            <ul class="methods itemMembers">
+            
+            </ul>
+            <ul class="events itemMembers">
+            
+            </ul>
+        </li>
+    
     </ul>
 </div>
     <div class="main">
@@ -1309,6 +1331,9 @@
         
             <dt><a href="module-asynciterator.UnionIterator.html">UnionIterator</a></dt>
             <dd></dd>
+        
+            <dt><a href="module-asynciterator.WrappingIterator.html">WrappingIterator</a></dt>
+            <dd></dd>
         </dl>
     
     
@@ -1378,6 +1403,51 @@ Items might still be available.</p>
     <div class="description">
         <p>ID of the CLOSING state.
 An iterator is closing if item generation is pending but will not be scheduled again.</p>
+    </div>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".DESTINATION"><span class="type-signature static">static,constant</span>module:asynciterator.DESTINATION</h4>
+    </div>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Key indicating the current consumer of a source.</p>
     </div>
     
     
@@ -1615,7 +1685,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1747
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1843
         </div>
         
     </div>
@@ -1686,7 +1756,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1761
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1857
         </div>
         
     </div>
@@ -1745,6 +1815,238 @@ An iterator is open if it can generate new items.</p>
             <td class="description last">
                 
                 <p>the items</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".fromIterable">
+            
+            <span class="type-signature static">static</span>module:asynciterator.fromIterable<span class="signature">(source)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1871
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator for the given Iterable.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>the iterable</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id=".fromIterator">
+            
+            <span class="type-signature static">static</span>module:asynciterator.fromIterator<span class="signature">(source)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1864
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates an iterator for the given Iterator.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>source</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Iterable</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>the iterator</p></td>
         </tr>
 	
 	
@@ -1873,7 +2175,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 681
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 677
         </div>
         
     </div>
@@ -1944,7 +2246,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1775
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1885
         </div>
         
     </div>
@@ -2202,7 +2504,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1754
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1850
         </div>
         
     </div>
@@ -2318,7 +2620,7 @@ An iterator is open if it can generate new items.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1768
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1878
         </div>
         
     </div>
@@ -2423,193 +2725,6 @@ An iterator is open if it can generate new items.</p>
     
 </dd>
 
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".wrap">
-            
-            <span class="type-signature static">static</span>module:asynciterator.wrap<span class="signature">(<span class="optional">source</span>, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{<a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>}</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1741
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates an iterator that wraps around a given iterator or readable stream.
-Use this to convert an iterator-like object into a full-featured AsyncIterator.
-After this operation, only read the returned iterator instead of the given one.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>source</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type"><a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a></span>
-|
-
-<span class="param-type">Readable</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>The source this iterator generates items from</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>Settings of the iterator</p></td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <h5>Returns:</h5>
-    
-
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Type</th>
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    
-        <tr>
-            
-            <td class="type">
-            
-                        <a href="module-asynciterator.AsyncIterator.html">module:asynciterator.AsyncIterator</a>
-                        
-                    
-            </td>
-            <td class="description last">A new iterator with the items from the given iterator</td>
-        </tr>
-    
-    </tbody>
-</table>
-
-    
-    
-    
-</dd>
-
         </dl>
     
     
@@ -2631,7 +2746,7 @@ After this operation, only read the returned iterator instead of the given one.<
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 125
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 121
         </div>
         
     </div>
@@ -2755,7 +2870,7 @@ You can then obtain items through <code>read</code> again.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 210
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 206
         </div>
         
     </div>
@@ -2826,7 +2941,7 @@ You can then obtain items through <code>read</code> again.</p>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 118
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 114
         </div>
         
     </div>
@@ -2902,7 +3017,7 @@ by calling <a href="module-asynciterator.AsyncIterator.html#read">module:asyncit
         
 
         <footer>
-            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Jul 04 2022 13:12:55 GMT+0000 (Coordinated Universal Time)
+            Documentation generated by <a target="_blank" href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Sun Jul 31 2022 13:00:12 GMT+0000 (Coordinated Universal Time)
         </footer>
     </div>
 </div>
