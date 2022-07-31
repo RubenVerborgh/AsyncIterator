@@ -1914,34 +1914,36 @@ export class ClonedIterator<T> extends TransformIterator<T> {
 // Stores the history of a source, so it can be cloned
 class HistoryReader<T> {
   private _source: AsyncIterator<T>;
-  private _clones: ClonedIterator<T>[] | null = null;
   private _history: T[] = [];
+  private _trackers: Set<ClonedIterator<T>> = new Set();
 
   constructor(source: AsyncIterator<T>) {
-    // If the source can still emit items, set up cloning
     this._source = source;
+
+    // If the source is still live, set up clone tracking;
+    // otherwise, the clones just read from the finished history
     if (!source.done) {
       // When the source becomes readable, makes all clones readable
       const setReadable = () => {
-        for (const clone of this._clones as ClonedIterator<T>[])
-          clone.readable = true;
+        for (const tracker of this._trackers)
+          tracker.readable = true;
       };
 
       // When the source errors, re-emits the error
       const emitError = (error: Error) => {
-        for (const clone of this._clones as ClonedIterator<T>[])
-          clone.emit('error', error);
+        for (const tracker of this._trackers)
+          tracker.emit('error', error);
       };
 
       // When the source ends, closes all clones that are fully read
       const end = () => {
         // Close the clone if all items had been emitted
-        for (const clone of this._clones as ClonedIterator<T>[]) {
-          if ((clone as any)._sourceStarted !== false &&
-            (clone as any)._readPosition === this._history.length)
-            clone.close();
+        for (const tracker of this._trackers) {
+          if ((tracker as any)._sourceStarted !== false &&
+            (tracker as any)._readPosition === this._history.length)
+            tracker.close();
         }
-        this._clones = null;
+        this._trackers.clear();
 
         // Remove source listeners, since no further events will be emitted
         source.removeListener('end', end);
@@ -1950,7 +1952,6 @@ class HistoryReader<T> {
       };
 
       // Listen to source events to trigger events in subscribed clones
-      this._clones = [];
       source.on('end', end);
       source.on('error', emitError);
       source.on('readable', setReadable);
@@ -1959,14 +1960,14 @@ class HistoryReader<T> {
 
   // Registers a clone for history updates
   register(clone: ClonedIterator<T>) {
-    if (this._clones !== null)
-      this._clones.push(clone);
+    // Tracking is only needed if the source is still live
+    if (!this._source.done)
+      this._trackers.add(clone);
   }
 
   // Unregisters a clone for history updates
   unregister(clone: ClonedIterator<T>) {
-    if (this._clones !== null)
-      this._clones = this._clones.filter(c => c !== clone);
+    this._trackers.delete(clone);
   }
 
   // Tries to read the item at the given history position
