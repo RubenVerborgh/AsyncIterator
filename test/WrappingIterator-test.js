@@ -130,6 +130,47 @@ describe('WrappingIterator', () => {
     });
   });
 
+  describe('with an AsyncIterator as source', () => {
+    let iterator, source;
+    before(() => {
+      source = new AsyncIterator();
+      source.read = () => 'item';
+      iterator = new WrappingIterator(source);
+    });
+
+    describe('before the source becomes readable', () => {
+      it('should not be readable', () => {
+        expect(iterator.readable).to.be.false;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return null upon read', () => {
+        expect(iterator.read()).to.be.null;
+      });
+    });
+
+    describe('after the source becomes readable', () => {
+      before(() => {
+        source.readable = true;
+      });
+
+      it('should not be readable', () => {
+        expect(iterator.readable).to.be.true;
+      });
+
+      it('should not have ended', () => {
+        expect(iterator.ended).to.be.false;
+      });
+
+      it('should return the item upon read', () => {
+        expect(iterator.read()).to.equal('item');
+      });
+    });
+  });
+
   describe('with an empty iterable', () => {
     let iterator;
     before(() => { iterator = fromIterable((function * () { /* empty */ })()); });
@@ -138,12 +179,13 @@ describe('WrappingIterator', () => {
       expect(iterator.readable).to.be.true;
     });
 
-    it('should end after the first invocation of read, which should return null', done => {
-      expect(iterator.once('end', done).read()).to.equal(null);
+    it('should end after reading null', done => {
+      iterator.on('end', done);
+      expect(iterator.read()).to.be.null;
     });
 
     it('should not be readable anymore', () => {
-      expect(iterator.readable).to.equal(false);
+      expect(iterator.readable).to.be.false;
     });
   });
 
@@ -309,7 +351,7 @@ describe('WrappingIterator', () => {
     });
   });
 
-  describe('with an AsyncIterator source', () => {
+  describe('with an ArrayIterator source', () => {
     let iterator, source;
     before(() => {
       source = new ArrayIterator([0, 1, 2, 3, 4]);
@@ -321,7 +363,7 @@ describe('WrappingIterator', () => {
     });
   });
 
-  describe('with a promisified AsyncIterator source', () => {
+  describe('with a promisified ArrayIterator source', () => {
     let iterator, source;
     before(() => {
       source = Promise.resolve(new ArrayIterator([0, 1, 2, 3, 4]));
@@ -383,8 +425,9 @@ describe('WrappingIterator', () => {
     let iterator;
     let source;
 
-    before(() => {
+    before(done => {
       source = new TransformIterator(new ArrayIterator([0, 1, 2, 3, 4]), { autoStart: true });
+      source.once('readable', done);
       iterator = new WrappingIterator(source);
       captureEvents(iterator, 'readable');
     });

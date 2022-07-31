@@ -2050,11 +2050,11 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 
     // Enable reading from source
     this._source = source;
-    this.readable = true;
+    this.readable = source.readable !== false;
   }
 
   read(): T | null {
-    if (this._source !== null) {
+    if (this._source !== null && this._source.readable !== false) {
       const item = this._source.read();
       if (item !== null)
         return item;
