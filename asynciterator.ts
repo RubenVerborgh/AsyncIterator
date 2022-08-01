@@ -1632,9 +1632,11 @@ export class UnionIterator<T> extends AsyncIterator<T> {
 
   /**
     Creates a new `UnionIterator`.
-    @param {module:asynciterator.AsyncIterator|Array} [sources] The sources to read from
+    @param {module:asynciterator.AsyncIterator|Array} [sources] The sources to read from.
     @param {object} [options] Settings of the iterator
     @param {boolean} [options.destroySource=true] Whether the sources should be destroyed when transformed iterator is closed or destroyed
+    @param {number} [options.maxParallelIterators=Infinity] The maximum number of iterators that can be read from simultaneously.
+    Setting equal to 1 will cause iterators to be read from sequentially and in order.
   */
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
                        AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
