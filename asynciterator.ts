@@ -1628,7 +1628,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   private _buffer = new LinkedList<AsyncIterator<T>>();
   private _sourceStarted: boolean = false;
   private _destroySources: boolean;
-  private _maxBufferSize: number;
+  private _maxParallelIterators: number;
 
   /**
     Creates a new `UnionIterator`.
@@ -1648,7 +1648,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
 
     // Set other options
     this._destroySources = options.destroySources !== false;
-    this._maxBufferSize = options.maxParallelIterators || Infinity;
+    this._maxParallelIterators = options.maxParallelIterators || Infinity;
 
     this.readable = this._sources.readable;
   }
@@ -1688,7 +1688,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
       // is called independently of the read
     }
 
-    while (this._buffer.length < this._maxBufferSize && (iterator = _sources.read()) !== null) {
+    while (this._buffer.length < this._maxParallelIterators && (iterator = _sources.read()) !== null) {
       this._addSource(iterator as any);
       this._buffer.push(iterator);
 
