@@ -481,8 +481,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} items Items to insert before this iterator's (remaining) items
     @returns {module:asynciterator.AsyncIterator} A new iterator that prepends items to this iterator
   */
-  prepend(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
-    return this.transform({ prepend: items });
+  prepend(items: IterableSource<T>): AsyncIterator<T> {
+    return union([wrap(items), this]);
   }
 
   /**
@@ -491,8 +491,8 @@ export class AsyncIterator<T> extends EventEmitter {
     @param {Array|module:asynciterator.AsyncIterator} items Items to insert after this iterator's (remaining) items
     @returns {module:asynciterator.AsyncIterator} A new iterator that appends items to this iterator
   */
-  append(items: T[] | AsyncIterator<T>): AsyncIterator<T> {
-    return this.transform({ append: items });
+  append(items: IterableSource<T>): AsyncIterator<T> {
+    return union([this, wrap(items)]);
   }
 
   /**
