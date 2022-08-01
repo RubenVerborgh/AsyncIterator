@@ -1681,9 +1681,9 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     let iterator: AsyncIterator<T> | null;
     let node = buffer._head;
     while (node !== null) {
-      if (node.value.readable && (item = node.value.read()) !== null) {
+      if (node.value.readable && (item = node.value.read()) !== null)
         return item;
-      }
+
       node = node.next;
       // Note - once #45 is merged it will be more efficient to have
       // a node.value.done check here and to remove the value when it

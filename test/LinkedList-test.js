@@ -93,4 +93,40 @@ describe('LinkedList', () => {
       expect(list.length).to.equal(2);
     });
   });
+
+  describe('Testing mutateFilter', () => {
+    beforeEach(() => {
+      list = new LinkedList();
+      list.push(1);
+      list.push(2);
+      list.push(3);
+      list.push(4);
+    });
+
+    it('Should remove odd elements', () => {
+      list.mutateFilter(x => x % 2 === 0);
+      expect(list.length).to.equal(2);
+      expect([...list]).to.deep.equal([2, 4]);
+    });
+
+    it('Should remove even elements', () => {
+      list.mutateFilter(x => x % 2 === 1);
+      expect(list.length).to.equal(2);
+      expect([...list]).to.deep.equal([1, 3]);
+    });
+
+    it('Should remove all elements', () => {
+      list.mutateFilter(x => false);
+      expect(list.length).to.equal(0);
+      expect([...list]).to.deep.equal([]);
+      expect(list.empty).to.equal(true);
+    });
+
+    it('Should remove no elements', () => {
+      list.mutateFilter(x => true);
+      expect(list.length).to.equal(4);
+      expect([...list]).to.deep.equal([1, 2, 3, 4]);
+      expect(list.empty).to.equal(false);
+    });
+  });
 });

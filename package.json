@@ -53,6 +53,7 @@
     "c8": "^7.2.0",
     "chai": "^4.2.0",
     "eslint": "^8.0.0",
+    "event-emitter-promisify": "^1.1.0",
     "husky": "^4.2.5",
     "jaguarjs-jsdoc": "^1.1.0",
     "jsdoc": "^3.5.5",

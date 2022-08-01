@@ -7,6 +7,7 @@ import {
   scheduleTask,
   isPromise,
   isIterator,
+  range,
 } from '../dist/asynciterator.js';
 
 import { EventEmitter } from 'events';
@@ -1329,6 +1330,24 @@ describe('Type-checking functions', () => {
 
     it('returns true for an iterator', () => {
       expect(isIterator([][Symbol.iterator]())).to.equal(true);
+    });
+  });
+
+  describe('Testing #append', () => {
+    it('Should append an array', async () => {
+      expect(await range(0, 1).append([2, 3, 4]).toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+    it('Should append an iterator', async () => {
+      expect(await range(0, 1).append(range(2, 4)).toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+  });
+
+  describe('Testing #prepend', () => {
+    it('Should prepend an array', async () => {
+      expect(await range(0, 1).prepend([2, 3, 4]).toArray()).to.deep.equal([2, 3, 4, 0, 1]);
+    });
+    it('Should prepend an iterator', async () => {
+      expect(await range(0, 1).prepend(range(2, 4)).toArray()).to.deep.equal([2, 3, 4, 0, 1]);
     });
   });
 });
