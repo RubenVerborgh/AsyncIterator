@@ -1625,7 +1625,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 */
 export class UnionIterator<T> extends AsyncIterator<T> {
   private _sources : AsyncIterator<AsyncIterator<T>>;
-  private buffer = new LinkedList<AsyncIterator<T>>();
+  private _buffer = new LinkedList<AsyncIterator<T>>();
   private _sourceStarted: boolean = false;
   private _destroySources: boolean;
   private _maxBufferSize: number;
@@ -1673,7 +1673,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     if (!this._sourceStarted)
       this._sourceStarted = true;
 
-    const { buffer, _sources } = this;
+    const { _buffer: buffer, _sources } = this;
     let item: T | null;
     let iterator: AsyncIterator<T> | null;
     let node = buffer._head;
@@ -1688,9 +1688,9 @@ export class UnionIterator<T> extends AsyncIterator<T> {
       // is called independently of the read
     }
 
-    while (this.buffer.length < this._maxBufferSize && (iterator = _sources.read()) !== null) {
+    while (this._buffer.length < this._maxBufferSize && (iterator = _sources.read()) !== null) {
       this._addSource(iterator as any);
-      this.buffer.push(iterator);
+      this._buffer.push(iterator);
 
       if ((item = iterator.read()) !== null)
         return item;
@@ -1701,7 +1701,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   }
 
   protected _removeEmptySources() {
-    this.buffer.mutateFilter((source: any) => {
+    this._buffer.mutateFilter((source: any) => {
       if (source.done) {
         this._removeSource(source);
         return false;
@@ -1710,7 +1710,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     });
 
     // TODO: Fix this up when merging #45
-    if (this.buffer.empty && this._sources.done && this._sourceStarted)
+    if (this._buffer.empty && this._sources.done && this._sourceStarted)
       this.close();
     // Check if we are in a position to continue filling the source buffer
     else // if (this._sources.readable)
@@ -1721,11 +1721,11 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     this._removeSource(this._sources);
     // Destroy all sources that are still readable
     if (this._destroySources) {
-      for (const source of this.buffer) {
+      for (const source of this._buffer) {
         this._removeSource(source);
         source.destroy();
       }
-      this.buffer.clear();
+      this._buffer.clear();
     }
     this._sources.destroy();
     super.close();
