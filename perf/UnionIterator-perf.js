@@ -17,16 +17,17 @@ for (let i = 0; i < 5; i++) {
 }
 console.timeEnd('UnionIterator 2x10^7 iterators');
 
-console.time('UnionIterator 1000x20_000 iterators');
+console.time('UnionIterator 1000x500 iterators');
 for (let i = 0; i < 5; i++) {
-  it = new UnionIterator(range(0, 1000).map(() => range(0, 20_000)));
+  it = new UnionIterator(range(0, 1000).map(() => range(0, 500)));
   await promisifyEventEmitter(it.on('data', () => { /* noop */ }));
 }
-console.timeEnd('UnionIterator 1000x20_000 iterators');
+console.timeEnd('UnionIterator 1000x500 iterators');
 
-console.time('UnionIterator 1000x20_000 iterators - maxBufferSize of 1');
+
+console.time('UnionIterator 1000x500 iterators - max parallelism of 1');
 for (let i = 0; i < 5; i++) {
-  it = new UnionIterator(range(0, 1000).map(() => range(0, 20_000)));
+  it = new UnionIterator(range(0, 1000).map(() => range(0, 500)), { maxParallelIterators: 1 });
   await promisifyEventEmitter(it.on('data', () => { /* noop */ }));
 }
-console.timeEnd('UnionIterator 1000x20_000 iterators - maxBufferSize of 1');
+console.timeEnd('UnionIterator 1000x500 iterators - max parallelism of 1');
