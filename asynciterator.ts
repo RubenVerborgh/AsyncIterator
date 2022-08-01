@@ -1626,7 +1626,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 export class UnionIterator<T> extends AsyncIterator<T> {
   private _sources : AsyncIterator<AsyncIterator<T>>;
   private buffer = new LinkedList<AsyncIterator<T>>();
-  private _sourceStarted: boolean;
+  private _sourceStarted: boolean = false;
   private _destroySources: boolean;
   private _maxBufferSize: number;
 
@@ -1640,20 +1640,15 @@ export class UnionIterator<T> extends AsyncIterator<T> {
                        AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
                        AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>> |
                        MaybePromise<AsyncIteratorOrArray<MaybePromise<IterableSource<T>>>>,
-              options: BufferedIteratorOptions & { destroySources?: boolean } = {}) {
+              options: { destroySources?: boolean, maxParallelIterators?: number } = {}) {
     super();
-    this._sources = wrap(sources).map<AsyncIterator<T>>(wrap);
+    this._addSource(this._sources = wrap(sources).map<AsyncIterator<T>>(wrap));
 
     // Set other options
     this._destroySources = options.destroySources !== false;
-    this._maxBufferSize = options.maxBufferSize || Infinity;
+    this._maxBufferSize = options.maxParallelIterators || Infinity;
 
-    // TODO: Get rid of this when merging #45
-    this._sourceStarted = options.autoStart !== false;
-    if (this._sources.done && this._sourceStarted)
-      this.close();
-    else
-      this.readable = this._sources.readable;
+    this.readable = this._sources.readable;
   }
 
   // Adds the given source to the internal sources array
@@ -1729,8 +1724,8 @@ export class UnionIterator<T> extends AsyncIterator<T> {
         source.destroy();
       }
       this.buffer.clear();
-      this._sources.destroy();
     }
+    this._sources.destroy();
     super.close();
   }
 }

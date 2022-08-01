@@ -86,8 +86,10 @@ describe('UnionIterator', () => {
       iterator = new UnionIterator(sources);
     });
 
-    it('should have ended', () => {
-      iterator.ended.should.be.true;
+    describe('before reading', () => {
+      it('should not have ended', () => {
+        iterator.ended.should.be.false;
+      });
     });
   });
 
@@ -95,7 +97,7 @@ describe('UnionIterator', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(sources, { autoStart: false });
+      iterator = new UnionIterator(sources);
     });
 
     describe('before reading', () => {
@@ -147,7 +149,7 @@ describe('UnionIterator', () => {
     });
 
     it('should have ended', () => {
-      iterator.ended.should.be.true;
+      iterator.ended.should.be.false;
     });
   });
 
@@ -159,7 +161,7 @@ describe('UnionIterator', () => {
     });
 
     it('should have ended', () => {
-      iterator.ended.should.be.true;
+      iterator.ended.should.be.false;
     });
   });
 
@@ -167,7 +169,7 @@ describe('UnionIterator', () => {
     let iterator;
     before(() => {
       const sources = [];
-      iterator = new UnionIterator(new ArrayIterator(sources), { autoStart: false });
+      iterator = new UnionIterator(new ArrayIterator(sources));
     });
 
     describe('before reading', () => {
@@ -237,10 +239,6 @@ describe('UnionIterator', () => {
     });
 
     describe('before reading', () => {
-      it('should have read the sources', () => {
-        sourceIterator.read.should.have.been.called;
-      });
-
       it('should not have ended', () => {
         iterator.ended.should.be.false;
       });
@@ -268,12 +266,12 @@ describe('UnionIterator', () => {
       const sources = [Promise.resolve(range(0, 2)), range(3, 6)];
       sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
-      iterator = new UnionIterator(sourceIterator, { autoStart: true });
+      iterator = new UnionIterator(sourceIterator);
     });
 
     describe('before reading', () => {
-      it('should have read the sources', () => {
-        sourceIterator.read.should.have.been.called;
+      it('should not have read the sources', () => {
+        sourceIterator.read.should.not.have.been.called;
       });
 
       it('should not have ended', () => {
@@ -303,7 +301,7 @@ describe('UnionIterator', () => {
       const sources = [range(0, 2), range(3, 6)];
       sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
-      iterator = new UnionIterator(sourceIterator, { autoStart: false });
+      iterator = new UnionIterator(sourceIterator);
     });
 
     describe('before reading', () => {
@@ -342,7 +340,7 @@ describe('UnionIterator', () => {
       const sources = [Promise.resolve(range(0, 2)), range(3, 6)];
       sourceIterator = new ArrayIterator(sources);
       sinon.spy(sourceIterator, 'read');
-      iterator = new UnionIterator(sourceIterator, { autoStart: false });
+      iterator = new UnionIterator(sourceIterator);
     });
 
     describe('before reading', () => {
@@ -387,6 +385,9 @@ describe('UnionIterator', () => {
     });
 
     it('should emit an error when the first iterator emits an error', () => {
+      iterator.read().should.eql(0);
+      iterator.read().should.eql(1);
+
       const error = new Error('error');
       const callback = sinon.spy();
       iterator.on('error', callback);
@@ -396,6 +397,11 @@ describe('UnionIterator', () => {
     });
 
     it('should emit an error when the second iterator emits an error', () => {
+      iterator.read().should.eql(0);
+      iterator.read().should.eql(1);
+      iterator.read().should.eql(2);
+      iterator.read().should.eql(3);
+
       const error = new Error('error');
       const callback = sinon.spy();
       iterator.on('error', callback);
@@ -408,22 +414,8 @@ describe('UnionIterator', () => {
       (await toArray(iterator)).should.be.instanceof(Array);
     });
 
-    it('should allow the _read method to be called multiple times', () => {
-      iterator._read(1, noop);
-      iterator._read(1, noop);
-    });
-
     it('should make a round-robin union of the data elements', async () => {
       (await toArray(iterator)).sort().should.eql([0, 1, 2, 3, 4, 5, 6]);
-    });
-
-    it('should destroy the sources when closing', async () => {
-      iterator.close();
-
-      await new Promise(resolve => iterator.on('end', resolve));
-
-      sources[0].closed.should.be.true;
-      sources[1].closed.should.be.true;
     });
   });
 
@@ -555,9 +547,18 @@ describe('UnionIterator', () => {
       await new Promise(resolve => iterator.on('end', resolve));
 
       sourcesIterator.closed.should.be.true;
+    });
+
+    it('should close iterators that have started to be read', async () => {
+      iterator.read();
+      iterator.close();
+
+      await new Promise(resolve => iterator.on('end', resolve));
+
+      sourcesIterator.closed.should.be.true;
 
       sources[0].closed.should.be.true;
-      sources[1].closed.should.be.true;
+      sources[1].closed.should.be.false;
     });
   });
 
@@ -586,9 +587,6 @@ describe('UnionIterator', () => {
       await new Promise(resolve => iterator.on('end', resolve));
 
       sourcesIterator.closed.should.be.true;
-
-      sources[0].closed.should.be.true;
-      sources[1].closed.should.be.true;
     });
   });
 
