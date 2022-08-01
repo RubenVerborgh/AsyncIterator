@@ -1621,13 +1621,14 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
 
 /**
   An iterator that generates items by reading from multiple other iterators.
-  @extends module:asynciterator.BufferedIterator
+  @extends module:asynciterator.AsyncIterator
 */
-export class UnionIterator<T> extends BufferedIterator<T> {
-  private _sources : InternalSource<T>[] = [];
-  private _pending? : { loading: boolean, sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
-  private _currentSource = -1;
-  protected _destroySources: boolean;
+export class UnionIterator<T> extends AsyncIterator<T> {
+  private _sources : AsyncIterator<AsyncIterator<T>>;
+  private buffer = new LinkedList<AsyncIterator<T>>();
+  private _sourceStarted: boolean;
+  private _destroySources: boolean;
+  private _maxBufferSize: number;
 
   /**
     Creates a new `UnionIterator`.
@@ -1637,128 +1638,109 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   */
   constructor(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
                        AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
-                       AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>,
+                       AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>> |
+                       MaybePromise<AsyncIteratorOrArray<MaybePromise<IterableSource<T>>>>,
               options: BufferedIteratorOptions & { destroySources?: boolean } = {}) {
-    super(options);
-    const autoStart = options.autoStart !== false;
+    super();
+    this._sources = wrap(sources).map<AsyncIterator<T>>(wrap);
 
-    // Sources have been passed as an iterator
-    if (isEventEmitter(sources)) {
-      sources.on('error', error => this.emit('error', error));
-      this._pending = { loading: false, sources: sources as AsyncIterator<MaybePromise<AsyncIterator<T>>> };
-      if (autoStart)
-        this._loadSources();
-    }
-    // Sources have been passed as a non-empty array
-    else if (Array.isArray(sources) && sources.length > 0) {
-      for (const source of sources)
-        this._addSource(source as MaybePromise<InternalSource<T>>);
-    }
-    // Sources are an empty list
-    else if (autoStart) {
-      this.close();
-    }
     // Set other options
     this._destroySources = options.destroySources !== false;
-  }
+    this._maxBufferSize = options.maxBufferSize || Infinity;
 
-  // Loads pending sources into the sources list
-  protected _loadSources() {
-    // Obtain sources iterator
-    const sources = this._pending!.sources!;
-    this._pending!.loading = true;
-
-    // Close immediately if done
-    if (sources.done) {
-      delete this._pending;
+    // TODO: Get rid of this when merging #45
+    this._sourceStarted = options.autoStart !== false;
+    if (this._sources.done && this._sourceStarted)
       this.close();
-    }
-    // Otherwise, set up source reading
-    else {
-      sources.on('data', source => {
-        this._addSource(source as MaybePromise<InternalSource<T>>);
-        this._fillBufferAsync();
-      });
-      sources.on('end', () => {
-        delete this._pending;
-        this._fillBuffer();
-      });
-    }
+    else
+      this.readable = true;
   }
 
   // Adds the given source to the internal sources array
-  protected _addSource(source: MaybePromise<InternalSource<T>>) {
-    if (isPromise(source))
-      source = wrap<T>(source) as any as InternalSource<T>;
-    if (!source.done) {
-      this._sources.push(source);
-      source[DESTINATION] = this;
-      source.on('error', destinationEmitError);
-      source.on('readable', destinationFillBuffer);
-      source.on('end', destinationRemoveEmptySources);
-    }
+  protected _addSource(source: InternalSource<any>) {
+    source[DESTINATION] = this;
+    source.on('error', destinationEmitError);
+    source.on('readable', destinationSetReadable);
+    source.on('end', destinationRemoveEmptySources);
   }
 
-  // Removes sources that will no longer emit items
-  protected _removeEmptySources() {
-    this._sources = this._sources.filter((source, index) => {
-      // Adjust the index of the current source if needed
-      if (source.done && index <= this._currentSource)
-        this._currentSource--;
-      return !source.done;
-    });
-    this._fillBuffer();
+  protected _removeSource(source: InternalSource<any>) {
+    source.removeListener('error', destinationEmitError);
+    source.removeListener('readable', destinationSetReadable);
+    source.removeListener('end', destinationRemoveEmptySources);
+    delete source[DESTINATION];
   }
 
-  // Reads items from the next sources
-  protected _read(count: number, done: () => void): void {
-    // Start source loading if needed
-    if (this._pending?.loading === false)
-      this._loadSources();
+  public read(): T | null {
+    // TODO: Get rid of this when merging #45
+    if (!this._sourceStarted)
+      this._sourceStarted = true;
 
-    // Try to read `count` items
-    let lastCount = 0, item : T | null;
-    while (lastCount !== (lastCount = count)) {
-      // Try every source at least once
-      for (let i = 0; i < this._sources.length && count > 0; i++) {
-        // Pick the next source
-        this._currentSource = (this._currentSource + 1) % this._sources.length;
-        const source = this._sources[this._currentSource];
-        // Attempt to read an item from that source
-        if ((item = source.read()) !== null) {
-          count--;
-          this._push(item);
-        }
+    const { buffer, _sources } = this;
+    let item: T | null;
+    let iterator: AsyncIterator<T> | null;
+    let node = buffer._head;
+    while (node !== null) {
+      if (node.value.readable && (item = node.value.read()) !== null) {
+        return item;
       }
+      node = node.next;
+      // Note - once #45 is merged it will be more efficient to have
+      // a node.value.done check here and to remove the value when it
+      // is done, and to only call _removeEmptySources when an 'end' event
+      // is called independently of the read
     }
 
-    // Close this iterator if all of its sources have been read
-    if (!this._pending && this._sources.length === 0)
-      this.close();
-    done();
+    while (this.buffer.length < this._maxBufferSize && (iterator = _sources.read()) !== null) {
+      this._addSource(iterator as any);
+      this.buffer.push(iterator);
+
+      if ((item = iterator.read()) !== null)
+        return item;
+    }
+    this._removeEmptySources();
+    this.readable = false;
+    return null;
   }
 
-  protected _end(destroy: boolean = false) {
-    super._end(destroy);
+  protected _removeEmptySources() {
+    this.buffer.mutateFilter((source: any) => {
+      if (source.done) {
+        this._removeSource(source);
+        return false;
+      }
+      return true;
+    });
 
+    // TODO: Fix this up when merging #45
+    if (this.buffer.empty && this._sources.done && this._sourceStarted)
+      this.close();
+    // Check if we are in a position to continue filling the source buffer
+    else // if (this._sources.readable)
+      this.readable = true;
+  }
+
+  public close() {
+    this._removeSource(this._sources);
     // Destroy all sources that are still readable
     if (this._destroySources) {
-      for (const source of this._sources)
+      for (const source of this.buffer) {
+        this._removeSource(source);
         source.destroy();
-
-      // Also close the sources stream if applicable
-      if (this._pending) {
-        this._pending!.sources!.destroy();
-        delete this._pending;
       }
+      this.buffer.clear();
+      this._sources.destroy();
     }
+    super.close();
   }
 }
 
 function destinationRemoveEmptySources<T>(this: InternalSource<T>) {
+  // Eventually, rather than just removing empty sources I think
+  // we will want to find a way of specifically removing the source
+  // that emitted the end event (the trick is to do this without creatingz race conditions)
   (this[DESTINATION] as any)._removeEmptySources();
 }
-
 
 /**
   An iterator that copies items from another iterator.
@@ -2166,7 +2148,8 @@ export function fromIterable<T>(source: Iterable<T> | Iterator<T>): AsyncIterato
  */
 export function union<T>(sources: AsyncIteratorOrArray<AsyncIterator<T>> |
                                   AsyncIteratorOrArray<Promise<AsyncIterator<T>>> |
-                                  AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>>) {
+                                  AsyncIteratorOrArray<MaybePromise<AsyncIterator<T>>> |
+                                  MaybePromise<AsyncIteratorOrArray<MaybePromise<IterableSource<T>>>>) {
   return new UnionIterator<T>(sources);
 }
 
