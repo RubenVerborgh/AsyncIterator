@@ -1653,7 +1653,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     if (this._sources.done && this._sourceStarted)
       this.close();
     else
-      this.readable = true;
+      this.readable = this._sources.readable;
   }
 
   // Adds the given source to the internal sources array
