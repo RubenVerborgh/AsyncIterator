@@ -2089,7 +2089,8 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   @param {object} [options] Settings of the iterator
   @returns {module:asynciterator.AsyncIterator} A new iterator with the items from the given iterator
 */
-export function wrap<T>(source: null | undefined): AsyncIterator<T>;
+export function wrap<T>(source: null | undefined,
+                        options?: TransformIteratorOptions<T>): AsyncIterator<T>;
 export function wrap<T>(source: MaybePromise<IterableSource<T>>,
                         options?: TransformIteratorOptions<T>): AsyncIterator<T>;
 export function wrap<T>(source: MaybePromise<AsyncIterator<T>>,
