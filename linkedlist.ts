@@ -1,4 +1,4 @@
-interface LinkedNode<V> {
+export interface LinkedNode<V> {
   value: V;
   next: LinkedNode<V> | null;
 }
@@ -22,6 +22,16 @@ export default class LinkedList<V> {
     this._length++;
   }
 
+  _push(value: V) {
+    const node = { value, next: null } as LinkedNode<V>;
+    if (this._tail === null)
+      this._head = this._tail = node;
+    else
+      this._tail.next = this._tail = node;
+    this._length++;
+    return node;
+  }
+
   shift(): V | undefined {
     if (this._head === null)
       return undefined;
@@ -32,6 +42,10 @@ export default class LinkedList<V> {
       this._tail = null;
     this._length--;
     return value;
+  }
+
+  remove(node: LinkedNode<V>) {
+    
   }
 
   mutateFilter(filter: (item: V) => boolean) {

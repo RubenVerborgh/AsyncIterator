@@ -1619,23 +1619,13 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   }
 }
 
-/** Key indicating the node of a source in a union buffer. */
-export const NODE = Symbol('node');
-
-interface CircularNode<T> {
-  last: CircularNode<T>;
-  next: CircularNode<T>;
-  value: T;
-}
-
 /**
   An iterator that generates items by reading from multiple other iterators.
   @extends module:asynciterator.AsyncIterator
 */
 export class UnionIterator<T> extends AsyncIterator<T> {
   private _sources : AsyncIterator<AsyncIterator<T>>;
-  private _node: CircularNode<AsyncIterator<T>> | null = null;
-  private _size: number = 0;
+  private _buffer = new LinkedList<AsyncIterator<T>>();
   private _sourceStarted: boolean = false;
   private _destroySources: boolean;
   private _maxParallelIterators: number;
@@ -1654,7 +1644,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
                        MaybePromise<AsyncIteratorOrArray<MaybePromise<IterableSource<T>>>>,
               options: { destroySources?: boolean, maxParallelIterators?: number } = {}) {
     super();
-    this._listenSource(this._sources = wrap(sources).map<AsyncIterator<T>>(wrap));
+    this._addSource(this._sources = wrap(sources).map<AsyncIterator<T>>(wrap));
 
     // Set other options
     this._destroySources = options.destroySources !== false;
@@ -1664,65 +1654,18 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   }
 
   // Adds the given source to the internal sources array
-  protected _listenSource(source: InternalSource<any>) {
+  protected _addSource(source: InternalSource<any>) {
     source[DESTINATION] = this;
     source.on('error', destinationEmitError);
-    // TODO: On readable events we should start reading from the iterator
-    // that emitted the event
     source.on('readable', destinationSetReadable);
     source.on('end', destinationRemoveEmptySources);
   }
 
-  protected _unListenSource(source: InternalSource<any>) {
+  protected _removeSource(source: InternalSource<any>) {
     source.removeListener('error', destinationEmitError);
     source.removeListener('readable', destinationSetReadable);
     source.removeListener('end', destinationRemoveEmptySources);
     delete source[DESTINATION];
-  }
-
-  protected _addSource(source: InternalSource<any>, successor = this._node) {
-    this._listenSource(source);
-    this._size++;
-
-    let node: CircularNode<AsyncIterator<T>>;
-    if (successor === null) {
-      // There is no circular list so make one
-      node = { value: source } as CircularNode<AsyncIterator<T>>;
-      node.next = node;
-      node.last = node;
-      this._node = node;
-    } else {
-      // Insert the source into the circular structure
-      this._node = node = {
-        value: source,
-        next: successor,
-        last: successor.last
-      };
-
-      successor.last.next = node;
-      successor.last = node;
-    }
-    source[NODE] = node;
-  }
-
-  protected _removeSource(value: InternalSource<T>) {
-    const node = value[NODE]!;
-    this._unListenSource(value);
-    delete value[NODE];
-    this._size--;
-
-    if (this._size === 0) {
-      this._node = null;
-    } else {
-      node.last.next = node.next;
-      node.next.last = node.last;
-
-      // Make sure the root node no longer
-      // references a deleted iterator.
-      if (this._node === node) {
-        this._node = node.next;
-      }
-    }
   }
 
   public read(): T | null {
@@ -1730,49 +1673,59 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     if (!this._sourceStarted)
       this._sourceStarted = true;
 
-    let { _sources, _size } = this;
+    const { _buffer: buffer, _sources } = this;
     let item: T | null;
     let iterator: AsyncIterator<T> | null;
-    while (_size > 0) {
-      iterator = this._node!.value;
-      
-      if (iterator.readable && (item = iterator.read()) !== null)
+    let node = buffer._head;
+    while (node !== null) {
+      if (node.value.readable && (item = node.value.read()) !== null)
         return item;
 
-      // If the iterator is done, get rid of it from the circular list
-      if (iterator.done) {
-        this._removeSource(iterator);
-      } else {
-        this._node = this._node!.next;
-      }
-      _size--;
-      // TODO: See if this should be an else
+      node = node.next;
+      // Note - once #45 is merged it will be more efficient to have
+      // a node.value.done check here and to remove the value when it
+      // is done, and to only call _removeEmptySources when an 'end' event
+      // is called independently of the read
     }
 
-    while (this._size < this._maxParallelIterators && (iterator = _sources.read()) !== null) {
-      // TODO - it would be nice to skip adding sources if it is a single or no
-      // element iterator.
-      this._addSource(iterator);
+    while (this._buffer.length < this._maxParallelIterators && (iterator = _sources.read()) !== null) {
+      this._addSource(iterator as any);
+      this._buffer.push(iterator);
+
       if ((item = iterator.read()) !== null)
         return item;
     }
+    this._removeEmptySources();
     this.readable = false;
     return null;
   }
 
+  protected _removeEmptySources() {
+    this._buffer.mutateFilter((source: any) => {
+      if (source.done) {
+        this._removeSource(source);
+        return false;
+      }
+      return true;
+    });
+
+    // TODO: Fix this up when merging #45
+    if (this._buffer.empty && this._sources.done && this._sourceStarted)
+      this.close();
+    // Check if we are in a position to continue filling the source buffer
+    else // if (this._sources.readable)
+      this.readable = true;
+  }
+
   public close() {
-    this._unListenSource(this._sources);
+    this._removeSource(this._sources);
     // Destroy all sources that are still readable
     if (this._destroySources) {
-      let { _node, _size } = this;
-      while (_size > 0) {
-        this._unListenSource(_node!.value);
-        _node!.value!.destroy();
-        delete (_node as any)[NODE];
-        _size--;
-        _node = _node!.next
+      for (const source of this._buffer) {
+        this._removeSource(source);
+        source.destroy();
       }
-      this._node = null;
+      this._buffer.clear();
     }
     this._sources.destroy();
     super.close();
@@ -1782,24 +1735,8 @@ export class UnionIterator<T> extends AsyncIterator<T> {
 function destinationRemoveEmptySources<T>(this: InternalSource<T>) {
   // Eventually, rather than just removing empty sources I think
   // we will want to find a way of specifically removing the source
-  // that emitted the end event (the trick is to do this without creating race conditions)
-  const destination = this[DESTINATION];
-  if (NODE in this) {
-    (this[DESTINATION] as any)._removeSource(this);
-    if ((destination as any)._size === 0 && (destination as any)._sources.done) {
-      // (this[DESTINATION] as any).readable = true;
-      (destination as any).readable = true;
-      // TODO: Also capture the case where we need to just start re-filling the circular
-      // list
-    }
-  } else {
-    (this[DESTINATION] as any)._unListenSource(this);
-    if ((destination as any)._size === 0) {
-      // (this[DESTINATION] as any).readable = true;
-      (destination as any).readable = true;
-    }
-  }
-  // (destination as any).readable = true;
+  // that emitted the end event (the trick is to do this without creatingz race conditions)
+  (this[DESTINATION] as any)._removeEmptySources();
 }
 
 /**
@@ -2270,7 +2207,7 @@ type SourceExpression<T> =
   (() => MaybePromise<AsyncIterator<T>>);
 
 type InternalSource<T> =
-  AsyncIterator<T> & { [DESTINATION]?: AsyncIterator<any>; [NODE]?: CircularNode<AsyncIterator<any>> };
+  AsyncIterator<T> & { [DESTINATION]?: AsyncIterator<any> };
 
 // Returns a function that calls `fn` with `self` as `this` pointer. */
 function bind<T extends Function>(fn: T, self?: object): T {
