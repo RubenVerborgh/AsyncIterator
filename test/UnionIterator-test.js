@@ -68,6 +68,27 @@ describe('UnionIterator', () => {
     (await toArray(iterator)).sort().should.eql([0, 1, 2]);
   });
 
+  it('should include all data from 0 sources - with maxParallelIterators: 1', async () => {
+    const iterator = new UnionIterator([
+    ], { maxParallelIterators: 1 });
+    (await toArray(iterator)).sort().should.eql([]);
+  });
+
+  it('should include all data from 1 non-empty source - with maxParallelIterators: 1', async () => {
+    const iterator = new UnionIterator([
+      range(0, 2),
+    ], { maxParallelIterators: 1 });
+    (await toArray(iterator)).sort().should.eql([0, 1, 2]);
+  });
+
+  it('should include all data from 2 non-empty sources - with maxParallelIterators: 1', async () => {
+    const iterator = new UnionIterator([
+      range(0, 2),
+      range(3, 4),
+    ], { maxParallelIterators: 1 });
+    (await toArray(iterator)).sort().should.eql([0, 1, 2, 3, 4]);
+  });
+
   it('should include all data from 1 non-empty and 4 empty sources - with maxParallelIterators: 1', async () => {
     const iterator = new UnionIterator([
       new EmptyIterator(),
@@ -77,6 +98,23 @@ describe('UnionIterator', () => {
       new EmptyIterator(),
     ], { maxParallelIterators: 1 });
     (await toArray(iterator)).sort().should.eql([0, 1, 2]);
+  });
+
+  it('should include all data from 4 empty sources - with maxParallelIterators: 1', async () => {
+    const iterator = new UnionIterator([
+      new EmptyIterator(),
+      new EmptyIterator(),
+      new EmptyIterator(),
+      new EmptyIterator(),
+    ], { maxParallelIterators: 1 });
+    (await toArray(iterator)).sort().should.eql([]);
+  });
+
+  it('should include all data from 1 empty source - with maxParallelIterators: 1', async () => {
+    const iterator = new UnionIterator([
+      new EmptyIterator(),
+    ], { maxParallelIterators: 1 });
+    (await toArray(iterator)).sort().should.eql([]);
   });
 
   describe('when constructed with an array of 0 sources', () => {

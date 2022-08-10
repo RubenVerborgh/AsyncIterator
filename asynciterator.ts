@@ -1753,9 +1753,11 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     while (this._size < this._maxParallelIterators && (iterator = _sources.read()) !== null) {
       // TODO - it would be nice to skip adding sources if it is a single or no
       // element iterator.
-      this._addSource(iterator);
-      if ((item = iterator.read()) !== null)
-        return item;
+      // if (!iterator.done) {
+        this._addSource(iterator);
+        if ((item = iterator.read()) !== null)
+          return item;
+      // }
     }
 
     if (this._size === 0 && this._sources.done)
@@ -1798,7 +1800,10 @@ function destinationRemoveEmptySources<T>(this: InternalSource<T>) {
 
     // else if (destination._size < destination._maxParallelIterators && destination._sources.readable) {
     // TODO: Add a test case for this
-    this.readable = true;
+    if (this.readable)
+      this.emit('readable')
+    else
+      this.readable = true;
     // TODO: Future performance improvement - continue re-filling the circular linked list
     // }
   }
