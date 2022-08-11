@@ -1,4 +1,5 @@
-import LinkedList from '../dist/linkedlist.js';
+import { LinkedList } from '../dist/linkedlist.js';
+import * as module from '../dist/asynciterator.js';
 
 describe('LinkedList', () => {
   let list;
@@ -92,5 +93,9 @@ describe('LinkedList', () => {
       expect(list.last).to.equal(3);
       expect(list.length).to.equal(2);
     });
+  });
+
+  it('should export LinkedList from asynciterator package', () => {
+    expect(module.LinkedList).to.equal(LinkedList);
   });
 });

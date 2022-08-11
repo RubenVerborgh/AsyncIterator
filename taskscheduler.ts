@@ -1,7 +1,7 @@
 const resolved = Promise.resolve(undefined);
 
 // Returns a function that asynchronously schedules a task
-export default function createTaskScheduler() : TaskScheduler {
+export function createTaskScheduler() : TaskScheduler {
   // Use or create a microtask scheduler
   const scheduleMicrotask = typeof queueMicrotask === 'function' ?
     queueMicrotask : (task: Task) => resolved.then(task);

@@ -3,7 +3,10 @@ interface LinkedNode<V> {
   next: LinkedNode<V> | null;
 }
 
-export default class LinkedList<V> {
+/**
+ * A list with O(1) push and shift operations.
+ */
+export class LinkedList<V> {
   private _length: number = 0;
   private _head: LinkedNode<V> | null = null;
   private _tail: LinkedNode<V> | null = null;

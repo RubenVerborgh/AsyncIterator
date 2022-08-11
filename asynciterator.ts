@@ -4,11 +4,14 @@
  */
 
 import { EventEmitter } from 'events';
-import createTaskScheduler from './taskscheduler';
-import LinkedList from './linkedlist';
+import { LinkedList } from './linkedlist';
+import { createTaskScheduler } from './taskscheduler';
 import type { Task, TaskScheduler } from './taskscheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
+
+// Export utilities for reuse
+export { LinkedList };
 
 /** Schedules the given task for asynchronous execution. */
 export function scheduleTask(task: Task): void {
