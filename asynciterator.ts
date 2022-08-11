@@ -1740,24 +1740,21 @@ export class UnionIterator<T> extends AsyncIterator<T> {
       if (iterator.readable && (item = iterator.read()) !== null)
         return item;
 
-      // If the iterator is done, get rid of it from the circular list
-      if (iterator.done)
-        this._removeSource(iterator);
-      else
-        this._node = this._node!.next;
+      // TODO: in #45 - if the iterator is done, get rid of it from the circular list
+      // if (iterator.done)
+      //   this._removeSource(iterator);
+      // else
+      this._node = this._node!.next;
 
       _size--;
-      // TODO: See if this should be an else
     }
 
     while (this._size < this._maxParallelIterators && (iterator = _sources.read()) !== null) {
-      // TODO - it would be nice to skip adding sources if it is a single or no
-      // element iterator.
-      // if (!iterator.done) {
+      if (!iterator.done) {
         this._addSource(iterator);
-        if ((item = iterator.read()) !== null)
+        if (iterator.readable && (item = iterator.read()) !== null)
           return item;
-      // }
+      }
     }
 
     if (this._size === 0 && this._sources.done)
@@ -1794,23 +1791,31 @@ function destinationRemoveEmptySources<T>(this: InternalSource<T>) {
   const destination = this[DESTINATION] as any;
   if (NODE in this) {
     destination._removeSource(this);
-    if (destination._size === 0 && destination._sources.done && destination._sourceStarted)
+    if (destination._size === 0 && destination._sources.done && destination._sourceStarted) {
       destination!.close();
-      // Also capture the case where we need to just start re-filling the circular
-
-    // else if (destination._size < destination._maxParallelIterators && destination._sources.readable) {
-    // TODO: Add a test case for this
-    if (this.readable)
-      this.emit('readable')
-    else
-      this.readable = true;
-    // TODO: Future performance improvement - continue re-filling the circular linked list
+      return;
+    }
+    destination.readable = true;
+    // const _sources = destination._sources;
+    // let iterator;
+    // while (destination._size < destination._maxParallelIterators && iterator.readable && (iterator = _sources.read()) !== null) {
+    //   if (!iterator.done) {
+    //     destination._addSource(iterator);
+    //     if (iterator.readable) {
+    //       destination.readable = true;
+    //       return;
+    //     }
+    //   }
     // }
   }
   else {
     destination._unListenSource(this);
-    if (destination._size === 0 && destination._sourceStarted)
-      destination!.close();
+    if (destination._size === 0) {
+      if (destination._sourceStarted)
+        destination.close();
+      else
+        destination.readable = true;
+    }
   }
 }
 
