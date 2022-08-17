@@ -1039,6 +1039,66 @@ describe('TransformIterator', () => {
     });
   });
 
+  describe('A TransformIterator with a source creation function returning a slow promise', () => {
+    let iterator, source, createSource, sourcePromise, resolvePromise;
+    before(() => {
+      source = new ArrayIterator(['a']);
+      sinon.spy(source, 'read');
+      sinon.spy(source, 'destroy');
+      sourcePromise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+      createSource = sinon.spy(() => sourcePromise);
+      iterator = new TransformIterator(createSource);
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the source is created', () => {
+      it('should allow destruction', () => {
+        iterator.destroy();
+        iterator.done.should.equal(true);
+      });
+    });
+
+    describe('after the promise resolves', () => {
+      before(() => resolvePromise(source));
+
+      it('should destroy the source', () => {
+        source.destroy.should.have.been.calledOnce;
+      });
+    });
+  });
+
+  describe('A TransformIterator with a source creation function returning a slow promise without destroy source', () => {
+    let iterator, source, createSource, sourcePromise, resolvePromise;
+    before(() => {
+      source = new ArrayIterator(['a']);
+      sinon.spy(source, 'read');
+      sinon.spy(source, 'destroy');
+      sourcePromise = new Promise(resolve => {
+        resolvePromise = resolve;
+      });
+      createSource = sinon.spy(() => sourcePromise);
+      iterator = new TransformIterator(createSource, { destroySource: false });
+      captureEvents(iterator, 'readable', 'end');
+    });
+
+    describe('before the source is created', () => {
+      it('should allow destruction', () => {
+        iterator.destroy();
+        iterator.done.should.equal(true);
+      });
+    });
+
+    describe('after the promise resolves', () => {
+      before(() => resolvePromise(source));
+
+      it('should not destroy the source', () => {
+        source.destroy.should.not.have.been.called;
+      });
+    });
+  });
+
   describe('A TransformIterator with a source creation function and without autoStart', () => {
     let iterator, source, createSource, sourcePromise, resolvePromise;
     before(() => {

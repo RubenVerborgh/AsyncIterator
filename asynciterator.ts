@@ -1206,16 +1206,17 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
   }
 
   set source(value: AsyncIterator<S> | undefined) {
-    // Do not change sources if the iterator is already done
-    if (this.done)
-      return;
-
     // Validate and set source
     const source = this._source = this._validateSource(value);
     source[DESTINATION] = this;
 
-    // Close this iterator if the source has already ended
-    if (source.done) {
+    // Do not read the source if this iterator already ended
+    if (this.done) {
+      if (this._destroySource)
+        source.destroy();
+    }
+    // Close this iterator if the source already ended
+    else if (source.done) {
       this.close();
     }
     // Otherwise, react to source events
@@ -1791,18 +1792,19 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   }
 
   set source(value: AsyncIterator<T> | undefined) {
-    // Do not change sources if the iterator is already done
-    if (this.done)
-      return;
-
     // Validate and set the source
     const source = this._source = this._validateSource(value);
     // Create a history reader for the source if none already existed
     const history = (source && (source as any)[DESTINATION]) ||
       (source[DESTINATION] = new HistoryReader<T>(source) as any);
 
+    // Do not read the source if this iterator already ended
+    if (this.done) {
+      if (this._destroySource)
+        source.destroy();
+    }
     // Close this clone if history is empty and the source has ended
-    if (history.endsAt(0)) {
+    else if (history.endsAt(0)) {
       this.close();
     }
     else {

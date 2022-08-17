@@ -84,10 +84,6 @@ describe('ClonedIterator', () => {
         clone.close();
       });
 
-      it('should not do anything when a source is set', () => {
-        clone.source = {};
-      });
-
       it('should have undefined as `source` property', () => {
         expect(clone.source).to.be.undefined;
       });
@@ -114,6 +110,13 @@ describe('ClonedIterator', () => {
 
       it('should return an empty property set', () => {
         clone.getProperties().should.deep.equal({});
+      });
+
+      it('should destroy a newly added source', () => {
+        const source = new AsyncIterator();
+        sinon.spy(source, 'destroy');
+        clone.source = source;
+        source.destroy.should.have.been.calledOnce;
       });
     });
   });
