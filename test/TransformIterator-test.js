@@ -34,9 +34,9 @@ describe('TransformIterator', () => {
       });
     });
 
-    describe('the result when called through `wrap`', () => {
+    describe('the result when called through `wrap` and a TransformIterator option', () => {
       let instance;
-      before(() => { instance = wrap({}, {}); });
+      before(() => { instance = wrap({}, { autoStart: false }); });
 
       it('should be an TransformIterator object', () => {
         instance.should.be.an.instanceof(TransformIterator);

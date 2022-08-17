@@ -585,4 +585,100 @@ describe('wrap', () => {
       expect(await iterator.toArray()).to.deep.equal([0, 1, 2, 3, 4]);
     });
   });
+
+  describe('with a source that is explicitly set to be destroyed', () => {
+    let source;
+
+    before(async () => {
+      source = new IntegerIterator({ start: 1, step: 1, end: 4 });
+      sinon.spy(source, 'destroy');
+      await wrap(Promise.resolve(source), { destroySource: true }).toArray();
+    });
+
+    it('should have destroyed the source', async () => {
+      source.destroy.should.have.been.calledOnce;
+    });
+  });
+
+  describe('with a source that is explicitly set not to be destroyed', () => {
+    let source;
+
+    before(async () => {
+      source = new IntegerIterator({ start: 1, step: 1, end: 4 });
+      sinon.spy(source, 'destroy');
+      await wrap(Promise.resolve(source), { destroySource: false }).toArray();
+    });
+
+    it('should have destroyed the source', async () => {
+      source.destroy.should.not.have.been.called;
+    });
+  });
+
+  describe('with a source that is implicitly set to be destroyed', () => {
+    let source;
+
+    before(async () => {
+      source = new IntegerIterator({ start: 1, step: 1, end: 4 });
+      sinon.spy(source, 'destroy');
+      await wrap(Promise.resolve(source)).toArray();
+    });
+
+    it('should have destroyed the source', async () => {
+      source.destroy.should.have.been.calledOnce;
+    });
+  });
+
+  describe('with a source provided by a slow-resolving promise that is explicitly set to be destroyed', () => {
+    let source;
+    let iterator;
+    let resolvePromise;
+
+    before(async () => {
+      source = new IntegerIterator({ start: 1, step: 1, end: 4 });
+      sinon.spy(source, 'destroy');
+      iterator = wrap(new Promise(resolve => { resolvePromise = resolve; }), { destroySource: true });
+    });
+
+    describe('Before the promise resolves', () => {
+      it('should allow destruction', () => {
+        iterator.destroy();
+      });
+    });
+
+    describe('After the promise resolves', () => {
+      before(() => {
+        resolvePromise(source);
+      });
+      it('should have destroyed the source', async () => {
+        source.destroy.should.have.been.calledOnce;
+      });
+    });
+  });
+
+  describe('with a source provided by a slow-resolving promise that is explicitly set not to be destroyed', () => {
+    let source;
+    let iterator;
+    let resolvePromise;
+
+    before(async () => {
+      source = new IntegerIterator({ start: 1, step: 1, end: 4 });
+      sinon.spy(source, 'destroy');
+      iterator = wrap(new Promise(resolve => { resolvePromise = resolve; }), { destroySource: false });
+    });
+
+    describe('Before the promise resolves', () => {
+      it('should allow destruction', () => {
+        iterator.destroy();
+      });
+    });
+
+    describe('After the promise resolves', () => {
+      before(() => {
+        resolvePromise(source);
+      });
+      it('should not have destroyed the source', async () => {
+        source.destroy.should.not.have.been.called;
+      });
+    });
+  });
 });

@@ -1998,9 +1998,11 @@ class HistoryReader<T> {
  */
 export class WrappingIterator<T> extends AsyncIterator<T> {
   protected _source: InternalSource<T> | null = null;
+  protected _destroySource: boolean;
 
-  constructor(source?: MaybePromise<IterableSource<T>>) {
+  constructor(source?: MaybePromise<IterableSource<T>>, opts?: SourcedIteratorOptions) {
     super();
+    this._destroySource = opts?.destroySource !== false;
 
     // If promise, set up a temporary source and replace when ready
     if (isPromise(source)) {
@@ -2018,9 +2020,6 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 
   set source(value: IterableSource<T>) {
     let source: InternalSource<T> = value as any;
-    // Do not change sources if the iterator is already done
-    if (this.done)
-      return;
     if (this._source !== null)
       throw new Error('The source cannot be changed after it has been set');
 
@@ -2051,6 +2050,13 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
       source = ensureSourceAvailable(source);
     }
 
+    // Do not change sources if the iterator is already done
+    if (this.done) {
+      if (this._destroySource && isFunction(source.destroy))
+        source.destroy();
+      return;
+    }
+
     // Set up event handling
     source[DESTINATION] = this;
     source.on('end', destinationClose);
@@ -2073,15 +2079,17 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
   }
 
   protected _end(destroy: boolean = false) {
-    super._end(destroy);
-    // Clean up event handlers
     if (this._source !== null) {
       this._source.removeListener('end', destinationClose);
       this._source.removeListener('error', destinationEmitError);
       this._source.removeListener('readable', destinationSetReadable);
       delete this._source[DESTINATION];
+
+      if (this._destroySource && isFunction(this._source.destroy))
+        this._source.destroy();
       this._source = null;
     }
+    super._end(destroy);
   }
 }
 
@@ -2098,7 +2106,7 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 export function wrap<T>(source?: MaybePromise<IterableSource<T>> | null,
                         options?: TransformIteratorOptions<T>): AsyncIterator<T> {
   // TransformIterator if TransformIteratorOptions were specified
-  if (options)
+  if (options && ('autoStart' in options || 'optional' in options || 'source' in options || 'maxBufferSize' in options))
     return new TransformIterator<T>(source as MaybePromise<AsyncIterator<T>>, options);
 
   // Empty iterator if no source specified
@@ -2107,7 +2115,7 @@ export function wrap<T>(source?: MaybePromise<IterableSource<T>> | null,
 
   // Unwrap promised sources
   if (isPromise<T>(source))
-    return new WrappingIterator(source);
+    return new WrappingIterator(source, options);
 
   // Directly return any AsyncIterator
   if (source instanceof AsyncIterator)
@@ -2117,7 +2125,7 @@ export function wrap<T>(source?: MaybePromise<IterableSource<T>> | null,
   if (Array.isArray(source))
     return fromArray<T>(source);
   if (isIterable(source) || isIterator(source) || isEventEmitter(source))
-    return new WrappingIterator<T>(source);
+    return new WrappingIterator<T>(source, options);
 
   // Other types are unsupported
   throw new TypeError(`Invalid source: ${source}`);
