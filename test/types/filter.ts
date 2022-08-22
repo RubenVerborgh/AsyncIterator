@@ -1,5 +1,5 @@
-import { ArrayIterator } from '../asynciterator';
-import type { AsyncIterator } from '../asynciterator';
+import { ArrayIterator } from '../../asynciterator';
+import type { AsyncIterator } from '../../asynciterator';
 
 const iterator = new ArrayIterator<string | number>([1, 'h', 4, 5, 7, 's']);
 
