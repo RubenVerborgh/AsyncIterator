@@ -520,6 +520,30 @@ describe('wrap', () => {
     });
   });
 
+  describe('with an array source', () => {
+    let iterator, source;
+    before(() => {
+      source = [0, 1, 2, 3, 4];
+      iterator = wrap(source);
+    });
+
+    it('should emit all items', async () => {
+      expect(await iterator.toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+  });
+
+  describe('with an array source and options', () => {
+    let iterator, source;
+    before(() => {
+      source = [0, 1, 2, 3, 4];
+      iterator = wrap(source, { autoStart: true });
+    });
+
+    it('should emit all items', async () => {
+      expect(await iterator.toArray()).to.deep.equal([0, 1, 2, 3, 4]);
+    });
+  });
+
   describe('with a rejecting promise as a source', () => {
     it('should return an instance of WrappingIterator', done => {
       const err = new Error('some error');

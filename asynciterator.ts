@@ -2123,9 +2123,12 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
 */
 export function wrap<T>(source?: MaybePromise<IterableSource<T>> | null,
                         options?: TransformIteratorOptions<T>): AsyncIterator<T> {
-  // TransformIterator if TransformIteratorOptions were specified
-  if (options && ('autoStart' in options || 'optional' in options || 'source' in options || 'maxBufferSize' in options))
-    return new TransformIterator<T>(source as MaybePromise<AsyncIterator<T>>, options);
+  // For backward compatibility, always use TransformIterator when options are specified
+  if (options && ('autoStart' in options || 'optional' in options || 'source' in options || 'maxBufferSize' in options)) {
+    if (source && !isEventEmitter(source))
+      source = new WrappingIterator(source);
+    return new TransformIterator<T>(source as AsyncIterator<T>, options);
+  }
 
   // Empty iterator if no source specified
   if (!source)
