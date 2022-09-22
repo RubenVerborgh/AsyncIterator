@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ArrayIterator } from '../../asynciterator';
 import type { AsyncIterator } from '../../asynciterator';
 

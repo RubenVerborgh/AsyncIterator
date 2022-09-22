@@ -1311,24 +1311,24 @@ describe('AsyncIterator', () => {
   });
 });
 
-describe('Type-checking functions', () => {
-  describe('isPromise', () => {
-    it('returns false for null', () => {
-      expect(isPromise(null)).to.equal(false);
-    });
+// describe('Type-checking functions', () => {
+//   describe('isPromise', () => {
+//     it('returns false for null', () => {
+//       expect(isPromise(null)).to.equal(false);
+//     });
 
-    it('returns true for a Promise', () => {
-      expect(isPromise(Promise.resolve(0))).to.equal(true);
-    });
-  });
+//     it('returns true for a Promise', () => {
+//       expect(isPromise(Promise.resolve(0))).to.equal(true);
+//     });
+//   });
 
-  describe('isIterator', () => {
-    it('returns false for null', () => {
-      expect(isIterator(null)).to.equal(false);
-    });
+//   describe('isIterator', () => {
+//     it('returns false for null', () => {
+//       expect(isIterator(null)).to.equal(false);
+//     });
 
-    it('returns true for an iterator', () => {
-      expect(isIterator([][Symbol.iterator]())).to.equal(true);
-    });
-  });
-});
+//     it('returns true for an iterator', () => {
+//       expect(isIterator([][Symbol.iterator]())).to.equal(true);
+//     });
+//   });
+// });
