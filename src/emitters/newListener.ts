@@ -12,22 +12,7 @@ export function newListener<T>(this: AsyncIteratorBase<T>, eventName: string) {
       setFlowing.call(this);
       break;
   }
-  
-  
-  if (this._readable) {
-    switch (eventName) {
-      case 'readable':
-        emitReadable.call(this);
-        break;
-      // TODO: We still need to toggle on flowing mode even if readable is false
-      case 'data':
-        setFlowing.call(this);
-        break;
-    }
-  }
 }
-
-
 
 // export function newListener<T>(this: AsyncIteratorBase<T>, eventName: string) {
 //   if (this._readable) {
