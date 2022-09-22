@@ -1,4 +1,4 @@
-import { TaskScheduler, createTaskScheduler, Task } from "./createtaskscheduler";
+import { TaskScheduler, createTaskScheduler, Task } from "./createTaskScheduler";
 
 export let taskScheduler: TaskScheduler = createTaskScheduler();
 

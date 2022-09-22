@@ -2,19 +2,26 @@ import { EventEmitter } from "events";
 import { removeListener, newListener, setReadable, end } from "../emitters";
 import { ENDED, OPEN } from '../states';
 import { AsyncIteratorBase } from '../interface';
+import { DESTINATION } from "../symbols";
+
+// TODO: Work out how to handle externally called error
 
 /**
   An asynchronous iterator provides pull-based access to a stream of objects.
   @extends module:asynciterator.EventEmitter
 */
 export class AsyncIterator<T> extends EventEmitter implements AsyncIteratorBase<T> {
-  protected _state: number;
-  protected _readable = false;
-  protected _canEmitReadable = true;
-  protected _emitDataPendingOrRunning = false;
-  protected _flowing = false;
-  protected _properties?: { [name: string]: any };
-  protected _propertyCallbacks?: { [name: string]: [(value: any) => void] };
+  // TODO: Make all these private/protected
+  // TODO: Use symbols for most of these properties
+  public _state: number;
+  public _readable = false;
+  public _canEmitReadable = true;
+  public _emitDataPendingOrRunning = false;
+  public _flowing = false;
+  public _properties?: { [name: string]: any };
+  public _propertyCallbacks?: { [name: string]: [(value: any) => void] };
+  public onParentReadable?(parent: AsyncIterator<any>): void;
+  public [DESTINATION]?: AsyncIterator<any>;
 
   /** Creates a new `AsyncIterator`. */
   constructor(initialState = OPEN) {
@@ -53,7 +60,7 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIteratorBase<
   }
 
   read(): T | null {
-    end.call(this);
+    // end.call(this);
     return null;
   }
 }

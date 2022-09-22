@@ -5,8 +5,8 @@
 
 import { EventEmitter } from 'events';
 import { LinkedList } from './src/linkedlist';
-import { createTaskScheduler } from './src/createtaskscheduler';
-import type { Task, TaskScheduler } from './src/createtaskscheduler';
+import { createTaskScheduler } from './src/createTaskScheduler';
+import type { Task, TaskScheduler } from './src/createTaskScheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
 

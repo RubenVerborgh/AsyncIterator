@@ -5,8 +5,8 @@
 
 import { EventEmitter } from 'events';
 import { LinkedList } from './src/linkedlist';
-import { createTaskScheduler } from './src/createtaskscheduler';
-import type { Task, TaskScheduler } from './src/createtaskscheduler';
+import { createTaskScheduler } from './src/createTaskScheduler';
+import type { Task, TaskScheduler } from './src/createTaskScheduler';
 
 let taskScheduler: TaskScheduler = createTaskScheduler();
 
@@ -1208,7 +1208,7 @@ export class TransformIterator<S, D = S> extends BufferedIterator<D> {
     // The passed value is a promise or source creation function
     else if (source) {
       this._createSource = isPromise(source) ? () => source as any : source;
-      if (this._sourceStarted)
+      if (this._sourceStarted)BufferedIterator
         this._loadSourceAsync();
     }
     // Set other options

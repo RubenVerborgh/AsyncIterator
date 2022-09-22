@@ -5,3 +5,4 @@ export * from './newListener';
 export * from './removeListener';
 export * from './setFlowing';
 export * from './setReadable';
+export * from './emitError';

@@ -11,7 +11,7 @@ export interface AsyncIteratorBase<T> extends EventEmitter {
   _properties?: { [name: string]: any };
   _propertyCallbacks?: { [name: string]: [(value: any) => void] };
   [DESTINATION]?: AsyncIteratorBase<any>;
-  onParentReadable?(): void;
+  onParentReadable?(parent: AsyncIteratorBase<any>): void;
 
   read(): T | null;
 }

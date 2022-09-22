@@ -1,3 +1,5 @@
+import { addSyncErrorForwardingDestination, removeSyncErrorForwardingDestination } from '../addDestination';
+import { end } from '../emitters';
 import { setReadable } from '../emitters/setReadable';
 import { AsyncIterator } from './AsyncIterator';
 
@@ -6,66 +8,53 @@ import { AsyncIterator } from './AsyncIterator';
  by applying a mapping function.
  @extends module:asynciterator.AsyncIterator
 */
-export abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
-  protected readonly _source: InternalSource<S>;
-  protected readonly _destroySource: boolean;
-  // TODO: See if we need to bind to this
-  protected readonly onParentReadable = setReadable
+abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
+  // TODO: See if we don't need to bind to this
+  // Optimisation - in the case of the composite iterator
+  // public onParentReadable = setReadable.bind(this);
 
   /**
    * Applies the given mapping to the source iterator.
    */
   constructor(
-    source: AsyncIterator<S>,
-    options: SourcedIteratorOptions = {}
+    protected source: AsyncIterator<S>
   ) {
     super();
-    this._source = ensureSourceAvailable(source);
-    this._destroySource = options.destroySource !== false;
+    // TODO: See if we need this
+    // I don't think we do if we can assume the source is an asynciterator
+    // ensureSourceAvailable(source);
 
-    // Close if the source is already empty
-    if (source.done) {
-      this.close();
-    }
-    // Otherwise, wire up the source for reading
-    else {
-      this._source._destination = this;
-      this._source.on('end', destinationClose);
-      this._source.on('error', destinationEmitError);
-      this._source.on('readable', destinationSetReadable);
-      this.readable = this._source.readable;
-    }
+    // In synchronous transformations we assume that .read() on super classes are only made at the same time
+    // as the current read call and hence it is safe to forward the error immediately.
+    addSyncErrorForwardingDestination.call(this, source);
+    this.readable = source.readable;
   }
 
   protected abstract safeRead(): D | null;
 
   /* Tries to read the next item from the iterator. */
   read(): D | null {
-    if (!this.done) {
-      // Try to read an item that maps to a non-null value
-      if (this._source.readable) {
-        const item = this.safeRead();
-        if (item !== null) {
-          return item;
-        }
+    // Try to read an item that maps to a non-null value
+    // TODO: See if we actually need to *check* readability here
+    if (this.source.readable) {
+      const item = this.safeRead();
+      if (item !== null) {
+        return item;
       }
-      this.readable = false;
-
-      // Close this iterator if the source is empty
-      if (this._source.done)
-        this.close();
     }
+
+    // Close this iterator if the source is empty
+    if (this.source.done) {
+      removeSyncErrorForwardingDestination(this.source);
+      end.call(this);
+    }
+
     return null;
   }
-
-  /* Cleans up the source iterator and ends. */
-  protected _end(destroy: boolean) {
-    this._source.removeListener('end', destinationClose);
-    this._source.removeListener('error', destinationEmitError);
-    this._source.removeListener('readable', destinationSetReadable);
-    delete this._source._destination;
-    if (this._destroySource)
-      this._source.destroy();
-    super._end(destroy);
-  }
 }
+
+SynchronousTransformIterator.prototype.onParentReadable = setReadable;
+
+export {
+  SynchronousTransformIterator
+};
