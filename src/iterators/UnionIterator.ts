@@ -31,9 +31,9 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     this.readable = source.readable;
   }
 
-  onParentReadable(parent: AsyncIterator<T>) {
+  onParentReadable(parent: AsyncIterator<T> | AsyncIterator<AsyncIterator<T>>) {
     if (parent !== this.source) {
-      this.maybeReadable.add(parent);
+      this.maybeReadable.add(parent as AsyncIterator<T>);
       this.readable = true;
     } else if (this.live.size < this.maxParallelIterators) {
       this.readable = true;
@@ -48,6 +48,7 @@ export class UnionIterator<T> extends AsyncIterator<T> {
     let item: | T | null = null;
     let iterator: AsyncIterator<T> | null;
 
+    // TODO: Investigate the performance impact of sets
     for (iterator of maybeReadable) {
       if (iterator.readable && (item = iterator.read()) !== null)
         return item;
@@ -78,6 +79,8 @@ export class UnionIterator<T> extends AsyncIterator<T> {
       else
         live.add(iterator);
     }
+
+    this.readable = false;
 
     if (live.size === 0 && source.done)
       end.call(this);

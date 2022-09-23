@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { removeListener, newListener, setReadable, end } from "../emitters";
+import { removeListener, newListener, setReadable } from "../emitters";
 import { ENDED, OPEN } from '../states';
 import { AsyncIteratorBase } from '../interface';
 import { DESTINATION } from "../symbols";

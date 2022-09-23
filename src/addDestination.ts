@@ -13,6 +13,7 @@ export function addDestination<T, K>(this: AsyncIteratorBase<T>, source: Minimal
     throw new Error("Attempted to add destination to asynciterator source with existing destination");
   }
   source[DESTINATION] = this;
+  // console.log('adding destination', source)
 }
 
 export function addSyncErrorForwardingDestination<T, K>(this: AsyncIteratorBase<T>, source: MinimalSource<T>) {

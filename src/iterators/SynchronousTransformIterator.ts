@@ -49,6 +49,8 @@ abstract class SynchronousTransformIterator<S, D = S> extends AsyncIterator<D> {
       end.call(this);
     }
 
+    this.readable = false;
+
     return null;
   }
 }

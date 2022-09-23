@@ -20,8 +20,11 @@ export function setReadable(this: AsyncIteratorBase<any>) {
 
     // Note that we also check if this._readable is still true in case running emitData.call(this) has drained all
     // of the readable data already
-    if (this._readable && DESTINATION in this)
+    // console.log('readable advertised', this._readable, DESTINATION in this, this)
+    if (this._readable && DESTINATION in this) {
+      // console.log('r2')
       this[DESTINATION]!.onParentReadable!(this);
+    }
 
     // If the iterator is *still* readable then emit the readable event on the next tick
     if (this._readable)
