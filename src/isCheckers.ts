@@ -14,3 +14,7 @@ export function isEventEmitter(object: any): object is EventEmitter {
 export function isPromise<T>(object: any): object is Promise<T> {
   return isFunction(object?.then);
 }
+
+export function isValidSource(source: any) {
+  return source && isFunction(source.read) && isFunction(source.on) && isFunction(source.off)
+}

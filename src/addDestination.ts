@@ -2,19 +2,26 @@ import { DESTINATION, _READABLE } from './symbols';
 import { AsyncIteratorBase } from './interface';
 import { emitError } from './emitters';
 
-export function addDestination<T, K>(this: AsyncIteratorBase<T>, source: AsyncIteratorBase<K>) {
+export interface MinimalSource<T> {
+  [DESTINATION]?: AsyncIteratorBase<T>;
+  off(event: string | symbol, listener: (...args: any[]) => void): this;
+  on(event: string | symbol, listener: (...args: any[]) => void): this;
+}
+
+export function addDestination<T, K>(this: AsyncIteratorBase<T>, source: MinimalSource<T>) {
   if (DESTINATION in source) {
     throw new Error("Attempted to add destination to asynciterator source with existing destination");
   }
   source[DESTINATION] = this;
 }
 
-export function addSyncErrorForwardingDestination<T, K>(this: AsyncIteratorBase<T>, source: AsyncIteratorBase<K>) {
+export function addSyncErrorForwardingDestination<T, K>(this: AsyncIteratorBase<T>, source: MinimalSource<T>) {
+  // TODO: See if these need to be "emit error destination"
   source.on('error', emitError);
   addDestination.call(this, source);
 }
 
-export function removeSyncErrorForwardingDestination<T, K>(source: AsyncIteratorBase<K>) {
+export function removeSyncErrorForwardingDestination<T, K>(source: MinimalSource<K>) {
   source.off('error', emitError);
   delete source[DESTINATION];
 }

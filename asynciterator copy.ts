@@ -2042,7 +2042,7 @@ export class WrappingIterator<T> extends AsyncIterator<T> {
       throw new Error('The source cannot be changed after it has been set');
 
     // Process an iterable source
-    if (isIterable(source))
+    if (isIterable<T>(source))
       source = source[Symbol.iterator]() as any;
     // Process an iterator source
     if (isIterator<T>(source)) {

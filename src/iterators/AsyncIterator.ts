@@ -10,7 +10,7 @@ import { DESTINATION } from "../symbols";
   An asynchronous iterator provides pull-based access to a stream of objects.
   @extends module:asynciterator.EventEmitter
 */
-export class AsyncIterator<T> extends EventEmitter implements AsyncIteratorBase<T> {
+export abstract class AsyncIterator<T> extends EventEmitter implements AsyncIteratorBase<T> {
   // TODO: Make all these private/protected
   // TODO: Use symbols for most of these properties
   public _state: number;
@@ -59,8 +59,5 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIteratorBase<
     return this._state >= ENDED;
   }
 
-  read(): T | null {
-    // end.call(this);
-    return null;
-  }
+  abstract read(): T | null;
 }

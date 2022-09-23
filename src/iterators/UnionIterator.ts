@@ -12,13 +12,13 @@ import { end } from "../emitters";
 export class UnionIterator<T> extends AsyncIterator<T> {
   private maybeReadable: Set<AsyncIterator<T>> = new Set();
   private live: Set<AsyncIterator<T>> = new Set();
-  private maxParallelIterators: number = Infinity;
   
   /**
    * Applies the given mapping to the source iterator.
    */
    constructor(
-    protected source: AsyncIterator<AsyncIterator<T>>
+    protected source: AsyncIterator<AsyncIterator<T>>,
+    private maxParallelIterators: number = Infinity
   ) {
     super();
     // TODO: See if we need this
@@ -41,6 +41,8 @@ export class UnionIterator<T> extends AsyncIterator<T> {
   }
 
   // TODO: See if case of elements being added to maybeReadable during read() call needs to be handled
+  // TODO: See if it is more performant to wrap this all in a try/catch rather than having 
+  // addSyncErrorForwardingDestination and removeSyncErrorForwardingDestination listeners
   read(): T | null {
     const { maybeReadable, live, source, maxParallelIterators } = this;
     let item: | T | null = null;
@@ -58,11 +60,16 @@ export class UnionIterator<T> extends AsyncIterator<T> {
       }
     }
 
-    while (live.size < maxParallelIterators && source.readable && (iterator = source.read())) {
+    while (live.size < maxParallelIterators && source.readable && (iterator = source.read()) !== null) {
       addSyncErrorForwardingDestination.call(this, iterator);
 
       if (iterator.readable && (item = iterator.read()) !== null) {
         live.add(iterator);
+
+        if (iterator.readable) {
+          maybeReadable.add(iterator);
+        }
+
         return item;
       } 
       
