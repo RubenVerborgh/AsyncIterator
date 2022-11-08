@@ -34,12 +34,12 @@
     "build:commonjs:import": "sed -i'.bak' -e 's/\\.\\/linkedlist/.\\/linkedlist.js/'  -e 's/\\.\\/taskscheduler/.\\/taskscheduler.js/'  dist/asynciterator.js   && rm dist/*.bak",
     "build:types": "tsc -d && rm dist/ts-out/*.js && mv dist/ts-out/*.d.ts dist && rm -r dist/ts-out",
     "prepare": "npm run build",
-    "test": "npm run build:module && npm run test:microtask",
+    "test": "npm run build:commonjs && npm run test:microtask",
     "test:microtask": "npm run mocha",
     "test:immediate": "npm run mocha -- --require test/config/useSetImmediate.js",
     "mocha": "c8 mocha",
     "lint": "eslint asynciterator.ts test perf",
-    "docs": "npm run build:module && npm run jsdoc",
+    "docs": "npm run build:commonjs && npm run jsdoc",
     "jsdoc": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {

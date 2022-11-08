@@ -1,2 +1,2 @@
-import { setTaskScheduler } from '../../dist/asynciterator.js';
+const { setTaskScheduler } = require('../../dist/asynciterator.js');
 setTaskScheduler(setImmediate);
