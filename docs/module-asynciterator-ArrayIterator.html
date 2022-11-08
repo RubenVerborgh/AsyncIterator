@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Index</title>
+    <title>Class: ArrayIterator</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -447,176 +447,437 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="index.html">Index</h1>
+        <h1 class="page-title" data-filename="module-asynciterator-ArrayIterator.html">Class: ArrayIterator</h1>
         
 
 
+
+<section>
+    
+<header>
+    <h2>
+        <span class="ancestors"><a href="module-asynciterator.html">asynciterator</a>~</span>
+    
+    ArrayIterator
+    </h2>
+    
+        <div class="class-description"><p>An iterator that emits the items of a given array.</p></div>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="ArrayIterator">
+            
+            new ArrayIterator<span class="signature">(items)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 582
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates a new <code>ArrayIterator</code>.</p>
+    </div>
     
 
-
-    <h3> </h3>
-
-
-
-
-
-
-
-
     
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
 
 
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                    
+                        
+                    
+                
+                <p>The items that will be emitted.</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>options.autoStart</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
 
 
-    <section>
-        <article class="readme"><h1>Asynchronous iterators for JavaScript</h1>
-<p><a target="_blank" href="https://github.com/RubenVerborgh/AsyncIterator/actions"><img src="https://github.com/RubenVerborgh/AsyncIterator/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
-<a target="_blank" href="https://coveralls.io/github/RubenVerborgh/AsyncIterator"><img src="https://coveralls.io/repos/github/RubenVerborgh/AsyncIterator/badge.svg" alt="Coverage Status"></a>
-<a target="_blank" href="https://www.npmjs.com/package/asynciterator"><img src="https://badge.fury.io/js/asynciterator.svg" alt="npm version"></a></p>
-<p><strong>AsyncIterator is a lightweight JavaScript implementation of demand-driven object streams,</strong>
-and an alternative to the two-way flow controlled <a target="_blank" href="https://nodejs.org/api/stream.html">Node.js <code>Stream</code></a>.
-As opposed to <code>Stream</code>, you cannot <em>push</em> anything into an <code>AsyncIterator</code>;
-instead, an iterator <em>pulls</em> things from another iterator.
-This eliminates the need for expensive, complex flow control.</p>
-<p><a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/">Read the full API documentation.</a></p>
-<h2>Data streams that only generate what you need</h2>
-<p><code>AsyncIterator</code> allows functions to
-<strong>return multiple <em>asynchronously</em> and <em>lazily</em> created values</strong>.
-This adds a missing piece to JavaScript,
-which natively supports returning a single value synchronously
-and asynchronously (through <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"><code>Promise</code></a>),
-but multiple values only synchronously (through <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols"><code>Iterable</code></a>):</p>
-<table>
-  <tr>
-    <td>&nbsp;</td>
-    <th>single value</th>
-    <th>multiple values</th>
-  </tr>
-  <tr>
-    <th>synchronous</th>
-    <td><code>T getValue()</code></td>
-    <td><code>Iterable&lt;T&gt; getValues()</code></td>
-  </tr>
-  <tr>
-    <th>asynchronous</th>
-    <td><code>Promise&lt;T&gt; getValue()</code></td>
-    <td><strong><code>AsyncIterator&lt;T&gt; getValues()</code></strong></td>
-  </tr>
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Whether buffering starts directly after construction</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>options.preserve</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>If false, the passed array can be safely modified</p></td>
+        </tr>
+	
+	
+	</tbody>
 </table>
-<p>Like <code>Iterable</code>, <strong>an <code>AsyncIterator</code> only generates items when you ask it to</strong>.
-This contrast with patterns such as <a target="_blank" href="http://reactivex.io/intro.html"><code>Observable</code></a>,
-which are data-driven and don't wait for consumers to process items.</p>
-<h3>The asynchronous iterator interface</h3>
-<p>An asynchronous iterator is an object that exposes a series of data items by:</p>
-<ul>
-<li>implementing <a target="_blank" href="https://nodejs.org/api/events.html#events_class_eventemitter"><code>EventEmitter</code></a></li>
-<li>returning an item when you call <code>iterator.read</code> (yielding <code>null</code> when none is available at the moment)</li>
-<li>informing when new items might be available through <code>iterator.on('readable', callback)</code></li>
-<li>informing when no more items will become available through <code>iterator.on('end', callback)</code></li>
-<li>streaming all of its items when you register through <code>iterator.on('data', callback)</code></li>
-</ul>
-<p>Any object that conforms to the above conditions can be used with the AsyncIterator library
-(this includes <a target="_blank" href="https://nodejs.org/api/stream.html">Node.js Streams</a>).
-The <code>AsyncIterator</code> interface additionally exposes
-<a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html">several other methods and properties</a>.</p>
-<h2>Example: fetching Wikipedia links related to natural numbers</h2>
-<p>In the example below, we create an iterator of links found on Wikipedia pages for natural numbers.</p>
-<pre class="prettyprint source lang-JavaScript"><code>import https from 'https';
-import { resolve } from 'url';
-import { IntegerIterator } from 'asynciterator';
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
 
-// Iterate over the natural numbers
-const numbers = new IntegerIterator({ start: 0, end: Infinity });
-// Transform these numbers into Wikipedia URLs
-const urls = numbers.map(n => `https://en.wikipedia.org/wiki/${n}`);
-// Fetch each corresponding Wikipedia page
-const pages = urls.transform((url, done, push) => {
-  https.get(url, response => {
-    let page = '';
-    response.on('data', data => { page += data; });
-    response.on('end',  () => { push(page); done(); });
-  });
-});
-// Extract the links from each page
-const links = pages.transform((page, done, push) => {
-  let search = /href=&quot;([^&quot;]+)&quot;/g, match;
-  while (match = search.exec(page))
-    push(resolve('https://en.wikipedia.org/', match[1]));
-  done();
-});
-</code></pre>
-<p>We could display a link every 0.1 seconds:</p>
-<pre class="prettyprint source lang-JavaScript"><code>setInterval(() => {
-  const link = links.read();
-  if (link)
-    console.log(link);
-}, 100);
-</code></pre>
-<p>Or we can get the first 30 links and display them:</p>
-<pre class="prettyprint source lang-JavaScript"><code>links.take(30).on('data', console.log);
-</code></pre>
-<p>In both cases, pages from Wikipedia will only be fetched when needed—the data consumer is in control.
-This is what makes <code>AsyncIterator</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy</a>.</p>
-<p>If we had implemented this using the <code>Observable</code> pattern,
-an entire flow of unnecessary pages would be fetched,
-because it is controlled by the data publisher instead.</p>
-<h2>Usage</h2>
-<p><code>AsyncIterator</code> implements the <a target="_blank" href="https://nodejs.org/api/events.html#events_class_eventemitter"><code>EventEmitter</code></a> interface
-and a superset of the <a target="_blank" href="https://nodejs.org/api/stream.html"><code>Stream</code></a> interface.</p>
-<h3>Consuming an AsyncIterator in on-demand mode</h3>
-<p>By default, an AsyncIterator is in <em>on-demand</em> mode,
-meaning it only generates items when asked to.</p>
-<p>The <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#read"><code>read</code> method</a> returns the next item,
-or <code>null</code> when no item is available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator({ start: 1, end: 2 });
-console.log(numbers.read()); // 1
-console.log(numbers.read()); // 2
-console.log(numbers.read()); // null
-</code></pre>
-<p>If you receive <code>null</code>,
-you should wait until the next <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:readable"><code>readable</code> event</a> before reading again.
-This event is not a guarantee that an item <em>will</em> be available.</p>
-<pre class="prettyprint source lang-JavaScript"><code>links.on('readable', () => {
-  let link;
-  while (link = links.read())
-    console.log(link);
-});
-</code></pre>
-<p>The <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:end"><code>end</code> event</a> is emitted after you have read the last item from the iterator.</p>
-<h3>Consuming an AsyncIterator in flow mode</h3>
-<p>An AsyncIterator can be switched to <em>flow</em> mode by listening to the <a target="_blank" href="http://rubenverborgh.github.io/AsyncIterator/docs/AsyncIterator.html#.event:data"><code>data</code> event</a>.
-In flow mode, iterators generate items as fast as possible.</p>
-<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator({ start: 1, end: 100 });
-numbers.on('data', number => console.log('number', number));
-numbers.on('end',  () => console.log('all done!'));
-</code></pre>
-<p>To switch back to on-demand mode, simply remove all <code>data</code> listeners.</p>
-<h3>Setting and reading properties</h3>
-<p>An AsyncIterator can have custom properties assigned to it,
-which are preserved when the iterator is cloned.
-This is useful to pass around metadata about the iterator.</p>
-<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator();
-numbers.setProperty('rate', 1234);
-console.log(numbers.getProperty('rate')); // 1234
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
-const clone = numbers.clone();
-console.log(clone.getProperty('rate'));   // 1234
+    
+    
 
-numbers.setProperty('rate', 4567);
-console.log(clone.getProperty('rate'));   // 4567
-</code></pre>
-<p>You can also attach a callback
-that will be called as soon as the property is set:</p>
-<pre class="prettyprint source lang-JavaScript"><code>const numbers = new IntegerIterator();
-numbers.getProperty('later', console.log);
-numbers.setProperty('later', 'value');
-// 'value'
-</code></pre>
-<h2>License</h2>
-<p>The asynciterator library is copyrighted by <a target="_blank" href="http://ruben.verborgh.org/">Ruben Verborgh</a>
-and released under the <a target="_blank" href="http://opensource.org/licenses/MIT">MIT License</a>.</p></article>
-    </section>
+    
 
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+    
+    
+        <h3 class="subsection-title">Extends</h3>
+        
+        <ul>
+            <li>module:asynciterator.AsyncIterator</li>
+        </ul>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        <h3 class="subsection-title">Methods</h3>
+        
+        <dl>
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="toArray">
+            
+            toArray<span class="signature">(<span class="optional">options</span>)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 637
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Consume all remaining items of the iterator into an array that will be returned asynchronously.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Settings for array creation</p>
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>limit</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The maximum number of items to place in the array.</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        </dl>
+    
+    
+    
+    
+    
+
+    
+</article>
+
+</section>  
 
 
 

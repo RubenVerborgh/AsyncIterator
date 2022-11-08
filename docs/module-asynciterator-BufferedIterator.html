@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Module: asynciterator</title>
+    <title>Class: BufferedIterator</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -447,7 +447,7 @@
     </ul>
 </div>
     <div class="main">
-        <h1 class="page-title" data-filename="module-asynciterator.html">Module: asynciterator</h1>
+        <h1 class="page-title" data-filename="module-asynciterator-BufferedIterator.html">Class: BufferedIterator</h1>
         
 
 
@@ -456,8 +456,14 @@
     
 <header>
     <h2>
-    asynciterator
+        <span class="ancestors"><a href="module-asynciterator.html">asynciterator</a>~</span>
+    
+    BufferedIterator
     </h2>
+    
+        <div class="class-description"><p>An iterator that maintains an internal buffer of items.
+This class serves as a base class for other iterators
+with a typically complex item generation process.</p></div>
     
 </header>  
 
@@ -467,10 +473,185 @@
     
     
         
-            <div class="description"><p>An asynchronous iterator library for advanced object pipelines</p></div>
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="BufferedIterator">
+            
+            new BufferedIterator<span class="signature">(<span class="optional">options</span>)</span>
+        </h4>
+    
         
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 783
+        </div>
         
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Creates a new <code>BufferedIterator</code>.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
         
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Settings of the iterator</p>
+                
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		<th>Default</th>
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>maxBufferSize</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    4
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>The number of items to preload in the internal buffer</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>autoStart</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+            
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+            
+            <td class="description last">
+                
+                    
+                        <span class="optional">optional</span>
+                    
+                    
+                        
+                    
+                
+                <p>Whether buffering starts directly after construction</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+            </td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
 <dl class="details">
     
         
@@ -495,60 +676,35 @@
     
 </dl>
 
-        
-        
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
     
     </div>
     
     
+        <h3 class="subsection-title">Extends</h3>
+        
+        <ul>
+            <li>module:asynciterator.AsyncIterator</li>
+        </ul>
     
     
     
     
     
     
-        <h3 class="subsection-title">Classes</h3>
-        
-        <dl>
-            <dt><a href="module-asynciterator-ArrayIterator.html">ArrayIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-AsyncIterator.html">AsyncIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-BufferedIterator.html">BufferedIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-ClonedIterator.html">ClonedIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-EmptyIterator.html">EmptyIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-IntegerIterator.html">IntegerIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-MappingIterator.html">MappingIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-MultiTransformIterator.html">MultiTransformIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-SimpleTransformIterator.html">SimpleTransformIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-SingletonIterator.html">SingletonIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-TransformIterator.html">TransformIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-UnionIterator.html">UnionIterator</a></dt>
-            <dd></dd>
-        
-            <dt><a href="module-asynciterator-WrappingIterator.html">WrappingIterator</a></dt>
-            <dd></dd>
-        </dl>
     
     
     
@@ -560,7 +716,7 @@
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id=".CLOSED"><span class="type-signature static">static</span>module:asynciterator.CLOSED<span class="type-signature type integer">integer</span> </h4>
+        <h4 class="name" id="maxBufferSize">maxBufferSize<span class="type-signature type number">number</span> </h4>
     </div>
     
     
@@ -568,288 +724,9 @@
 <dd>
     
     <div class="description">
-        <p>ID of the CLOSED state.
-An iterator is closed if it no longer actively generates new items.
-Items might still be available.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".CLOSING"><span class="type-signature static">static</span>module:asynciterator.CLOSING<span class="type-signature type integer">integer</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>ID of the CLOSING state.
-An iterator is closing if item generation is pending but will not be scheduled again.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".DESTINATION"><span class="type-signature static">static</span>module:asynciterator.DESTINATION</h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Key indicating the current consumer of a source.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".DESTROYED"><span class="type-signature static">static</span>module:asynciterator.DESTROYED<span class="type-signature type integer">integer</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>ID of the DESTROYED state.
-An iterator has been destroyed
-after calling module:asynciterator.AsyncIterator#destroy.
-The 'end' event has not been called, as pending elements were voided.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".ENDED"><span class="type-signature static">static</span>module:asynciterator.ENDED<span class="type-signature type integer">integer</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>ID of the ENDED state.
-An iterator has ended if no further items will become available.
-The 'end' event is guaranteed to have been called when in this state.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".INIT"><span class="type-signature static">static</span>module:asynciterator.INIT<span class="type-signature type integer">integer</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>ID of the INIT state.
-An iterator is initializing if it is preparing main item generation.
-It can already produce items.</p>
-    </div>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".OPEN"><span class="type-signature static">static</span>module:asynciterator.OPEN<span class="type-signature type integer">integer</span> </h4>
-    </div>
-    
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>ID of the OPEN state.
-An iterator is open if it can generate new items.</p>
+        <p>The maximum number of items to preload in the internal buffer.
+A <code>BufferedIterator</code> tries to fill its buffer as far as possible.
+Set to <code>Infinity</code> to fully drain the source.</p>
     </div>
     
     
@@ -892,14 +769,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~empty">
+        <h4 class="name" id="_begin">
             
-            <span class="type-signature ">inner</span>empty<span class="signature">()</span>
+            <span class="type-signature ">protected</span>_begin<span class="signature">(done)</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1903
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 855
         </div>
         
     </div>
@@ -910,78 +787,9 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Creates an empty iterator.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~fromArray">
-            
-            <span class="type-signature ">inner</span>fromArray<span class="signature">(items)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1919
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates an iterator for the given array.</p>
+        <p>Writes beginning items and opens iterator resources.
+Should never be called before BufferedIterator#_init;
+typically, <code>_init</code> is responsible for calling <code>_begin</code>.</p>
     </div>
     
 
@@ -1012,13 +820,13 @@ An iterator is open if it can generate new items.</p>
 	
         <tr>
             
-                <td class="name"><code>items</code></td>
+                <td class="name"><code>done</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Array</span>
+<span class="param-type">function</span>
 
 
             
@@ -1028,7 +836,7 @@ An iterator is open if it can generate new items.</p>
             
             <td class="description last">
                 
-                <p>the items</p></td>
+                <p>To be called when initialization is complete</p></td>
         </tr>
 	
 	
@@ -1079,14 +887,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~fromIterable">
+        <h4 class="name" id="_completeClose">
             
-            <span class="type-signature ">inner</span>fromIterable<span class="signature">(source)</span>
+            <span class="type-signature ">protected</span>_completeClose<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1935
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 994
         </div>
         
     </div>
@@ -1097,7 +905,234 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Creates an iterator for the given Iterable.</p>
+        <p>Stops the iterator from generating new items,
+switching from <code>CLOSING</code> state into <code>CLOSED</code> state.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+    <h5>Fires:</h5>
+    <ul>
+        <li>module:asynciterator.AsyncIterator.event:end</li>
+    </ul>
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_fillBuffer">
+            
+            <span class="type-signature ">protected</span>_fillBuffer<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 920
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Fills the internal buffer until <code>this._maxBufferSize</code> items are present.
+This method calls BufferedIterator#_read to fetch items.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+    <h5>Fires:</h5>
+    <ul>
+        <li>module:asynciterator.AsyncIterator.event:readable</li>
+    </ul>
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_fillBufferAsync">
+            
+            _fillBufferAsync<span class="signature">()</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 961
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Schedules <code>_fillBuffer</code> asynchronously.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_flush">
+            
+            <span class="type-signature ">protected</span>_flush<span class="signature">(done)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1021
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Writes terminating items and closes iterator resources.
+Should never be called before BufferedIterator#close;
+typically, <code>close</code> is responsible for calling <code>_flush</code>.</p>
     </div>
     
 
@@ -1128,13 +1163,13 @@ An iterator is open if it can generate new items.</p>
 	
         <tr>
             
-                <td class="name"><code>source</code></td>
+                <td class="name"><code>done</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Iterable</span>
+<span class="param-type">function</span>
 
 
             
@@ -1144,7 +1179,7 @@ An iterator is open if it can generate new items.</p>
             
             <td class="description last">
                 
-                <p>the iterable</p></td>
+                <p>To be called when termination is complete</p></td>
         </tr>
 	
 	
@@ -1195,14 +1230,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~fromIterator">
+        <h4 class="name" id="_init">
             
-            <span class="type-signature ">inner</span>fromIterator<span class="signature">(source)</span>
+            <span class="type-signature ">protected</span>_init<span class="signature">(autoStart)</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1927
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 829
         </div>
         
     </div>
@@ -1213,7 +1248,8 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Creates an iterator for the given Iterator.</p>
+        <p>Initializing the iterator by calling BufferedIterator#_begin
+and changing state from INIT to OPEN.</p>
     </div>
     
 
@@ -1244,13 +1280,13 @@ An iterator is open if it can generate new items.</p>
 	
         <tr>
             
-                <td class="name"><code>source</code></td>
+                <td class="name"><code>autoStart</code></td>
             
             
             <td class="type">
             
                 
-<span class="param-type">Iterable</span>
+<span class="param-type">boolean</span>
 
 
             
@@ -1260,7 +1296,7 @@ An iterator is open if it can generate new items.</p>
             
             <td class="description last">
                 
-                <p>the iterator</p></td>
+                <p>Whether reading of items should immediately start after OPEN.</p></td>
         </tr>
 	
 	
@@ -1311,14 +1347,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~getTaskScheduler">
+        <h4 class="name" id="_push">
             
-            <span class="type-signature ">inner</span>getTaskScheduler<span class="signature">()</span>
+            <span class="type-signature ">protected</span>_push<span class="signature">(item)</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 19
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 907
         </div>
         
     </div>
@@ -1329,407 +1365,7 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Returns the asynchronous task scheduler.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~identity">
-            
-            <span class="type-signature ">inner</span>identity<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 706
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Function that maps an element to itself.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~range">
-            
-            <span class="type-signature ">inner</span>range<span class="signature">(items)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1951
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates an iterator of integers for the given numeric range.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>items</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                <p>the items</p></td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~scheduleTask">
-            
-            <span class="type-signature ">inner</span>scheduleTask<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 14
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Schedules the given task for asynchronous execution.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~setTaskScheduler">
-            
-            <span class="type-signature ">inner</span>setTaskScheduler<span class="signature">()</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 24
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Sets the asynchronous task scheduler.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id="~single">
-            
-            <span class="type-signature ">inner</span>single<span class="signature">(item)</span>
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1911
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Creates an iterator with a single item.</p>
+        <p>Adds an item to the internal buffer.</p>
     </div>
     
 
@@ -1776,7 +1412,152 @@ An iterator is open if it can generate new items.</p>
             
             <td class="description last">
                 
-                <p>the item</p></td>
+                <p>The item to add</p></td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
+
+    
+    
+    <h5>Fires:</h5>
+    <ul>
+        <li>module:asynciterator.AsyncIterator.event:readable</li>
+    </ul>
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="_read">
+            
+            <span class="type-signature ">protected</span>_read<span class="signature">(count, done)</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 898
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Tries to generate the given number of items.
+Implementers should add <code>count</code> items through BufferedIterator#_push.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>count</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">integer</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>The number of items to generate</p></td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>done</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+            
+            
+            
+            <td class="description last">
+                
+                <p>To be called when reading is complete</p></td>
         </tr>
 	
 	
@@ -1827,14 +1608,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~union">
+        <h4 class="name" id="_toStringDetails">
             
-            <span class="type-signature ">inner</span>union<span class="signature">(items)</span>
+            <span class="type-signature ">protected</span>_toStringDetails<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1943
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1028
         </div>
         
     </div>
@@ -1845,7 +1626,7 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Creates an iterator containing all items from the given iterators.</p>
+        <p>Generates details for a textual representation of the iterator.</p>
     </div>
     
 
@@ -1853,51 +1634,6 @@ An iterator is open if it can generate new items.</p>
     
     
     
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>items</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                <p>the items</p></td>
-        </tr>
-	
-	
-	</tbody>
-</table>
     
     
     
@@ -1943,14 +1679,14 @@ An iterator is open if it can generate new items.</p>
             
 <dt>
     <div class="nameContainer">
-        <h4 class="name" id="~wrap">
+        <h4 class="name" id="close">
             
-            <span class="type-signature ">inner</span>wrap<span class="signature">(<span class="optional">source</span>, <span class="optional">options</span>)</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{module:asynciterator.AsyncIterator}</span>
+            close<span class="signature">()</span>
         </h4>
     
         
         <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 1875
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 979
         </div>
         
     </div>
@@ -1961,9 +1697,10 @@ An iterator is open if it can generate new items.</p>
     
     
     <div class="description">
-        <p>Creates an iterator that wraps around a given iterator or readable stream.
-Use this to convert an iterator-like object into a full-featured AsyncIterator.
-After this operation, only read the returned iterator instead of the given one.</p>
+        <p>Stops the iterator from generating new items
+after a possible pending read operation has finished.
+Already generated, pending, or terminating items can still be emitted.
+After this, the iterator will end asynchronously.</p>
     </div>
     
 
@@ -1972,82 +1709,83 @@ After this operation, only read the returned iterator instead of the given one.<
     
     
     
+    
+    
+<dl class="details">
+    
         
+    
+    
+    
 
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>source</code></td>
-            
-            
-            <td class="type">
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>The source this iterator generates items from</p></td>
-        </tr>
-	
-	
-	
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</dl>
 
+    
+    
+    <h5>Fires:</h5>
+    <ul>
+        <li>module:asynciterator.AsyncIterator.event:end</li>
+    </ul>
+    
 
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+        
             
-            </td>
+<dt>
+    <div class="nameContainer">
+        <h4 class="name" id="read">
             
-            
-            
-            <td class="description last">
-                
-                    
-                        <span class="optional">optional</span>
-                    
-                    
-                        
-                    
-                
-                <p>Settings of the iterator</p></td>
-        </tr>
-	
-	
-	</tbody>
-</table>
+            read<span class="signature">()</span><span class="glyphicon glyphicon-circle-arrow-right"></span><span class="type-signature returnType">{object}</span>
+        </h4>
+    
+        
+        <div class="tag-source">
+            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 864
+        </div>
+        
+    </div>
+
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Tries to read the next item from the iterator.
+If the buffer is empty,
+this method calls BufferedIterator#_read to fetch items.</p>
+    </div>
+    
+
+    
+    
+    
+    
     
     
     
@@ -2103,11 +1841,11 @@ After this operation, only read the returned iterator instead of the given one.<
             
             <td class="type">
             
-                        module:asynciterator.AsyncIterator
+                        object
                         
                     
             </td>
-            <td class="description last">A new iterator with the items from the given iterator</td>
+            <td class="description last">The next item, or <code>null</code> if none is available</td>
         </tr>
     
     </tbody>
@@ -2125,279 +1863,6 @@ After this operation, only read the returned iterator instead of the given one.<
     
     
 
-    
-        <h3 class="subsection-title">Events</h3>
-        
-        <dl>
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".event:data">
-            
-            module:asynciterator.event:data
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 128
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The iterator emits a <code>data</code> event with a new item as soon as it becomes available.
-When one or more listeners are attached to the <code>data</code> event,
-the iterator switches to <em>flow mode</em>,
-generating and emitting new items as fast as possible.
-This drains the source and might create backpressure on the consumers,
-so only subscribe to this event if this behavior is intended.
-In flow mode, don't use module:asynciterator.AsyncIterator#read.
-To switch back to <em>on-demand mode</em>, remove all listeners from the <code>data</code> event.
-You can then obtain items through <code>read</code> again.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-        
-
-<table class="params">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-		
-		<th>Type</th>
-		
-		
-		
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-	
-	<tbody>
-	
-	
-        <tr>
-            
-                <td class="name"><code>item</code></td>
-            
-            
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-            
-            
-            
-            <td class="description last">
-                
-                <p>The new item</p></td>
-        </tr>
-	
-	
-	</tbody>
-</table>
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".event:end">
-            
-            module:asynciterator.event:end
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 213
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The <code>end</code> event is emitted after the last item of the iterator has been read.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        
-            
-<dt>
-    <div class="nameContainer">
-        <h4 class="name" id=".event:readable">
-            
-            module:asynciterator.event:readable
-        </h4>
-    
-        
-        <div class="tag-source">
-            /home/runner/work/AsyncIterator/AsyncIterator/dist/asynciterator.js, line 121
-        </div>
-        
-    </div>
-
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>The iterator emits a <code>readable</code> event when it might have new items available
-after having had no items available right before this event.
-If the iterator is not in flow mode, items can be retrieved
-by calling module:asynciterator.AsyncIterator#read.</p>
-    </div>
-    
-
-    
-    
-    
-    
-    
-    
-    
-<dl class="details">
-    
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
-</dd>
-
-        </dl>
     
 </article>
 
