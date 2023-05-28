@@ -1796,6 +1796,9 @@ export class ClonedIterator<T> extends TransformIterator<T> {
   constructor(source: AsyncIterator<T>) {
     super(source, { autoStart: false });
     this._reading = false;
+    // As cloned iterators are not auto-started, they must always be marked as readable.
+    if (source)
+      this.readable = true;
   }
 
   protected _init() {
