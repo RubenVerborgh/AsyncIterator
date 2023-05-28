@@ -173,8 +173,8 @@ describe('ClonedIterator', () => {
         });
 
         if (index === 0) {
-          it('should not have emitted the `readable` event', () => {
-            getClone()._eventCounts.readable.should.equal(0);
+          it('should have emitted the `readable` event once', () => {
+            getClone()._eventCounts.readable.should.equal(1);
           });
         }
 
@@ -187,8 +187,8 @@ describe('ClonedIterator', () => {
         });
 
         if (index === 0) {
-          it('should not be readable', () => {
-            getClone().readable.should.be.false;
+          it('should be readable', () => {
+            getClone().readable.should.be.true;
           });
 
           it('should return null on read', () => {
@@ -204,7 +204,7 @@ describe('ClonedIterator', () => {
           before(() => { getIterator()._push('a'); });
 
         it('should have emitted the `readable` event', () => {
-          getClone()._eventCounts.readable.should.equal(1);
+          getClone()._eventCounts.readable.should.equal(index === 0 ? 2 : 1);
         });
 
         it('should not have emitted the `end` event', () => {
@@ -231,7 +231,7 @@ describe('ClonedIterator', () => {
           before(() => { getIterator().close(); });
 
         it('should not have emitted anymore `readable` events', () => {
-          getClone()._eventCounts.readable.should.equal(1);
+          getClone()._eventCounts.readable.should.equal(index === 0 ? 2 : 1);
         });
 
         it('should have emitted the `end` event', () => {
@@ -708,6 +708,45 @@ describe('ClonedIterator', () => {
 
         it('should be readable', () => {
           getClone().readable.should.be.true;
+        });
+      });
+    });
+  });
+
+  describe('Cloning an iterator without autoStart', () => {
+    const clones = createClones(() => new TransformIterator(() => new ArrayIterator([1], { autoStart: false })));
+
+    describe('before the first item is read', () => {
+      describeClones(clones, getClone => {
+        it('should be readable', () => {
+          getClone().readable.should.be.true;
+        });
+
+        it('should have emitted the `readable` event', () => {
+          getClone()._eventCounts.readable.should.equal(1);
+        });
+      });
+    });
+
+    describe('after the first item is read', () => {
+      describeClones(clones, getClone => {
+        let item;
+        before(() => { item = getClone().read(); });
+
+        it('should have read the item correctly', () => {
+          item.should.equal(1);
+        });
+
+        it('should not be readable', () => {
+          getClone().readable.should.be.false;
+        });
+
+        it('should be done', () => {
+          getClone().done.should.be.true;
+        });
+
+        it('should not have emitted another `readable` event', () => {
+          getClone()._eventCounts.readable.should.equal(1);
         });
       });
     });
