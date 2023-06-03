@@ -458,6 +458,49 @@ describe('ClonedIterator', () => {
     });
   });
 
+  describe('Cloning a clone', () => {
+    let iterator, clone;
+    before(() => {
+      iterator = new ArrayIterator([1, 2, 3]);
+      clone = iterator.clone().clone();
+    });
+
+    it('#toArray should run', async () => {
+      expect(await clone.toArray()).to.deep.equal([1, 2, 3]);
+    });
+  });
+
+  describe('Cloning a mapped clone', () => {
+    let iterator, clone;
+    before(() => {
+      iterator = new ArrayIterator([1, 2, 3]);
+      clone = iterator.map(x => x).clone().clone();
+    });
+
+    it('#toArray should run', async () => {
+      expect(await clone.toArray()).to.deep.equal([1, 2, 3]);
+    });
+  });
+
+  describe('Cloning a transformed clone', () => {
+    let iterator, clone;
+    before(() => {
+      iterator = new ArrayIterator([1, 2, 3]);
+      clone = iterator.transform({
+        transform(item, done, push) {
+          setTimeout(() => {
+            push(item);
+            done();
+          }, 1);
+        },
+      }).clone().clone();
+    });
+
+    it('#toArray should run', async () => {
+      expect(await clone.toArray()).to.deep.equal([1, 2, 3]);
+    });
+  });
+
   describe('Cloning an iterator with properties', () => {
     let iterator, clone;
     before(() => {
