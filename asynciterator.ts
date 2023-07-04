@@ -76,12 +76,11 @@ export const ENDED = 1 << 4;
 */
 export const DESTROYED = 1 << 5;
 
-
 /**
   An asynchronous iterator provides pull-based access to a stream of objects.
   @extends module:asynciterator.EventEmitter
 */
-export class AsyncIterator<T> extends EventEmitter {
+export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
   protected _state: number;
   private _readable = false;
   protected _properties?: { [name: string]: any };
@@ -567,6 +566,47 @@ export class AsyncIterator<T> extends EventEmitter {
   */
   clone(): ClonedIterator<T> {
     return new ClonedIterator<T>(this);
+  }
+
+  /**
+   * An AsyncIterator is async iterable.
+   * This allows iterators to be used via the for-await syntax.
+   * @returns {ESAsyncIterator<T>} An EcmaScript AsyncIterator
+   */
+  [Symbol.asyncIterator](): ESAsyncIterator<T> {
+    const it = this;
+    // An EcmaScript AsyncIterator exposes the next() function that can be invoked repeatedly
+    return {
+      next(): Promise<IteratorResult<T>> {
+        return new Promise<IteratorResult<T>>((resolve, reject) => {
+          it.on('error', reject);
+          function tryResolve(): void {
+            const value = it.read();
+            if (value !== null) {
+              // Immediately resolve if we have read an element
+              it.removeListener('error', reject);
+              resolve({ done: false, value });
+            }
+            else if (it.done) {
+              // Close if we're done
+              it.removeListener('error', reject);
+              resolve({ done: true, value: undefined });
+            }
+            else {
+              // In all other cases, wait for the iterator to become readable or ended
+              const nextCallback = () => {
+                it.removeListener('readable', nextCallback);
+                it.removeListener('end', nextCallback);
+                tryResolve();
+              };
+              it.once('readable', nextCallback);
+              it.once('end', nextCallback);
+            }
+          }
+          tryResolve();
+        });
+      },
+    };
   }
 }
 
@@ -2246,6 +2286,13 @@ export interface TransformOptions<S, D> extends TransformIteratorOptions<S> {
 
 export interface MultiTransformOptions<S, D> extends TransformOptions<S, D> {
   multiTransform?: (item: S) => AsyncIterator<D>;
+}
+
+/**
+ * Copy of the EcmaScript AsyncIterator interface, which we can not use directly due to the name conflict.
+ */
+interface ESAsyncIterator<T> {
+  next(value?: any): Promise<IteratorResult<T>>;
 }
 
 type MaybePromise<T> =
