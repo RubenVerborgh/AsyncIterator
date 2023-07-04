@@ -1309,6 +1309,113 @@ describe('AsyncIterator', () => {
       });
     });
   });
+
+  describe('The AsyncIterator#[Symbol.asyncIterator] function', () => {
+    it('should be a function', () => {
+      expect(AsyncIterator.prototype[Symbol.asyncIterator]).to.be.a('function');
+    });
+
+    describe('called on an empty iterator', () => {
+      let iterator;
+      before(() => {
+        iterator = new AsyncIterator();
+        iterator.close();
+      });
+
+      it('should go through zero iterations', async () => {
+        let i = 0;
+        for await (const value of iterator) {
+          value.should.not.equal(undefined);
+          i++;
+        }
+        i.should.equal(0);
+      });
+    });
+
+    describe('called on an iterator with two items', () => {
+      let iterator;
+      before(() => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => {
+          if (i++ < 2)
+            return i;
+          iterator.close();
+          return null;
+        };
+      });
+
+      it('should go through two iterations', async () => {
+        const values = [];
+        for await (const value of iterator)
+          values.push(value);
+        values.should.eql([1, 2]);
+      });
+    });
+
+    describe('called on an iterator with two slowly generated items', () => {
+      let iterator;
+      before(() => {
+        let i = 0;
+        let generate = false;
+        iterator = new AsyncIterator();
+        iterator.readable = false;
+        iterator.read = () => {
+          if (!generate) {
+            generate = true;
+            setImmediate(() => {
+              iterator.readable = true;
+            });
+            return null;
+          }
+          generate = false;
+          iterator.readable = false;
+
+          if (i++ < 2)
+            return i;
+          iterator.close();
+          return null;
+        };
+      });
+
+      it('should go through two iterations', async () => {
+        const values = [];
+        for await (const value of iterator)
+          values.push(value);
+        values.should.eql([1, 2]);
+      });
+    });
+
+    describe('called on an erroring iterator', () => {
+      let iterator;
+      before(() => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => {
+          if (i++ < 2)
+            return i;
+          iterator.emit('error', new Error('AsyncIterator error'));
+          return null;
+        };
+      });
+
+      it('should go through two iterations and then throw', async () => {
+        const values = [];
+        let caughtError;
+        try {
+          for await (const value of iterator)
+            values.push(value);
+        }
+        catch (error) {
+          caughtError = error;
+        }
+        values.should.eql([1, 2]);
+        caughtError.message.should.eql('AsyncIterator error');
+      });
+    });
+  });
 });
 
 describe('Type-checking functions', () => {

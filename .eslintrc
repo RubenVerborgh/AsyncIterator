@@ -4,6 +4,10 @@
     node: true,
   },
 
+  globals: {
+    AsyncIterable: false,
+  },
+
   parser: "@typescript-eslint/parser",
 
   parserOptions: {

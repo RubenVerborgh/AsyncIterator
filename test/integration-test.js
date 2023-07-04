@@ -25,6 +25,23 @@ describe('Integration tests', () => {
     });
   });
 
+  describe('A sequence of ArrayIterator, TransformIterator, and Unioniterator is AsyncIterable', () => {
+    let arrayIterator, transformIterator, unionIterator;
+
+    before(() => {
+      arrayIterator = new ArrayIterator([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], { autoStart: false });
+      transformIterator = new TransformIterator(arrayIterator, { autoStart: false });
+      unionIterator = new UnionIterator([transformIterator], { autoStart: false });
+    });
+
+    it('returns all values', async () => {
+      const values = [];
+      for await (const value of unionIterator)
+        values.push(value);
+      values.should.eql([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+  });
+
   describe('Cloning iterators', () => {
     describe('A clone of an empty ArrayIterator without autoStart', () => {
       let arrayIterator, clonedIterator;
