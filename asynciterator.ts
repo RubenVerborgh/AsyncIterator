@@ -579,31 +579,31 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
     return {
       next(): Promise<IteratorResult<T>> {
         return new Promise<IteratorResult<T>>((resolve, reject) => {
+          let hasDataListeners = false;
           it.on('error', reject);
-          function nextCallback(): void {
-            it.removeListener('readable', nextCallback);
-            it.removeListener('end', nextCallback);
-            tryResolve();
-          }
-          function tryResolve(): void {
+
+          // Tries to read the next item and passes it through the callback
+          function readNext(): void {
+            // Try to read the next item
             const value = it.read();
-            if (value !== null) {
-              // Immediately resolve if we have read an element
+            if (value !== null || it.done) {
               it.removeListener('error', reject);
-              resolve({ done: false, value });
+              if (hasDataListeners) {
+                it.removeListener('end', readNext);
+                it.removeListener('readable', readNext);
+              }
+              resolve(value !== null ?
+                { done: false, value } :
+                { done: true, value: undefined });
             }
-            else if (it.done) {
-              // Close if we're done
-              it.removeListener('error', reject);
-              resolve({ done: true, value: undefined });
-            }
-            else {
-              // In all other cases, wait for the iterator to become readable or ended
-              it.once('readable', nextCallback);
-              it.once('end', nextCallback);
+            // If none available, listen for new items
+            else if (!hasDataListeners) {
+              hasDataListeners = true;
+              it.on('end', readNext);
+              it.on('readable', readNext);
             }
           }
-          tryResolve();
+          readNext();
         });
       },
     };
