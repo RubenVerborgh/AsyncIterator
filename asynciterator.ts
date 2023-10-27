@@ -580,6 +580,11 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
       next(): Promise<IteratorResult<T>> {
         return new Promise<IteratorResult<T>>((resolve, reject) => {
           it.on('error', reject);
+          function nextCallback(): void {
+            it.removeListener('readable', nextCallback);
+            it.removeListener('end', nextCallback);
+            tryResolve();
+          }
           function tryResolve(): void {
             const value = it.read();
             if (value !== null) {
@@ -594,11 +599,6 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
             }
             else {
               // In all other cases, wait for the iterator to become readable or ended
-              const nextCallback = () => {
-                it.removeListener('readable', nextCallback);
-                it.removeListener('end', nextCallback);
-                tryResolve();
-              };
               it.once('readable', nextCallback);
               it.once('end', nextCallback);
             }
