@@ -647,7 +647,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
@@ -683,7 +683,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
@@ -725,7 +725,7 @@ describe('AsyncIterator', () => {
       });
 
       it('should not have listeners for the `data` event', () => {
-        EventEmitter.listenerCount(iterator, 'readable').should.equal(0);
+        EventEmitter.listenerCount(iterator, 'data').should.equal(0);
       });
 
       it('should not be listening for the `readable` event', () => {
