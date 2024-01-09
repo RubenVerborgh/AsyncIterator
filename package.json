@@ -15,8 +15,14 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "require": "./dist/asynciterator.js",
-      "import": "./dist/asynciterator.mjs"
+      "require": {
+        "types": "./dist/asynciterator.d.ts",
+        "default": "./dist/asynciterator.js"
+      },
+      "import": {
+        "types": "./dist/asynciterator.d.ts",
+        "default": "./dist/asynciterator.mjs"
+      }
     }
   },
   "module": "./dist/asynciterator.mjs",
