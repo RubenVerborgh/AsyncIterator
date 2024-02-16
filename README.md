@@ -174,6 +174,25 @@ numbers.setProperty('later', 'value');
 // 'value'
 ```
 
+### Consuming an AsyncIterator as EcmaScript-AsyncIterator
+Due to the syntactical sugar [EcmaScript's AsyncIterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator)
+provides, our iterators can also be consumed as such.
+If high performance over large iterators is required, this method of consumption not recommended.
+
+```JavaScript
+const numbers = new IntegerIterator({ start: 1, end: 100 });
+
+for await (const number of numbers)
+  console.log('number', number);
+console.log('all done!');
+```
+
+Error events emitted within the iterator can be caught by wrapping the for-await-block in a try-catch.
+
+In cases where the returned EcmaScript AsyncIterator will not be fully consumed,
+it is recommended to manually listen for error events on the main AsyncIterator
+to avoid uncaught error messages.
+
 ## License
 The asynciterator library is copyrighted by [Ruben Verborgh](http://ruben.verborgh.org/)
 and released under the [MIT License](http://opensource.org/licenses/MIT).
