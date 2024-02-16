@@ -571,6 +571,11 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
   /**
    * An AsyncIterator is async iterable.
    * This allows iterators to be used via the for-await syntax.
+   *
+   * In cases where the returned EcmaScript AsyncIterator will not be fully consumed,
+   * it is recommended to manually listen for error events on the main AsyncIterator
+   * to avoid uncaught error messages.
+   *
    * @returns {ESAsyncIterator<T>} An EcmaScript AsyncIterator
    */
   [Symbol.asyncIterator](): ESAsyncIterator<T> {
@@ -611,7 +616,7 @@ export class AsyncIterator<T> extends EventEmitter implements AsyncIterable<T> {
         currentResolve = currentReject = pendingError = null;
         removeListeners();
       }
-      else if (pendingError !== null) {
+      else if (pendingError === null) {
         pendingError = error;
       }
     }
