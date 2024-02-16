@@ -1415,6 +1415,40 @@ describe('AsyncIterator', () => {
         caughtError.message.should.eql('AsyncIterator error');
       });
     });
+
+    describe('called on an iterator that errors inbetween next() calls', () => {
+      let iterator;
+      before(() => {
+        let i = 0;
+        iterator = new AsyncIterator();
+        iterator.readable = true;
+        iterator.read = () => {
+          if (i++ < 2)
+            return i;
+          return null;
+        };
+      });
+
+      it('should throw errors that were emitted before next() was called', async () => {
+        const values = [];
+        let caughtError;
+        const esit = iterator[Symbol.asyncIterator]();
+
+        values.push(await esit.next());
+
+        iterator.emit('error', new Error('AsyncIterator error'));
+
+        try {
+          await esit.next();
+        }
+        catch (error) {
+          caughtError = error;
+        }
+
+        values.should.eql([{ done: false, value: 1 }]);
+        caughtError.message.should.eql('AsyncIterator error');
+      });
+    });
   });
 });
 
