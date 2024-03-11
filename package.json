@@ -15,8 +15,14 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "require": "./dist/asynciterator.js",
-      "import": "./dist/asynciterator.mjs"
+      "require": {
+        "types": "./dist/asynciterator.d.ts",
+        "default": "./dist/asynciterator.js"
+      },
+      "import": {
+        "types": "./dist/asynciterator.d.mts",
+        "default": "./dist/asynciterator.mjs"
+      }
     }
   },
   "module": "./dist/asynciterator.mjs",
@@ -26,13 +32,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run build:clean && npm run build:module && npm run build:commonjs && npm run build:types",
+    "build": "npm run build:clean && npm run build:module && npm run build:commonjs",
     "build:clean": "rm -rf dist",
-    "build:module": "  tsc --module es2015   && ./.change-extension mjs dist/ts-out/*.js && mv dist/ts-out/*.mjs dist && rm -r dist/ts-out && npm run build:module:import",
-    "build:commonjs": "tsc --module commonjs && mv dist/ts-out/*.js dist                                              && rm -r dist/ts-out && npm run build:commonjs:import",
-    "build:module:import": "  sed -i'.bak' -e 's/\\.\\/linkedlist/.\\/linkedlist.mjs/' -e 's/\\.\\/taskscheduler/.\\/taskscheduler.mjs/' dist/asynciterator.mjs  && rm dist/*.bak",
-    "build:commonjs:import": "sed -i'.bak' -e 's/\\.\\/linkedlist/.\\/linkedlist.js/'  -e 's/\\.\\/taskscheduler/.\\/taskscheduler.js/'  dist/asynciterator.js   && rm dist/*.bak",
-    "build:types": "tsc -d && rm dist/ts-out/*.js && mv dist/ts-out/*.d.ts dist && rm -r dist/ts-out",
+    "build:module": "tsc -d --module es2015 && ./.change-extension mjs dist/ts-out/*.js && ./.change-extension d.mts dist/ts-out/*.d.ts && mv dist/ts-out/*.mjs dist/ts-out/*.d.mts dist && rm -r dist/ts-out && npm run build:module:import",
+    "build:commonjs": "tsc -d --module commonjs && mv dist/ts-out/*.js dist/ts-out/*.d.ts dist && rm -r dist/ts-out && npm run build:commonjs:import",
+    "build:module:import": "sed -i'.bak' -e 's/\\.\\/linkedlist/.\\/linkedlist.mjs/' -e 's/\\.\\/taskscheduler/.\\/taskscheduler.mjs/' dist/asynciterator.mjs dist/asynciterator.d.mts && rm dist/*.bak",
+    "build:commonjs:import": "sed -i'.bak' -e 's/\\.\\/linkedlist/.\\/linkedlist.js/' -e 's/\\.\\/taskscheduler/.\\/taskscheduler.js/' dist/asynciterator.js && rm dist/*.bak",
     "prepare": "npm run build",
     "test": "npm run build:commonjs && npm run test:microtask",
     "test:microtask": "npm run mocha",

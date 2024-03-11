@@ -6,5 +6,5 @@ shift
 
 # The other parameters are the files to be renamed with the extension
 for file in "$@"; do
-  mv "$file" "${file%.*}.$extension"
+  mv "$file" "${file%%.*}.$extension"
 done
