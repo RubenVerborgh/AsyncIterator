@@ -1717,7 +1717,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   @extends module:asynciterator.BufferedIterator
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
-  private _sources : {read: boolean, source: InternalSource<T>}[] = [];
+  private _sources : { requiresRead: boolean, source: InternalSource<T> }[] = [];
   private _pending? : { loading: boolean, sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
   private _currentSource = -1;
   protected _destroySources: boolean;
@@ -1784,12 +1784,12 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     if (isPromise(source))
       source = wrap<T>(source) as any as InternalSource<T>;
     if (!source.done) {
-      const sourceObj = { read: true, source };
+      const sourceObj = { requiresRead: true, source };
       this._sources.push(sourceObj);
       source[DESTINATION] = this;
       source.on('error', destinationEmitError);
       source.on('readable', () => {
-        sourceObj.read = true;
+        sourceObj.requiresRead = true;
         destinationFillBuffer.bind(<InternalSource<unknown>>sourceObj.source)();
       });
       source.on('end', destinationRemoveEmptySources);
@@ -1821,6 +1821,9 @@ export class UnionIterator<T> extends BufferedIterator<T> {
         // Pick the next source
         this._currentSource = (this._currentSource + 1) % this._sources.length;
         const source = this._sources[this._currentSource];
+        if (!source.source.readable && !source.requiresRead)
+          continue;
+        source.requiresRead = false;
         // Attempt to read an item from that source
         if ((item = source.source.read()) !== null) {
           count--;
