@@ -1,4 +1,3 @@
-
 const resolved = Promise.resolve(undefined);
 
 // Returns a function that asynchronously schedules a task
