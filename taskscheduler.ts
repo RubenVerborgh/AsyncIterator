@@ -1,14 +1,11 @@
+
 const resolved = Promise.resolve(undefined);
 
 // Returns a function that asynchronously schedules a task
-export function createTaskScheduler() : TaskScheduler {
+export function createTaskScheduler(scheduleMacrotask: TaskScheduler) : TaskScheduler {
   // Use or create a microtask scheduler
   const scheduleMicrotask = typeof queueMicrotask === 'function' ?
     queueMicrotask : (task: Task) => resolved.then(task);
-
-  // Use or create a macrotask scheduler
-  const scheduleMacrotask = typeof setImmediate === 'function' ?
-    setImmediate : (task: Task) => setTimeout(task, 0);
 
   // Interrupt with a macrotask every once in a while to avoid freezing
   let i = 0;

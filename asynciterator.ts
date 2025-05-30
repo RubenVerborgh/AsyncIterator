@@ -6,9 +6,10 @@
 import { EventEmitter } from 'events';
 import { LinkedList } from './linkedlist';
 import { createTaskScheduler } from './taskscheduler';
+import { setImmediate } from 'tiny-set-immediate';
 import type { Task, TaskScheduler } from './taskscheduler';
 
-let taskScheduler: TaskScheduler = createTaskScheduler();
+let taskScheduler: TaskScheduler = createTaskScheduler(setImmediate);
 
 // Export utilities for reuse
 export { LinkedList };
