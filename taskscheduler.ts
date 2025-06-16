@@ -1,7 +1,9 @@
+import { setImmediate } from 'tiny-set-immediate';
+
 const resolved = Promise.resolve(undefined);
 
 // Returns a function that asynchronously schedules a task
-export function createTaskScheduler(scheduleMacrotask: TaskScheduler) : TaskScheduler {
+export function createTaskScheduler(scheduleMacrotask: TaskScheduler = setImmediate) : TaskScheduler {
   // Use or create a microtask scheduler
   const scheduleMicrotask = typeof queueMicrotask === 'function' ?
     queueMicrotask : (task: Task) => resolved.then(task);
