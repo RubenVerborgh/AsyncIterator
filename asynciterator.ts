@@ -1717,7 +1717,7 @@ export class MultiTransformIterator<S, D = S> extends TransformIterator<S, D> {
   @extends module:asynciterator.BufferedIterator
 */
 export class UnionIterator<T> extends BufferedIterator<T> {
-  private _sources : InternalSource<T>[] = [];
+  private _sources : { requiresRead: boolean, source: InternalSource<T> }[] = [];
   private _pending? : { loading: boolean, sources?: AsyncIterator<MaybePromise<AsyncIterator<T>>> };
   private _currentSource = -1;
   protected _destroySources: boolean;
@@ -1784,10 +1784,14 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     if (isPromise(source))
       source = wrap<T>(source) as any as InternalSource<T>;
     if (!source.done) {
-      this._sources.push(source);
+      const sourceObj = { requiresRead: true, source };
+      this._sources.push(sourceObj);
       source[DESTINATION] = this;
       source.on('error', destinationEmitError);
-      source.on('readable', destinationFillBuffer);
+      source.on('readable', () => {
+        sourceObj.requiresRead = true;
+        destinationFillBuffer.bind(<InternalSource<unknown>>sourceObj.source)();
+      });
       source.on('end', destinationRemoveEmptySources);
     }
   }
@@ -1796,9 +1800,9 @@ export class UnionIterator<T> extends BufferedIterator<T> {
   protected _removeEmptySources() {
     this._sources = this._sources.filter((source, index) => {
       // Adjust the index of the current source if needed
-      if (source.done && index <= this._currentSource)
+      if (source.source.done && index <= this._currentSource)
         this._currentSource--;
-      return !source.done;
+      return !source.source.done;
     });
     this._fillBuffer();
   }
@@ -1817,8 +1821,11 @@ export class UnionIterator<T> extends BufferedIterator<T> {
         // Pick the next source
         this._currentSource = (this._currentSource + 1) % this._sources.length;
         const source = this._sources[this._currentSource];
+        if (!source.source.readable && !source.requiresRead)
+          continue;
+        source.requiresRead = false;
         // Attempt to read an item from that source
-        if ((item = source.read()) !== null) {
+        if ((item = source.source.read()) !== null) {
           count--;
           this._push(item);
         }
@@ -1837,7 +1844,7 @@ export class UnionIterator<T> extends BufferedIterator<T> {
     // Destroy all sources that are still readable
     if (this._destroySources) {
       for (const source of this._sources)
-        source.destroy();
+        source.source.destroy();
 
       // Also close the sources stream if applicable
       if (this._pending) {
